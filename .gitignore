@@ -1,0 +1,13 @@
+# macOS / Xcode
+*.xcuserdata/
+DerivedData/
+.DS_Store
+
+# Swift/Build artifacts (safe ignores)
+*.xcscmblueprint
+*.xcworkspace/xcshareddata/
+
+# DMG assets (website links use GitHub Releases instead)
+website/downloads/*.dmg
+website/downloads/*.zip
+
