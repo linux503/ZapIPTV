@@ -32,9 +32,9 @@ a{color:inherit}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none}
 .logo{
   width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
-  background:linear-gradient(135deg,var(--red),var(--orange));
-  font-weight:900;font-size:18px;
+  background:transparent;overflow:hidden;padding:0;
 }
+.logo img{width:34px;height:34px;display:block;border-radius:10px}
 .logo--sm{width:22px;height:22px;font-size:12px;border-radius:6px}
 .brand__text{display:flex;flex-direction:column;line-height:1.15}
 .brand__name{font-weight:800}
