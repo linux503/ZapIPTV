@@ -15,7 +15,7 @@ final class PlaybackRouter: ObservableObject {
         overlayTitle = ""
         pendingLive = channel
         showAppSidebar = false
-        selectedTab = .live
+        selectedTab = channel.group == "⚽ 体育" ? .sports : .live
     }
 
     func playInline(url: URL, title: String) {

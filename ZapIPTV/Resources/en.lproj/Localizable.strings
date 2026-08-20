@@ -2,6 +2,7 @@
 
 "tab.home" = "Home";
 "tab.live" = "Live";
+"tab.sports" = "Sports";
 "tab.movies" = "Movies";
 "tab.series" = "Series";
 "tab.favorites" = "Favorites";
@@ -62,6 +63,10 @@
 "live.categories" = "Categories";
 "live.search" = "Search channels";
 "live.connecting" = "Connecting…";
+"live.connecting_hint" = "Connecting to the stream";
+"live.switching" = "Switching source, please wait…";
+"live.switching_hint" = "This line is unavailable — trying a backup";
+"live.mirror" = "Source %d / %d";
 "live.unavailable" = "This channel is temporarily unavailable";
 "live.try_next" = "Next channel";
 "live.select" = "Pick a channel to start watching";
@@ -74,6 +79,32 @@
 "live.locate" = "Jump to current channel";
 "live.no_channels" = "No channels found";
 "live.add_source_hint" = "Add a source to start watching";
+
+"sports.search" = "Search sports channels";
+"sports.count" = "%d sports channels";
+"sports.select" = "Pick a sports channel to watch";
+"sports.empty" = "No sports channels yet — wait for sources to load";
+"sports.categories" = "Categories";
+"sports.filter.all" = "All";
+"sports.filter.football" = "Football";
+"sports.filter.basketball" = "Basketball";
+"sports.filter.tennis" = "Tennis";
+"sports.filter.golf" = "Golf";
+"sports.filter.motor" = "Motorsport";
+"sports.filter.combat" = "Combat";
+"sports.filter.china" = "China";
+"sports.filter.network" = "Networks";
+"sports.filter.american" = "US Sports";
+"sports.filter.cricket" = "Cricket";
+"sports.filter.other" = "Other";
+"sports.brand.sky" = "Sky Sports";
+"sports.brand.bein" = "beIN Sports";
+"sports.brand.dazn" = "DAZN";
+"sports.brand.euro" = "Europe";
+"sports.brand.us" = "North America";
+"sports.brand.latin" = "Latin America";
+"sports.brand.asia" = "Asia / Local";
+"sports.brand.misc" = "More";
 
 "movies.title" = "Movies";
 "movies.count" = "%d titles available";

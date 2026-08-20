@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-VER="2.0.6"
+VER="2.0.7"
 DIST="$ROOT/dist"
 WEB="$ROOT/cross-platform/web"
 ELEC="$ROOT/cross-platform/electron"
@@ -34,7 +34,7 @@ WIN_OUT=$(find "$ELEC/dist" -name "ZapIPTV-${VER}-win-x64.exe" 2>/dev/null | hea
 echo "Windows: $WIN_OUT"
 
 echo "==> Android APK"
-export JAVA_HOME="${JAVA_HOME:-/opt/homebrew/Cellar/openjdk/26.0.1/libexec/openjdk.jdk/Contents/Home}"
+export JAVA_HOME="${JAVA_HOME:-/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home}"
 export ANDROID_HOME="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
 export PATH="$JAVA_HOME/bin:$ANDROID_HOME/platform-tools:$PATH"
 cd "$AND"

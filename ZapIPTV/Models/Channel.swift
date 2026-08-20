@@ -12,6 +12,19 @@ struct Channel: Identifiable, Hashable {
     var epgId: String?
     var isFavorite: Bool = false
     var lastWatched: Date?
+    /// Alternate stream URLs for the same channel (tried on connect failure).
+    var backupURLs: [URL] = []
+
+    /// Primary + backups, de-duplicated.
+    var allStreamURLs: [URL] {
+        var seen = Set<String>()
+        var out: [URL] = []
+        for u in [url] + backupURLs {
+            let key = u.absoluteString
+            if seen.insert(key).inserted { out.append(u) }
+        }
+        return out
+    }
 }
 
 struct Movie: Identifiable, Hashable {

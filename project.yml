@@ -25,10 +25,12 @@ targets:
       path: ZapIPTV/Info.plist
       properties:
         CFBundleName: ZapIPTV
+        CFBundleIconFile: AppIcon
+        CFBundleIconName: AppIcon
         CFBundleDisplayName: ZapIPTV
         CFBundleIdentifier: com.zapiptv.app
-        CFBundleVersion: "42"
-        CFBundleShortVersionString: "2.0.6"
+        CFBundleVersion: "43"
+        CFBundleShortVersionString: "2.0.7"
         CFBundleDevelopmentRegion: zh-Hant
         CFBundleLocalizations: [zh-Hant, zh-Hans, en]
         NSHumanReadableCopyright: "© 2026 ZapIPTV"
@@ -45,6 +47,19 @@ targets:
         com.apple.security.app-sandbox: false
         com.apple.security.network.client: true
         com.apple.security.files.user-selected.read-only: true
+
+    postBuildScripts:
+      - name: Restore full AppIcon.icns
+        script: |
+          SRC="${SRCROOT}/ZapIPTV/Resources/AppIcon.icns"
+          DST="${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/Contents/Resources/AppIcon.icns"
+          if [ -f "$SRC" ]; then
+            cp -f "$SRC" "$DST"
+            echo "Restored full AppIcon.icns ($(wc -c < "$DST") bytes)"
+          else
+            echo "warning: missing $SRC" >&2
+          fi
+
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.zapiptv.app

@@ -12,17 +12,169 @@ enum ChinesePlaylist {
             return curateMainland(channels.map {
                 Channel(id: $0.id, name: displayName($0.name), url: $0.url,
                         logoURL: $0.logoURL, group: "🇨🇳 中国大陆",
-                        epgId: $0.epgId, lastWatched: $0.lastWatched)
+                        epgId: $0.epgId, isFavorite: $0.isFavorite,
+                        lastWatched: $0.lastWatched, backupURLs: $0.backupURLs)
             })
         }
         return channels
     }
 
-    /// Drop foreign / religious / non-mainland noise and sort CCTV → 卫视 → 地方台.
+    /// Drop foreign / religious / non-mainland noise, merge CCTV / 卫视 duplicates into
+    /// one row with backup URLs (Live TV auto-failover), then sort CCTV → 卫视 → 地方台.
     static func curateMainland(_ channels: [Channel]) -> [Channel] {
-        channels
-            .filter { isMainlandChannel($0.name) }
-            .sorted { mainlandScore($0.name) > mainlandScore($1.name) }
+        let filtered = channels.filter { isMainlandChannel($0.name) }
+        let merged = mergeMainlandMirrors(filtered, limitBackups: 12)
+        return merged.sorted { mainlandScore($0.name) > mainlandScore($1.name) }
+    }
+
+    /// Group CCTV-1 / CCTV1 / CCTV-1综合 / 央视一套 into one channel; stash other URLs as lines.
+    private static func mergeMainlandMirrors(_ channels: [Channel], limitBackups: Int) -> [Channel] {
+        let grouped = Dictionary(grouping: channels, by: { mainlandMirrorKey($0.name) })
+        return grouped.values.compactMap { group -> Channel? in
+            let ranked = group.sorted { ChannelQuality.score($0) > ChannelQuality.score($1) }
+            guard var best = ranked.first else { return nil }
+            best.name = preferredDisplayName(for: group.map(\.name), key: mainlandMirrorKey(best.name))
+
+            var urls: [URL] = []
+            var seen = Set<String>([best.url.absoluteString])
+            for ch in ranked {
+                for u in ch.allStreamURLs {
+                    let key = u.absoluteString
+                    guard seen.insert(key).inserted else { continue }
+                    urls.append(u)
+                    if urls.count >= limitBackups { break }
+                }
+                if urls.count >= limitBackups { break }
+            }
+            if best.logoURL == nil {
+                best.logoURL = ranked.compactMap(\.logoURL).first
+            }
+            if ranked.contains(where: \.isFavorite) { best.isFavorite = true }
+            if let latest = ranked.compactMap(\.lastWatched).max() {
+                best.lastWatched = latest
+            }
+            best.backupURLs = urls
+            return best
+        }
+    }
+
+    /// Stable merge key so CCTV variants become one entry.
+    static func mainlandMirrorKey(_ name: String) -> String {
+        let n = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let u = n.uppercased()
+
+        // CCTV-5+
+        if u.range(of: #"CCTV[\s\-]?5\s*[\+＋]"#, options: .regularExpression) != nil {
+            return "cctv:5+"
+        }
+        // CCTV 4K / 8K (keep separate from SD/HD siblings)
+        if u.contains("CCTV"), u.contains("4K") || u.contains("8K") {
+            if let num = cctvNumber(u) { return "cctv:\(num):uhd" }
+            return "cctv:uhd"
+        }
+        if let num = cctvNumber(u) {
+            return "cctv:\(num)"
+        }
+        if let alias = cctvChineseAlias(n) {
+            return "cctv:\(alias)"
+        }
+
+        if u.contains("CGTN") {
+            if u.contains("DOC") || n.contains("纪录") || n.contains("紀錄") { return "cgtn:doc" }
+            if u.contains("ESPANOL") || u.contains("ESPAÑOL") || n.contains("西班牙语") { return "cgtn:esp" }
+            if u.contains("FRANÇAIS") || u.contains("FRANCAIS") || n.contains("法语") { return "cgtn:fra" }
+            if u.contains("ARABIC") || n.contains("阿语") || n.contains("阿拉伯") { return "cgtn:ara" }
+            if u.contains("РУССКИЙ") || u.contains("RUSSIAN") || n.contains("俄语") { return "cgtn:rus" }
+            return "cgtn:en"
+        }
+
+        if n.contains("卫视") || n.contains("衛視") {
+            var core = n
+                .replacingOccurrences(of: "衛視", with: "卫视")
+                .replacingOccurrences(
+                    of: #"[\s\-_]*(HD|FHD|UHD|4K|8K|1080[Pp]?|720[Pp]?|高清|超清|备用|備用|线路\d*|\d+)$"#,
+                    with: "",
+                    options: [.regularExpression, .caseInsensitive]
+                )
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            core = core.replacingOccurrences(of: " ", with: "")
+            return "ws:" + core.lowercased()
+        }
+
+        return ChannelQuality.canonicalName(n)
+    }
+
+    static func preferredDisplayName(for names: [String], key: String) -> String {
+        if key == "cctv:5+" { return "CCTV-5+" }
+        if key == "cctv:uhd" { return "CCTV-4K" }
+        if key.hasPrefix("cctv:"), key.hasSuffix(":uhd"),
+           let num = key.split(separator: ":").dropFirst().first {
+            return "CCTV-\(num) 4K"
+        }
+        if key.hasPrefix("cctv:"), let num = key.split(separator: ":").last, Int(num) != nil {
+            return "CCTV-\(num)"
+        }
+        if key == "cgtn:en" { return "CGTN" }
+        if key == "cgtn:doc" { return "CGTN Documentary" }
+        if key == "cgtn:esp" { return "CGTN Español" }
+        if key == "cgtn:fra" { return "CGTN Français" }
+        if key == "cgtn:ara" { return "CGTN Arabic" }
+        if key == "cgtn:rus" { return "CGTN Русский" }
+        if key.hasPrefix("ws:") {
+            // Prefer a clean 卫视 title without HD / 备用 suffixes
+            let cleaned = names
+                .map {
+                    $0.replacingOccurrences(of: "衛視", with: "卫视")
+                        .replacingOccurrences(
+                            of: #"[\s\-_]*(HD|FHD|UHD|4K|1080[Pp]?|720[Pp]?|高清|超清|备用|備用|线路\d*)$"#,
+                            with: "",
+                            options: [.regularExpression, .caseInsensitive]
+                        )
+                        .trimmingCharacters(in: .whitespacesAndNewlines)
+                }
+                .filter { $0.contains("卫视") }
+            if let best = cleaned.min(by: { $0.count < $1.count }) { return best }
+        }
+        // Shortest non-empty original as fallback
+        return names
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .min(by: { $0.count < $1.count })
+            ?? names.first
+            ?? key
+    }
+
+    /// 「央视综合」等中文别名 → CCTV 编号
+    private static func cctvChineseAlias(_ name: String) -> String? {
+        let n = name.replacingOccurrences(of: " ", with: "")
+        // Only when it clearly refers to a CCTV feed
+        let isYangshi = n.contains("央视") || n.contains("央視") || n.contains("中央电视台")
+            || n.uppercased().contains("CCTV")
+        guard isYangshi || n.hasPrefix("中央") else { return nil }
+
+        let pairs: [(String, String)] = [
+            ("综合", "1"), ("綜合", "1"), ("一套", "1"),
+            ("财经", "2"), ("財經", "2"), ("二套", "2"),
+            ("综艺", "3"), ("綜藝", "3"), ("三套", "3"),
+            ("中文国际", "4"), ("国际", "4"), ("四套", "4"),
+            ("体育", "5"), ("體育", "5"), ("五套", "5"),
+            ("电影", "6"), ("電影", "6"), ("六套", "6"),
+            ("国防军事", "7"), ("军事", "7"), ("七套", "7"),
+            ("电视剧", "8"), ("電視劇", "8"), ("八套", "8"),
+            ("纪录", "9"), ("紀錄", "9"), ("九套", "9"),
+            ("科教", "10"), ("十套", "10"),
+            ("戏曲", "11"), ("戲曲", "11"),
+            ("社会与法", "12"), ("社会与法", "12"),
+            ("新闻", "13"), ("新聞", "13"),
+            ("少儿", "14"), ("少兒", "14"),
+            ("音乐", "15"), ("音樂", "15"),
+            ("奥林匹克", "16"), ("奥运", "16"),
+            ("农业农村", "17"), ("农业", "17"),
+        ]
+        for (key, num) in pairs where n.contains(key) {
+            return num
+        }
+        return nil
     }
 
     // MARK: - vbskycn
@@ -40,7 +192,9 @@ enum ChinesePlaylist {
                 logoURL: ch.logoURL,
                 group: mappedGroup(group: ch.group, name: name),
                 epgId: ch.epgId,
-                lastWatched: ch.lastWatched
+                isFavorite: ch.isFavorite,
+                lastWatched: ch.lastWatched,
+                backupURLs: ch.backupURLs
             )
             if mapped.group == "🎆 春晚" {
                 gala.append(mapped)
@@ -89,6 +243,7 @@ enum ChinesePlaylist {
     static func mappedGroup(group: String, name: String) -> String {
         let n = name.uppercased()
         if group.contains("春晚") || name.contains("春晚") { return "🎆 春晚" }
+        if SportsPlaylist.isBasketballName(name) { return "⚽ 体育" }
         if group == "电影频道"
             || isMovieLoop(name)
             || n == "CCTV6" || n.contains("CCTV-6") || n.contains("CCTV6")

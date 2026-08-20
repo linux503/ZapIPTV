@@ -8,8 +8,9 @@ class PlayerEngine: ObservableObject {
     @Published var isPlaying = false
     @Published var isMuted = false
     @Published var volume: Float = 1.0
-    @Published var currentTime: Double = 0
-    @Published var duration: Double = 0
+    /// Not @Published — updating every second was invalidating Live/Sports entire UI trees.
+    var currentTime: Double = 0
+    var duration: Double = 0
     @Published var isBuffering = false
     @Published var error: Error?
     @Published var rate: Float = 1.0
@@ -20,16 +21,49 @@ class PlayerEngine: ObservableObject {
     private var keepUpObserver: NSKeyValueObservation?
     private var bufferEmptyObserver: NSKeyValueObservation?
     private var stallObserver: NSObjectProtocol?
+    private var failedObserver: NSObjectProtocol?
     private var loadSeq = 0
     /// User tapped pause — do not auto-resume on buffer recovery.
     private var userPaused = false
+    private var connectTimeoutTask: Task<Void, Never>?
+
+    /// Dead / geo-blocked live feeds often never fail — abandon after this.
+    private let connectTimeoutSeconds: Double = 12
 
     func load(url: URL, startAt position: Double = 0) {
         cleanup()
         loadSeq += 1
         userPaused = false
-        isBuffering = true
+        setBuffering(true)
         startPlayback(url: url, startAt: position)
+        scheduleConnectTimeout(seq: loadSeq)
+    }
+
+    private func setPlaying(_ value: Bool) {
+        if isPlaying != value { isPlaying = value }
+    }
+
+    private func setBuffering(_ value: Bool) {
+        if isBuffering != value { isBuffering = value }
+    }
+
+    private func scheduleConnectTimeout(seq: Int) {
+        connectTimeoutTask?.cancel()
+        connectTimeoutTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: UInt64(connectTimeoutSeconds * 1_000_000_000))
+            guard !Task.isCancelled, loadSeq == seq else { return }
+            let rate = player?.rate ?? 0
+            let keepUp = player?.currentItem?.isPlaybackLikelyToKeepUp == true
+            let status = player?.currentItem?.status
+            if status == .failed { return }
+            // Still not actually playing after timeout → treat as unreachable
+            if rate == 0 || (!keepUp && isBuffering) {
+                error = PlaybackError.unreachable
+                setBuffering(false)
+                setPlaying(false)
+                player?.pause()
+            }
+        }
     }
 
     private func startPlayback(url: URL, startAt position: Double) {
@@ -37,12 +71,13 @@ class PlayerEngine: ObservableObject {
         let headers = StreamProbe.httpHeaders(for: url)
         let asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
         let item = AVPlayerItem(asset: asset)
-        item.preferredForwardBufferDuration = 8
+        let liveHint = Self.looksLikeLive(url)
+        // Live IPTV: start immediately; long stall-wait often means forever "connecting"
+        item.preferredForwardBufferDuration = liveHint ? 2 : 8
         item.canUseNetworkResourcesForLiveStreamingWhilePaused = true
 
         let p = AVPlayer(playerItem: item)
-        // Must stay true: otherwise a live stall sets rate=0 and never starts again.
-        p.automaticallyWaitsToMinimizeStalling = true
+        p.automaticallyWaitsToMinimizeStalling = !liveHint
         p.volume = volume
         p.isMuted = isMuted
         player = p
@@ -51,63 +86,65 @@ class PlayerEngine: ObservableObject {
             p.seek(to: CMTime(seconds: position, preferredTimescale: 600))
         }
 
+        // Progress only — do not publish (Live/Sports observe this engine via EnvironmentObject)
         timeObserver = p.addPeriodicTimeObserver(
             forInterval: CMTime(seconds: 1, preferredTimescale: 1),
             queue: .main
         ) { [weak self] time in
-            DispatchQueue.main.async {
-                guard let self, self.loadSeq == seq else { return }
-                self.currentTime = time.seconds
-                if let dur = p.currentItem?.duration.seconds, dur.isFinite {
-                    self.duration = dur
-                }
+            guard let self, self.loadSeq == seq else { return }
+            self.currentTime = time.seconds
+            if let dur = p.currentItem?.duration.seconds, dur.isFinite {
+                self.duration = dur
             }
         }
 
         statusObserver = item.observe(\.status, options: [.initial, .new]) { [weak self] item, _ in
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 guard let self, self.loadSeq == seq else { return }
                 switch item.status {
                 case .readyToPlay:
-                    self.isBuffering = !item.isPlaybackLikelyToKeepUp
+                    self.setBuffering(!item.isPlaybackLikelyToKeepUp)
                     self.resumeIfNeeded()
                 case .failed:
                     self.error = item.error ?? PlaybackError.unreachable
-                    self.isPlaying = false
-                    self.isBuffering = false
+                    self.setPlaying(false)
+                    self.setBuffering(false)
                 default:
-                    self.isBuffering = true
+                    self.setBuffering(true)
                 }
             }
         }
 
         rateObserver = p.observe(\.rate, options: [.new]) { [weak self] p, _ in
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 guard let self, self.loadSeq == seq else { return }
-                self.isPlaying = p.rate > 0
-                if p.rate == 0 && !self.userPaused && self.error == nil {
-                    self.isBuffering = true
+                self.setPlaying(p.rate > 0)
+                if p.rate > 0 {
+                    self.setBuffering(false)
+                    self.connectTimeoutTask?.cancel()
+                } else if !self.userPaused && self.error == nil {
+                    self.setBuffering(true)
                 }
             }
         }
 
         keepUpObserver = item.observe(\.isPlaybackLikelyToKeepUp, options: [.new]) { [weak self] item, _ in
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 guard let self, self.loadSeq == seq else { return }
                 if item.isPlaybackLikelyToKeepUp {
-                    self.isBuffering = false
+                    self.setBuffering(false)
                     self.resumeIfNeeded()
                 } else if !self.userPaused {
-                    self.isBuffering = true
+                    self.setBuffering(true)
                 }
             }
         }
 
         bufferEmptyObserver = item.observe(\.isPlaybackBufferEmpty, options: [.new]) { [weak self] item, _ in
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 guard let self, self.loadSeq == seq else { return }
                 if item.isPlaybackBufferEmpty && !self.userPaused {
-                    self.isBuffering = true
+                    self.setBuffering(true)
                 }
             }
         }
@@ -118,15 +155,35 @@ class PlayerEngine: ObservableObject {
             queue: .main
         ) { [weak self] _ in
             guard let self, self.loadSeq == seq else { return }
-            self.isBuffering = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            self.setBuffering(true)
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 400_000_000)
                 guard self.loadSeq == seq else { return }
                 self.resumeIfNeeded()
             }
         }
 
+        failedObserver = NotificationCenter.default.addObserver(
+            forName: .AVPlayerItemFailedToPlayToEndTime,
+            object: item,
+            queue: .main
+        ) { [weak self] note in
+            guard let self, self.loadSeq == seq else { return }
+            self.error = (note.userInfo?[AVPlayerItemFailedToPlayToEndTimeErrorKey] as? Error)
+                ?? PlaybackError.unreachable
+            self.setBuffering(false)
+            self.setPlaying(false)
+        }
+
         p.play()
-        isPlaying = true
+        setPlaying(true)
+    }
+
+    private static func looksLikeLive(_ url: URL) -> Bool {
+        let u = url.absoluteString.lowercased()
+        if u.contains(".m3u8") || u.contains("/live") || u.contains("livestream") { return true }
+        let ext = url.pathExtension.lowercased()
+        return ext == "ts" || ext == "m3u8" || ext.isEmpty
     }
 
     private func resumeIfNeeded() {
@@ -141,14 +198,14 @@ class PlayerEngine: ObservableObject {
     func play() {
         userPaused = false
         player?.play()
-        isPlaying = true
+        setPlaying(true)
     }
 
     func pause() {
         userPaused = true
         player?.pause()
-        isPlaying = false
-        isBuffering = false
+        setPlaying(false)
+        setBuffering(false)
     }
 
     func togglePlayPause() {
@@ -182,17 +239,23 @@ class PlayerEngine: ObservableObject {
     func stop() {
         loadSeq += 1
         userPaused = true
+        connectTimeoutTask?.cancel()
         player?.pause()
-        isPlaying = false
+        setPlaying(false)
         player = nil
     }
 
     private func cleanup() {
+        connectTimeoutTask?.cancel()
+        connectTimeoutTask = nil
         if let obs = timeObserver, let p = player {
             p.removeTimeObserver(obs)
         }
         if let stallObserver {
             NotificationCenter.default.removeObserver(stallObserver)
+        }
+        if let failedObserver {
+            NotificationCenter.default.removeObserver(failedObserver)
         }
         statusObserver?.invalidate()
         rateObserver?.invalidate()
@@ -202,13 +265,14 @@ class PlayerEngine: ObservableObject {
         player = nil
         timeObserver = nil
         stallObserver = nil
+        failedObserver = nil
         statusObserver = nil
         rateObserver = nil
         keepUpObserver = nil
         bufferEmptyObserver = nil
         currentTime = 0
         duration = 0
-        isBuffering = false
+        setBuffering(false)
         error = nil
     }
 }

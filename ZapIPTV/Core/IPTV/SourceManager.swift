@@ -9,8 +9,12 @@ private let defaultSources: [(name: String, url: String, type: PlaylistSource.So
     let cdn = "https://cdn.jsdelivr.net/gh/iptv-org/iptv@gh-pages"
     return [
         // ── 中华区（优先）──────────────────────────────────────
-        ("🇨🇳 中国大陆",  "\(cdn)/countries/cn.m3u", .m3u, "🇨🇳 中国大陆"),
+        // 国内列表放前面：同名频道合并时优先国内镜像，并保留多条备用线路
         ("🇨🇳 国内直播",  "https://cdn.jsdelivr.net/gh/vbskycn/iptv@master/tv/iptv4.m3u", .m3u, nil),
+        ("🇨🇳 国内直播备用", "https://cdn.jsdelivr.net/gh/vbskycn/iptv@master/tv/iptv6.m3u", .m3u, nil),
+        ("🇨🇳 央视卫视精选", "https://live.fanmingming.com/tv/m3u/ipv6.m3u", .m3u, "🇨🇳 中国大陆"),
+        ("🇨🇳 中国大陆",  "\(cdn)/countries/cn.m3u", .m3u, "🇨🇳 中国大陆"),
+        ("🇨🇳 中文直播补充", "https://cdn.jsdelivr.net/gh/YueChan/Live@main/IPTV.m3u", .m3u, "🇨🇳 中国大陆"),
         ("🇹🇼 台湾",      "\(cdn)/countries/tw.m3u", .m3u, "🇹🇼 台湾"),
         ("🇹🇼🇭🇰 港澳台精选", "https://cdn.jsdelivr.net/gh/suxuang/myIPTV@main/ipv4.m3u", .m3u, nil),
         ("🇹🇼🇭🇰 港澳台备用", "https://raw.githubusercontent.com/Guovin/iptv-api/gd/output/result.m3u", .m3u, nil),
@@ -28,6 +32,12 @@ private let defaultSources: [(name: String, url: String, type: PlaylistSource.So
         ("📺 亚洲剧集",  "\(cdn)/categories/series.m3u", .m3u, nil),
         ("🎮 亚洲娱乐",  "\(cdn)/categories/entertainment.m3u", .m3u, nil),
 
+        // ── 全球体育赛事 / 体育频道 ────────────────────────────
+        ("⚽ 全球体育",  "\(cdn)/categories/sports.m3u", .m3u, "⚽ 体育"),
+        ("⚽ 体育备用",  "https://iptv-org.github.io/iptv/categories/sports.m3u", .m3u, "⚽ 体育"),
+        // 篮球补充（Gather 里筛 NBA / 睛彩篮球 等）
+        ("🏀 篮球补充",  "https://raw.githubusercontent.com/YanG-1989/m3u/main/Gather.m3u", .m3u, nil),
+
         // ── 东南亚 ────────────────────────────────────────────
         ("🇹🇭 泰国",      "\(cdn)/countries/th.m3u", .m3u, "🇹🇭 泰国"),
         ("🇻🇳 越南",      "\(cdn)/countries/vn.m3u", .m3u, "🇻🇳 越南"),
@@ -42,7 +52,14 @@ private let defaultSources: [(name: String, url: String, type: PlaylistSource.So
 @MainActor
 class SourceManager: ObservableObject {
     @Published var sources: [PlaylistSource] = []
-    @Published var channels: [Channel] = []
+    /// Manual publish so refreshAll can batch updates without stuttering the UI.
+    private(set) var channels: [Channel] = [] {
+        didSet {
+            if !suppressChannelPublish {
+                objectWillChange.send()
+            }
+        }
+    }
     @Published var movies: [Movie] = []
     @Published var seriesList: [SeriesCatalogItem] = []
     @Published var isLoading = false
@@ -60,6 +77,7 @@ class SourceManager: ObservableObject {
     private var channelsByGroup: [String: [Channel]] = [:]
     private var modelContext: ModelContext?
     private var suppressGroupUpdate: Bool = false
+    private var suppressChannelPublish: Bool = false
 
     // Limits parallel refresh tasks to avoid CPU/network bursts during app launch
     actor AsyncSemaphore {
@@ -89,7 +107,7 @@ class SourceManager: ObservableObject {
     }
 
     // Bump when default catalog changes — triggers one-time channel reload
-    private static let catalogVersion = 12
+    private static let catalogVersion = 16
 
     private static let legacySourceNames: Set<String> = [
         "News (Global)", "Sports (Global)", "Movies & Films", "Kids & Family",
@@ -299,12 +317,25 @@ class SourceManager: ObservableObject {
 
     func markWatched(_ channel: Channel) {
         guard let idx = channels.firstIndex(where: { $0.id == channel.id }) else { return }
+        suppressChannelPublish = true
         channels[idx].lastWatched = Date()
+        if var cached = channelsByGroup[channels[idx].group],
+           let cidx = cached.firstIndex(where: { $0.id == channel.id }) {
+            cached[cidx].lastWatched = channels[idx].lastWatched
+            channelsByGroup[channels[idx].group] = cached
+        }
+        suppressChannelPublish = false
     }
 
     func toggleFavorite(channelId: String) {
         guard let idx = channels.firstIndex(where: { $0.id == channelId }) else { return }
         channels[idx].isFavorite.toggle()
+        let group = channels[idx].group
+        if var cached = channelsByGroup[group],
+           let cidx = cached.firstIndex(where: { $0.id == channelId }) {
+            cached[cidx].isFavorite = channels[idx].isFavorite
+            channelsByGroup[group] = cached
+        }
     }
 
     func toggleFavorite(movieId: String) {
@@ -319,9 +350,10 @@ class SourceManager: ObservableObject {
         loadingMessage = "Loading \(sources.count) sources…"
 
         suppressGroupUpdate = true
+        suppressChannelPublish = true
 
         let snapshot = sources
-        let semaphore = AsyncSemaphore(4) // max parallel refresh tasks
+        let semaphore = AsyncSemaphore(3) // fewer parallel merges = smoother UI
 
         await withTaskGroup(of: Void.self) { group in
             for source in snapshot {
@@ -333,7 +365,9 @@ class SourceManager: ObservableObject {
             }
         }
 
+        suppressChannelPublish = false
         suppressGroupUpdate = false
+        objectWillChange.send()
         updateGroups()
         rebuildGroupIndex()
         syncLiveMovieCatalog()
@@ -345,7 +379,9 @@ class SourceManager: ObservableObject {
 
     func refreshSource(_ source: PlaylistSource) async {
         isLoading = true
-        loadingMessage = "Loading \(source.name)…"
+        if !suppressGroupUpdate {
+            loadingMessage = "Loading \(source.name)…"
+        }
         loadError = nil
 
         do {
@@ -433,15 +469,23 @@ class SourceManager: ObservableObject {
         result.channels = ChinesePlaylist.refine(result.channels, sourceURL: source.url)
         result.channels = HongKongPlaylist.refine(result.channels, sourceURL: source.url)
         result.channels = RegionalPlaylist.refineExtra(result.channels, sourceURL: source.url)
+        result.channels = SportsPlaylist.refine(result.channels, sourceURL: source.url)
 
         // If the source has an overrideGroup, stamp every channel with it
         if let og = source.overrideGroup {
             result.channels = result.channels.map {
                 Channel(id: $0.id, name: $0.name, url: $0.url, logoURL: $0.logoURL,
-                        group: og, lastWatched: $0.lastWatched)
+                        group: og, epgId: $0.epgId, isFavorite: $0.isFavorite,
+                        lastWatched: $0.lastWatched, backupURLs: $0.backupURLs)
             }
+            // NBA / 篮球 等不要被盖成「中国大陆」
+            result.channels = SportsPlaylist.relabelBasketballGroups(result.channels)
             if og == "🇨🇳 中国大陆" {
-                result.channels = ChinesePlaylist.curateMainland(result.channels)
+                let sports = result.channels.filter { $0.group == "⚽ 体育" }
+                let mainland = ChinesePlaylist.curateMainland(result.channels.filter { $0.group != "⚽ 体育" })
+                result.channels = mainland + SportsPlaylist.curate(sports)
+            } else if og == "⚽ 体育" {
+                result.channels = SportsPlaylist.curate(result.channels)
             } else {
                 result.channels = RegionalPlaylist.curate(result.channels, group: og)
             }
@@ -451,6 +495,9 @@ class SourceManager: ObservableObject {
             result.channels = byGroup.flatMap { group, list in
                 if group == "🇨🇳 中国大陆" {
                     return ChinesePlaylist.curateMainland(list)
+                }
+                if group == "⚽ 体育" {
+                    return SportsPlaylist.curate(list)
                 }
                 return RegionalPlaylist.curate(list, group: group)
             }
@@ -588,8 +635,9 @@ class SourceManager: ObservableObject {
         }
         updated.append(contentsOf: optimized)
         channels = updated
-        rebuildGroupIndex()
+        // During refreshAll, defer expensive curate/index until the end
         if !suppressGroupUpdate {
+            rebuildGroupIndex()
             updateGroups()
         }
     }
@@ -597,6 +645,8 @@ class SourceManager: ObservableObject {
     /// Drop channels confirmed as FLV / HTML / 404. Keep unknowns so CDNs that
     /// reject Range still get a real AVPlayer attempt.
     private func pruneUnplayableChannels(sourceId: String) async {
+        // Skip mid-refresh probes — they fight the UI while lists are still growing
+        guard !suppressGroupUpdate else { return }
         var snapshot = channels.filter { $0.id.hasPrefix(sourceId) }
         guard snapshot.count >= 6 else { return }
         // Cap probes for launch speed — skip 春晚 / 华语影视 and take a sample
@@ -634,13 +684,34 @@ class SourceManager: ObservableObject {
     }
 
     private func rebuildGroupIndex() {
+        // Relabel into a local copy — avoid a second `channels =` publish when groups unchanged
+        let labeled = SportsPlaylist.relabelBasketballGroups(channels)
+        var groupsChanged = labeled.count != channels.count
+        if !groupsChanged {
+            for i in labeled.indices where labeled[i].group != channels[i].group {
+                groupsChanged = true
+                break
+            }
+        }
+        if groupsChanged {
+            channels = labeled
+        }
+
+        let source = groupsChanged ? channels : labeled
         var index: [String: [Channel]] = [:]
-        for ch in channels {
+        index.reserveCapacity(32)
+        for ch in source {
             index[ch.group, default: []].append(ch)
         }
-        // Cache curated mainland list so Live tab does not re-sort every render
+        // Cache curated lists + merge same-name mirrors so Live can failover
         if let mainland = index["🇨🇳 中国大陆"] {
             index["🇨🇳 中国大陆"] = ChinesePlaylist.curateMainland(mainland)
+        }
+        if let sports = index["⚽ 体育"] {
+            index["⚽ 体育"] = SportsPlaylist.curate(sports)
+        }
+        for key in Array(index.keys) where key != "🇨🇳 中国大陆" && key != "⚽ 体育" {
+            index[key] = ChannelQuality.mergeMirrors(index[key] ?? [], limitBackups: 6)
         }
         channelsByGroup = index
     }
@@ -873,12 +944,12 @@ class SourceManager: ObservableObject {
     }
 
     private let groupSortOrder = [
-        "🇨🇳 中国大陆", "🎬 华语影视", "🎆 春晚", "🇹🇼 台湾", "🇭🇰 香港",
+        "🇨🇳 中国大陆", "⚽ 体育", "🎬 华语影视", "🎆 春晚", "🇹🇼 台湾", "🇭🇰 香港",
         "🇯🇵 日本", "🇰🇷 韩国", "🇹🇭 泰国", "🇻🇳 越南",
         "🇮🇩 印尼", "🇲🇾 马来西亚", "🇸🇬 新加坡", "🇵🇭 菲律宾", "🇮🇳 印度",
         "🌙 阿拉伯/中东", "🇹🇷 土耳其",
         "🇺🇸 美国/英语", "🇬🇧 英国", "🇩🇪 德国", "🇫🇷 法国", "🇷🇺 俄罗斯",
-        "📺 新闻", "⚽ 体育", "🎬 电影", "🎮 娱乐", "🎵 音乐",
+        "📺 新闻", "🎬 电影", "🎮 娱乐", "🎵 音乐",
         "🧒 儿童/动画", "📖 纪录片", "🔬 科学/科技", "✈️ 旅游", "🍳 美食",
         "💼 财经", "🌿 生活", "🚗 汽车", "🕌 宗教", "📡 综合",
     ]

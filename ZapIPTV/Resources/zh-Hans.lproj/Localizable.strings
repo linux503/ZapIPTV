@@ -2,6 +2,7 @@
 
 "tab.home" = "首页";
 "tab.live" = "直播";
+"tab.sports" = "体育";
 "tab.movies" = "电影";
 "tab.series" = "剧集";
 "tab.favorites" = "收藏";
@@ -62,6 +63,10 @@
 "live.categories" = "分类";
 "live.search" = "搜索频道";
 "live.connecting" = "连接中…";
+"live.connecting_hint" = "正在连接播放源";
+"live.switching" = "线路切换中，请稍候…";
+"live.switching_hint" = "当前线路不可用，正在尝试备用线路";
+"live.mirror" = "线路 %d / %d";
 "live.unavailable" = "此频道暂时无法播放";
 "live.try_next" = "下一频道";
 "live.select" = "选择一个频道开始观看";
@@ -74,6 +79,32 @@
 "live.locate" = "定位到当前频道";
 "live.no_channels" = "没有找到频道";
 "live.add_source_hint" = "添加源后即可观看";
+
+"sports.search" = "搜索体育频道";
+"sports.count" = "共 %d 个体育频道";
+"sports.select" = "选择一个体育频道开始观看";
+"sports.empty" = "暂无体育频道，请等待片源加载";
+"sports.categories" = "分类";
+"sports.filter.all" = "全部";
+"sports.filter.football" = "足球";
+"sports.filter.basketball" = "篮球";
+"sports.filter.tennis" = "网球";
+"sports.filter.golf" = "高尔夫";
+"sports.filter.motor" = "赛车";
+"sports.filter.combat" = "格斗";
+"sports.filter.china" = "国内";
+"sports.filter.network" = "综合台";
+"sports.filter.american" = "美职";
+"sports.filter.cricket" = "板球";
+"sports.filter.other" = "其他";
+"sports.brand.sky" = "Sky 体育";
+"sports.brand.bein" = "beIN 体育";
+"sports.brand.dazn" = "DAZN";
+"sports.brand.euro" = "欧洲台";
+"sports.brand.us" = "北美台";
+"sports.brand.latin" = "拉美台";
+"sports.brand.asia" = "亚洲/本地";
+"sports.brand.misc" = "更多";
 
 "movies.title" = "电影";
 "movies.count" = "共 %d 部可播放";

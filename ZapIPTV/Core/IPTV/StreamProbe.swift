@@ -82,11 +82,9 @@ enum StreamProbe {
 
 enum ChannelQuality {
     static func optimize(_ channels: [Channel]) -> [Channel] {
-        let filtered = channels.filter { isCandidate($0) }
-        let grouped = Dictionary(grouping: filtered, by: { canonicalName($0.name) })
-        return grouped.values.compactMap { group in
-            group.max(by: { score($0) < score($1) })
-        }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+        // Keep alternate URLs as backup lines (not hard-drop duplicates)
+        mergeMirrors(channels.filter { isCandidate($0) }, limitBackups: 8)
+            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
 
     static func isCandidate(_ ch: Channel) -> Bool {
@@ -106,20 +104,86 @@ enum ChannelQuality {
         var s = name
         s = s.replacingOccurrences(of: #"\s*\([^)]*\)"#, with: "", options: .regularExpression)
         s = s.replacingOccurrences(of: #"\s*\[[^\]]*\]"#, with: "", options: .regularExpression)
-        return s.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        s = s.trimmingCharacters(in: .whitespacesAndNewlines)
+        let u = s.uppercased()
+        // CCTV-5+ before plain CCTV-5
+        if u.range(of: #"CCTV[\s\-]?5\s*[\+＋]"#, options: .regularExpression) != nil {
+            return "cctv-5+"
+        }
+        // CCTV-1 / CCTV1 / CCTV 1 综合 → cctv-1
+        if let re = try? NSRegularExpression(pattern: #"CCTV[\s\-]?(\d{1,2})"#, options: .caseInsensitive),
+           let m = re.firstMatch(in: s, range: NSRange(s.startIndex..., in: s)),
+           let numRange = Range(m.range(at: 1), in: s) {
+            return "cctv-\(s[numRange])"
+        }
+        s = s.lowercased()
+        s = s.replacingOccurrences(of: #"[\s\-_]*((f?hd|uhd|4k|8k|1080p?|720p?|高清|超清|备用|備用)\s*)+$"#,
+                                   with: "", options: .regularExpression)
+        s = s.replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
+        return s
     }
 
     static func score(_ ch: Channel) -> Int {
         var n = 0
         let u = ch.url.absoluteString.lowercased()
-        if ch.url.scheme?.lowercased() == "https" { n += 6 }
-        if u.contains(".m3u8") { n += 5 }
+        let host = (ch.url.host ?? "").lowercased()
+
+        // Prefer domestic / known-good Chinese live mirrors over iptv-org geo feeds
+        if u.contains("vbskycn") || host.contains("live.fanmingming")
+            || u.contains("fanmingming") || u.contains("iptv4") || u.contains("iptv6")
+            || u.contains("yuechan") {
+            n += 14
+        }
+        if u.contains("guovin") || u.contains("suxuang") || u.contains("hk-iptv") {
+            n += 6
+        }
+        // iptv-org CN list often geo-blocks / hangs AVPlayer outside CN CDNs
+        if u.contains("iptv-org") { n -= 8 }
+        // Global sports category is still useful despite iptv-org host
+        if u.contains("/categories/sports") { n += 12 }
+        if ch.name.lowercased().contains("geo-blocked") || u.contains("geo-blocked") { n -= 20 }
+
+        if ch.url.scheme?.lowercased() == "https" { n += 4 }
+        if u.contains(".m3u8") { n += 8 }
         if u.contains("1080") || ch.name.contains("1080") { n += 2 }
         if u.contains("720") || ch.name.contains("720") { n += 1 }
-        if let host = ch.url.host, host.allSatisfy({ $0.isNumber || $0 == "." }) {
-            n -= 1
-        }
+        if host.allSatisfy({ $0.isNumber || $0 == "." }) { n -= 2 }
         if ch.name.lowercased().contains("not 24/7") { n -= 2 }
         return n
+    }
+
+    /// Keep one channel per display name; stash other URLs as ranked backups.
+    static func mergeMirrors(_ channels: [Channel], limitBackups: Int = 6) -> [Channel] {
+        let grouped = Dictionary(grouping: channels, by: { canonicalName($0.name) })
+        return grouped.values.compactMap { group -> Channel? in
+            let ranked = group.sorted { score($0) > score($1) }
+            guard var best = ranked.first else { return nil }
+            var urls: [URL] = []
+            var seen = Set<String>([best.url.absoluteString])
+            for ch in ranked {
+                for u in ch.allStreamURLs {
+                    let key = u.absoluteString
+                    guard seen.insert(key).inserted else { continue }
+                    urls.append(u)
+                    if urls.count >= limitBackups { break }
+                }
+                if urls.count >= limitBackups { break }
+            }
+            // Prefer logo / favorites from any mirror
+            if best.logoURL == nil {
+                best.logoURL = ranked.compactMap(\.logoURL).first
+            }
+            if ranked.contains(where: \.isFavorite) { best.isFavorite = true }
+            if let latest = ranked.compactMap(\.lastWatched).max() {
+                best.lastWatched = latest
+            }
+            best.backupURLs = urls
+            return best
+        }
+    }
+
+    /// Keep one stream per display name, preferring higher `score`.
+    static func dedupePreferringQuality(_ channels: [Channel]) -> [Channel] {
+        mergeMirrors(channels, limitBackups: 6)
     }
 }

@@ -2,6 +2,7 @@ import { DEFAULT_SOURCES, GROUP_ORDER, normaliseGroup, refineRegionalExtra, cura
 import { parseM3U } from './m3u.js';
 import { refineChinese } from './chinese.js';
 import { t } from './i18n.js';
+import { groupIconHTML, groupTitle } from './group-icons.js';
 
 const state = {
   lang: localStorage.getItem('zap-lang') || 'hant',
@@ -94,39 +95,65 @@ async function loadCatalog() {
   renderChannelList();
 }
 
+function letterFor(name) {
+  const s = String(name || '').trim();
+  return (s[0] || '?').toUpperCase();
+}
+
+function thumbHTML(ch, kind) {
+  const letter = esc(letterFor(ch.name));
+  if (ch.logo) {
+    return `<div class="${kind}"><img src="${esc(ch.logo)}" alt="" loading="lazy" decoding="async" /></div>`;
+  }
+  return `<div class="${kind}"><span class="letter">${letter}</span></div>`;
+}
+
 function renderHome() {
   const root = $('#home-sections');
   root.innerHTML = '';
+  const frag = document.createDocumentFragment();
   for (const g of groups().slice(0, 8)) {
     const list = channelsInGroup(g).slice(0, 16);
     if (!list.length) continue;
     const sec = document.createElement('div');
     sec.className = 'section';
-    sec.innerHTML = `<h3>${g}</h3>`;
+    sec.innerHTML = `<h3>${groupIconHTML(g)}<span>${esc(groupTitle(g))}</span></h3>`;
     const row = document.createElement('div');
     row.className = 'row';
     for (const ch of list) {
-      const el = document.createElement('div');
+      const el = document.createElement('button');
+      el.type = 'button';
       el.className = 'chip';
-      el.innerHTML = `${ch.logo ? `<img src="${ch.logo}" alt="" loading="lazy" />` : ''}<span>${esc(ch.name)}</span>`;
-      el.onclick = () => { switchTab('live'); play(ch); state.selectedGroup = ch.group; renderGroups(); renderChannelList(); };
+      el.innerHTML = `${thumbHTML(ch, 'thumb')}<span>${esc(ch.name)}</span>`;
+      el.onclick = () => {
+        switchTab('live');
+        play(ch);
+        state.selectedGroup = ch.group;
+        renderGroups();
+        renderChannelList();
+      };
       row.appendChild(el);
     }
     sec.appendChild(row);
-    root.appendChild(sec);
+    frag.appendChild(sec);
   }
+  root.appendChild(frag);
 }
 
 function renderGroups() {
   const root = $('#group-list');
   root.innerHTML = '';
+  const frag = document.createDocumentFragment();
   for (const g of groups()) {
     const btn = document.createElement('button');
+    btn.type = 'button';
     btn.className = 'group-btn' + (g === state.selectedGroup ? ' active' : '');
-    btn.textContent = g;
+    btn.innerHTML = `${groupIconHTML(g)}<span class="g-label">${esc(groupTitle(g))}</span>`;
+    btn.title = g;
     btn.onclick = () => { state.selectedGroup = g; renderGroups(); renderChannelList(); };
-    root.appendChild(btn);
+    frag.appendChild(btn);
   }
+  root.appendChild(frag);
 }
 
 function renderChannelList() {
@@ -135,18 +162,37 @@ function renderChannelList() {
   if (q) list = list.filter((c) => c.name.toLowerCase().includes(q));
   const root = $('#channel-list');
   root.innerHTML = '';
-  for (const ch of list.slice(0, 500)) {
-    const row = document.createElement('div');
+  const frag = document.createDocumentFragment();
+  for (const ch of list.slice(0, 400)) {
+    const row = document.createElement('button');
+    row.type = 'button';
     row.className = 'ch-row' + (state.current?.id === ch.id ? ' playing' : '');
     row.dataset.id = ch.id;
     row.innerHTML = `
-      ${ch.logo ? `<img src="${ch.logo}" alt="" loading="lazy" />` : '<div style="width:44px;height:28px;background:var(--surface2);border-radius:4px"></div>'}
+      ${thumbHTML(ch, 'ch-logo')}
       <div class="meta"><div class="name">${esc(ch.name)}</div><div class="grp">${esc(ch.group)}</div></div>`;
     row.onclick = () => play(ch);
-    root.appendChild(row);
+    frag.appendChild(row);
   }
+  root.appendChild(frag);
   updateNowBar();
 }
+
+function switchTab(name) {
+  $$('.nav-btn').forEach((b) => b.classList.toggle('active', b.dataset.tab === name));
+  $$('.view').forEach((v) => {
+    const on = v.id === `view-${name}`;
+    v.classList.toggle('active', on);
+  });
+  // Keep live player attached; only pause when leaving live if buffering forever
+}
+
+let searchTimer = 0;
+$('#search').oninput = () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => renderChannelList(), 120);
+};
+
 
 function updateNowBar() {
   const bar = $('#now-bar');
@@ -191,11 +237,6 @@ function play(ch) {
   renderChannelList();
 }
 
-function switchTab(name) {
-  $$('.nav-btn').forEach((b) => b.classList.toggle('active', b.dataset.tab === name));
-  $$('.view').forEach((v) => v.classList.toggle('active', v.id === `view-${name}`));
-}
-
 function esc(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
@@ -222,7 +263,6 @@ $$('[data-theme]').forEach((btn) => {
   };
 });
 
-$('#search').oninput = () => renderChannelList();
 $('#btn-refresh').onclick = () => loadCatalog();
 
 applyI18n();

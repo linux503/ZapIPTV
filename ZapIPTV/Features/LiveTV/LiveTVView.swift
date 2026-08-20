@@ -13,6 +13,11 @@ struct LiveTVView: View {
     @State private var groupCounts: [String: Int] = [:]
     @State private var failedChannelIDs: Set<String> = []
     @State private var locateToken = 0
+    @State private var streamURLs: [URL] = []
+    @State private var streamIndex = 0
+    @State private var mirrorLabel = ""
+    @State private var isPreparingStream = false
+    @State private var isSwitchingMirror = false
 
     private static let asianGroupOrder = [
         "🇨🇳 中国大陆", "🎬 华语影视", "🎆 春晚", "🇹🇼 台湾", "🇭🇰 香港",
@@ -165,16 +170,11 @@ struct LiveTVView: View {
                             VideoPlayerView(engine: playerEngine)
                                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                            if playerEngine.isBuffering {
-                                VStack(spacing: 10) {
-                                    ProgressView().progressViewStyle(.circular)
-                                        .scaleEffect(1.4).tint(.white)
-                                    Text(loc.t("live.connecting"))
-                                        .font(.system(size: 13)).foregroundColor(.white.opacity(0.7))
-                                }
+                            if showLiveStatusOverlay {
+                                liveStatusOverlay
                             }
 
-                            if let err = playerEngine.error {
+                            if showLiveErrorOverlay, let err = playerEngine.error {
                                 VStack(spacing: 14) {
                                     Image(systemName: "exclamationmark.triangle")
                                         .font(.system(size: 36)).foregroundColor(.orange)
@@ -198,15 +198,21 @@ struct LiveTVView: View {
                         if !playback.playerFullScreen {
                         // Channel info bar
                         HStack(spacing: 12) {
-                            if let logo = channel.logoURL {
-                                CachedAsyncImage(url: logo, contentMode: .fit)
-                                    .frame(width: 36, height: 24)
-                            }
+                            ChannelLogoView(channel: channel, width: 52, height: 34, cornerRadius: 8)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(channel.name)
                                     .font(.system(size: 14, weight: .semibold)).foregroundColor(ZapColor.textPrimary)
-                                Text(channel.group)
-                                    .font(.system(size: 11)).foregroundColor(ZapColor.textTertiary)
+                                HStack(spacing: 6) {
+                                    Text(channel.group)
+                                        .font(.system(size: 11)).foregroundColor(ZapColor.textTertiary)
+                                    if !mirrorLabel.isEmpty {
+                                        Text("·")
+                                            .font(.system(size: 11)).foregroundColor(ZapColor.textTertiary)
+                                        Text(mirrorLabel)
+                                            .font(.system(size: 11, weight: .medium))
+                                            .foregroundColor(ZapColor.accentStart)
+                                    }
+                                }
                             }
                             Spacer()
 
@@ -274,11 +280,65 @@ struct LiveTVView: View {
             ensureValidGroup()
         }
         .onChange(of: playback.pendingLive?.id) { _ in consumePendingLive() }
+        .onChange(of: playerEngine.isPlaying) { _, playing in
+            if playing {
+                isSwitchingMirror = false
+                isPreparingStream = false
+            }
+        }
         .onChange(of: playerEngine.error?.localizedDescription) { _ in
             guard playerEngine.error != nil, let ch = selectedChannel else { return }
+            // Try next mirror of the same channel before skipping to another channel
+            if streamIndex + 1 < streamURLs.count {
+                beginMirrorSwitch()
+                playerEngine.error = nil
+                streamIndex += 1
+                loadStream(at: streamIndex, for: ch)
+                return
+            }
+            isSwitchingMirror = false
+            isPreparingStream = false
             failedChannelIDs.insert(ch.id)
             playNext()
         }
+    }
+
+    private var showLiveStatusOverlay: Bool {
+        (isPreparingStream || isSwitchingMirror || playerEngine.isBuffering)
+            && playerEngine.error == nil
+    }
+
+    private var showLiveErrorOverlay: Bool {
+        playerEngine.error != nil && !isSwitchingMirror && !isPreparingStream
+    }
+
+    private var liveStatusOverlay: some View {
+        let switching = isSwitchingMirror || streamIndex > 0
+        return VStack(spacing: 12) {
+            ProgressView().progressViewStyle(.circular)
+                .scaleEffect(1.35).tint(.white)
+            Text(loc.t(switching ? "live.switching" : "live.connecting"))
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundColor(.white)
+            Text(loc.t(switching ? "live.switching_hint" : "live.connecting_hint"))
+                .font(.system(size: 12))
+                .foregroundColor(.white.opacity(0.55))
+                .multilineTextAlignment(.center)
+            if !mirrorLabel.isEmpty {
+                Text(mirrorLabel)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(ZapColor.accentStart)
+                    .padding(.top, 2)
+            }
+        }
+        .padding(.horizontal, 28)
+        .padding(.vertical, 22)
+        .background(.ultraThinMaterial.opacity(0.92), in: RoundedRectangle(cornerRadius: 14))
+    }
+
+    private func beginMirrorSwitch() {
+        isSwitchingMirror = true
+        isPreparingStream = true
     }
 
     private func consumePendingLive() {
@@ -310,8 +370,51 @@ struct LiveTVView: View {
     private func playChannel(_ ch: Channel) {
         selectedChannel = ch
         sourceManager.markWatched(ch)
-        playerEngine.load(url: ch.url)
         locateToken += 1
+        streamURLs = ch.allStreamURLs
+        streamIndex = 0
+        isSwitchingMirror = false
+        isPreparingStream = true
+        loadStream(at: 0, for: ch)
+    }
+
+    private func loadStream(at index: Int, for ch: Channel) {
+        guard index < streamURLs.count else {
+            isSwitchingMirror = false
+            isPreparingStream = false
+            failedChannelIDs.insert(ch.id)
+            playNext()
+            return
+        }
+        if index > 0 { beginMirrorSwitch() }
+        else { isPreparingStream = true }
+
+        let url = streamURLs[index]
+        mirrorLabel = streamURLs.count > 1
+            ? String(format: loc.t("live.mirror"), index + 1, streamURLs.count)
+            : ""
+        Task { @MainActor in
+            let kind = await StreamProbe.check(url)
+            guard selectedChannel?.id == ch.id, streamIndex == index else { return }
+            if kind == .flv || kind == .html || kind == .dead {
+                if index + 1 < streamURLs.count {
+                    beginMirrorSwitch()
+                    streamIndex = index + 1
+                    loadStream(at: streamIndex, for: ch)
+                } else {
+                    isSwitchingMirror = false
+                    isPreparingStream = false
+                    failedChannelIDs.insert(ch.id)
+                    playerEngine.error = kind == .flv
+                        ? PlaybackError.unsupportedFormat
+                        : PlaybackError.unreachable
+                }
+                return
+            }
+            // Hand off to AVPlayer — keep preparing until buffering/playing updates
+            isPreparingStream = true
+            playerEngine.load(url: url)
+        }
     }
 
     private func locateCurrent() {
@@ -358,223 +461,6 @@ struct LiveTVView: View {
             return
         }
         playChannel(list[0])
-    }
-}
-
-enum LiveGroupLabel {
-    static func split(_ group: String) -> (flag: String, title: String) {
-        if let space = group.firstIndex(of: " ") {
-            let flag = String(group[..<space])
-            let title = String(group[group.index(after: space)...])
-            if !flag.isEmpty { return (flag, title) }
-        }
-        return ("📡", group)
-    }
-
-    static func title(of group: String) -> String { split(group).title }
-}
-
-// MARK: - Realistic group icons
-
-struct LiveGroupIcon: View {
-    let group: String
-    var size: CGFloat = 28
-
-    var body: some View {
-        Group {
-            switch group {
-            case "🇨🇳 中国大陆":
-                ChinaFlagIcon()
-            case "🎬 华语影视":
-                HuayuCinemaIcon()
-            case "🎆 春晚":
-                ChunwanLanternIcon()
-            case "🇹🇼 台湾":
-                TaiwanFlagIcon()
-            case "🇭🇰 香港":
-                HongKongFlagIcon()
-            default:
-                emojiFallback
-            }
-        }
-        .frame(width: size, height: size)
-        .clipShape(RoundedRectangle(cornerRadius: size * 0.22, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: size * 0.22, style: .continuous)
-                .strokeBorder(Color.white.opacity(0.22), lineWidth: 0.5)
-        )
-        .shadow(color: .black.opacity(0.18), radius: 2, y: 1)
-    }
-
-    private var emojiFallback: some View {
-        ZStack {
-            LinearGradient(
-                colors: [Color(hex: "#3A3230"), Color(hex: "#1C1614")],
-                startPoint: .topLeading, endPoint: .bottomTrailing
-            )
-            Text(LiveGroupLabel.split(group).flag)
-                .font(.system(size: size * 0.55))
-        }
-    }
-}
-
-/// PRC flag — red field + yellow stars
-private struct ChinaFlagIcon: View {
-    var body: some View {
-        GeometryReader { geo in
-            let s = min(geo.size.width, geo.size.height)
-            ZStack(alignment: .topLeading) {
-                Color(hex: "#DE2910")
-                Image(systemName: "star.fill")
-                    .font(.system(size: s * 0.30))
-                    .foregroundColor(Color(hex: "#FFDE00"))
-                    .position(x: s * 0.26, y: s * 0.36)
-                Group {
-                    star(at: CGPoint(x: 0.52, y: 0.18), size: s * 0.10)
-                    star(at: CGPoint(x: 0.62, y: 0.30), size: s * 0.10)
-                    star(at: CGPoint(x: 0.62, y: 0.46), size: s * 0.10)
-                    star(at: CGPoint(x: 0.52, y: 0.58), size: s * 0.10)
-                }
-            }
-            .frame(width: geo.size.width, height: geo.size.height)
-        }
-    }
-
-    private func star(at p: CGPoint, size: CGFloat) -> some View {
-        GeometryReader { geo in
-            Image(systemName: "star.fill")
-                .font(.system(size: size))
-                .foregroundColor(Color(hex: "#FFDE00"))
-                .position(x: geo.size.width * p.x, y: geo.size.height * p.y)
-        }
-    }
-}
-
-/// Taiwan (ROC) flag — red field, blue canton, white sun
-private struct TaiwanFlagIcon: View {
-    var body: some View {
-        GeometryReader { geo in
-            let w = geo.size.width
-            let h = geo.size.height
-            ZStack(alignment: .topLeading) {
-                Color(hex: "#FE0000")
-                ZStack {
-                    Color(hex: "#000095")
-                    ZStack {
-                        ForEach(0..<12, id: \.self) { i in
-                            Capsule()
-                                .fill(Color.white)
-                                .frame(width: max(1.5, w * 0.04), height: h * 0.20)
-                                .offset(y: -h * 0.09)
-                                .rotationEffect(.degrees(Double(i) * 30))
-                        }
-                        Circle()
-                            .fill(Color.white)
-                            .frame(width: w * 0.18, height: h * 0.18)
-                        Circle()
-                            .strokeBorder(Color(hex: "#000095"), lineWidth: max(1, w * 0.03))
-                            .frame(width: w * 0.18, height: h * 0.18)
-                    }
-                }
-                .frame(width: w * 0.5, height: h * 0.5)
-            }
-        }
-    }
-}
-
-/// Hong Kong flag — red field + white Bauhinia (simplified flower)
-private struct HongKongFlagIcon: View {
-    var body: some View {
-        ZStack {
-            Color(hex: "#DE2910")
-            ZStack {
-                ForEach(0..<5, id: \.self) { i in
-                    Capsule()
-                        .fill(Color.white)
-                        .frame(width: 4, height: 11)
-                        .offset(y: -5)
-                        .rotationEffect(.degrees(Double(i) * 72))
-                }
-                Circle()
-                    .fill(Color(hex: "#DE2910"))
-                    .frame(width: 5, height: 5)
-            }
-        }
-    }
-}
-
-/// 华语影视 — cinema clapper / film look
-private struct HuayuCinemaIcon: View {
-    var body: some View {
-        ZStack {
-            LinearGradient(
-                colors: [Color(hex: "#1A1A1A"), Color(hex: "#3D1A14"), Color(hex: "#8B1520")],
-                startPoint: .topLeading, endPoint: .bottomTrailing
-            )
-            // Film strip edge marks
-            HStack {
-                VStack(spacing: 3) {
-                    ForEach(0..<4, id: \.self) { _ in
-                        RoundedRectangle(cornerRadius: 1)
-                            .fill(Color.white.opacity(0.35))
-                            .frame(width: 3, height: 3)
-                    }
-                }
-                .padding(.leading, 3)
-                Spacer()
-                VStack(spacing: 3) {
-                    ForEach(0..<4, id: \.self) { _ in
-                        RoundedRectangle(cornerRadius: 1)
-                            .fill(Color.white.opacity(0.35))
-                            .frame(width: 3, height: 3)
-                    }
-                }
-                .padding(.trailing, 3)
-            }
-            Image(systemName: "movieclapper.fill")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [Color(hex: "#FFD36A"), Color(hex: "#F24A1A")],
-                        startPoint: .top, endPoint: .bottom
-                    )
-                )
-                .shadow(color: .black.opacity(0.4), radius: 1, y: 1)
-        }
-    }
-}
-
-/// 春晚 — festive red lantern
-private struct ChunwanLanternIcon: View {
-    var body: some View {
-        ZStack {
-            LinearGradient(
-                colors: [Color(hex: "#4A0A10"), Color(hex: "#C41E3A"), Color(hex: "#8B0000")],
-                startPoint: .top, endPoint: .bottom
-            )
-            VStack(spacing: 0) {
-                Capsule()
-                    .fill(Color(hex: "#FFD36A"))
-                    .frame(width: 8, height: 3)
-                Ellipse()
-                    .fill(
-                        LinearGradient(
-                            colors: [Color(hex: "#FF4D4D"), Color(hex: "#B01020")],
-                            startPoint: .top, endPoint: .bottom
-                        )
-                    )
-                    .frame(width: 16, height: 18)
-                    .overlay(
-                        Text("福")
-                            .font(.system(size: 8, weight: .black, design: .rounded))
-                            .foregroundColor(Color(hex: "#FFD36A"))
-                    )
-                Capsule()
-                    .fill(Color(hex: "#FFD36A"))
-                    .frame(width: 3, height: 4)
-            }
-            .offset(y: 1)
-        }
     }
 }
 
@@ -738,18 +624,7 @@ struct ChannelListRow: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(ZapColor.surface2)
-                    .frame(width: 44, height: 30)
-                if let logo = channel.logoURL {
-                    CachedAsyncImage(url: logo, contentMode: .fit)
-                        .frame(width: 36, height: 24)
-                } else {
-                    Image(systemName: "tv").font(.system(size: 12))
-                        .foregroundColor(ZapColor.textTertiary)
-                }
-            }
+            ChannelLogoView(channel: channel, width: 52, height: 34)
             Text(channel.name)
                 .font(.system(size: 12, weight: isPlaying ? .semibold : .regular))
                 .foregroundColor(isPlaying ? ZapColor.textPrimary : ZapColor.textSecondary)
@@ -769,7 +644,7 @@ struct ChannelListRow: View {
                     .symbolEffect(.variableColor.iterative)
             }
         }
-        .padding(.horizontal, 8).padding(.vertical, 6)
+        .padding(.horizontal, 8).padding(.vertical, 7)
         .background(hovered && !isPlaying ? ZapColor.hover : Color.clear,
                     in: RoundedRectangle(cornerRadius: 8))
         .onHover { hovered = $0 }

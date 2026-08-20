@@ -11,7 +11,7 @@ cat > "$OUT" << 'BUNDLE_HEAD'
 BUNDLE_HEAD
 
 # Strip export keywords and append modules
-for f in catalog m3u chinese i18n; do
+for f in catalog m3u chinese i18n group-icons; do
   sed -E 's/^export (const|function)/\1/g; s/^export \{[^}]+\};//g' "$WEB/js/$f.js" >> "$OUT"
   echo "" >> "$OUT"
 done

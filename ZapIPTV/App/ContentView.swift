@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum AppTab: String, CaseIterable, Identifiable {
-    case home, live, movies, series, favorites, settings
+    case home, live, sports, movies, series, favorites, settings
 
     var id: String { rawValue }
 
@@ -11,6 +11,7 @@ enum AppTab: String, CaseIterable, Identifiable {
         switch self {
         case .home:      return "house.fill"
         case .live:      return "tv.fill"
+        case .sports:    return "sportscourt.fill"
         case .movies:    return "film.fill"
         case .series:    return "rectangle.stack.fill"
         case .favorites: return "star.fill"
@@ -18,7 +19,7 @@ enum AppTab: String, CaseIterable, Identifiable {
         }
     }
 
-    static var mainTabs: [AppTab] { [.home, .live, .movies, .series, .favorites] }
+    static var mainTabs: [AppTab] { [.home, .live, .sports, .movies, .series, .favorites] }
 }
 
 struct ContentView: View {
@@ -39,6 +40,7 @@ struct ContentView: View {
                     switch playback.selectedTab {
                     case .home:      HomeView()
                     case .live:      LiveTVView()
+                    case .sports:    SportsView()
                     case .movies:    MoviesView()
                     case .series:    SeriesView()
                     case .favorites: FavoritesView()
@@ -57,7 +59,7 @@ struct ContentView: View {
         .onChange(of: playback.playerFullScreen) { _, _ in syncAppSidebar() }
         .onChange(of: playback.showAppSidebar) { _, _ in syncAppSidebar() }
         .onChange(of: playback.selectedTab) { _, tab in
-            if tab == .live {
+            if tab == .live || tab == .sports {
                 playback.showAppSidebar = false
             } else {
                 playback.showAppSidebar = true
@@ -77,7 +79,7 @@ struct ContentView: View {
 
     private func syncAppSidebar() {
         let collapse = playback.playerFullScreen
-            || (playback.selectedTab == .live && !playback.showAppSidebar)
+            || ((playback.selectedTab == .live || playback.selectedTab == .sports) && !playback.showAppSidebar)
         withAnimation(.easeOut(duration: 0.2)) {
             sidebarVisible = collapse ? .detailOnly : .all
         }

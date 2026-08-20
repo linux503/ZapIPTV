@@ -2,6 +2,7 @@
 
 "tab.home" = "首頁";
 "tab.live" = "直播";
+"tab.sports" = "體育";
 "tab.movies" = "電影";
 "tab.series" = "劇集";
 "tab.favorites" = "收藏";
@@ -62,6 +63,10 @@
 "live.categories" = "分類";
 "live.search" = "搜尋頻道";
 "live.connecting" = "連線中…";
+"live.connecting_hint" = "正在連線播放源";
+"live.switching" = "線路切換中，請稍候…";
+"live.switching_hint" = "目前線路無法播放，正在嘗試備用線路";
+"live.mirror" = "線路 %d / %d";
 "live.unavailable" = "此頻道暫時無法播放";
 "live.try_next" = "下一頻道";
 "live.select" = "選擇一個頻道開始觀看";
@@ -74,6 +79,32 @@
 "live.locate" = "定位到當前頻道";
 "live.no_channels" = "找不到頻道";
 "live.add_source_hint" = "新增來源後即可觀看";
+
+"sports.search" = "搜尋體育頻道";
+"sports.count" = "共 %d 個體育頻道";
+"sports.select" = "選擇一個體育頻道開始觀看";
+"sports.empty" = "暫無體育頻道，請等待片源載入";
+"sports.categories" = "分類";
+"sports.filter.all" = "全部";
+"sports.filter.football" = "足球";
+"sports.filter.basketball" = "籃球";
+"sports.filter.tennis" = "網球";
+"sports.filter.golf" = "高爾夫";
+"sports.filter.motor" = "賽車";
+"sports.filter.combat" = "格鬥";
+"sports.filter.china" = "國內";
+"sports.filter.network" = "綜合台";
+"sports.filter.american" = "美職";
+"sports.filter.cricket" = "板球";
+"sports.filter.other" = "其他";
+"sports.brand.sky" = "Sky 體育";
+"sports.brand.bein" = "beIN 體育";
+"sports.brand.dazn" = "DAZN";
+"sports.brand.euro" = "歐洲台";
+"sports.brand.us" = "北美台";
+"sports.brand.latin" = "拉美台";
+"sports.brand.asia" = "亞洲/本地";
+"sports.brand.misc" = "更多";
 
 "movies.title" = "電影";
 "movies.count" = "共 %d 部可播放";

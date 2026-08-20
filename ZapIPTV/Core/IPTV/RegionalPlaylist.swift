@@ -112,7 +112,8 @@ enum RegionalPlaylist {
             filtered = filtered.filter { !isMainlandNoise($0.name) }
         }
 
-        return filtered.sorted { score($0.name, group: group) > score($1.name, group: group) }
+        return ChannelQuality.mergeMirrors(filtered, limitBackups: 6)
+            .sorted { score($0.name, group: group) > score($1.name, group: group) }
     }
 
     private static func remapped(_ ch: Channel, group: String) -> Channel {
@@ -123,7 +124,9 @@ enum RegionalPlaylist {
             logoURL: ch.logoURL,
             group: group,
             epgId: ch.epgId,
-            lastWatched: ch.lastWatched
+            isFavorite: ch.isFavorite,
+            lastWatched: ch.lastWatched,
+            backupURLs: ch.backupURLs
         )
     }
 

@@ -179,7 +179,7 @@ struct HomeView: View {
         kr    = Array(all.filter { $0.group == "🇰🇷 韩国" }.prefix(20))
         sea   = Array(all.filter { ["🇹🇭 泰国","🇻🇳 越南","🇮🇩 印尼","🇲🇾 马来西亚"].contains($0.group) }.prefix(20))
         news  = Array(all.filter { $0.group == "📺 新闻" }.prefix(16))
-        sport = Array(all.filter { $0.group == "⚽ 体育" }.prefix(16))
+        sport = Array(all.filter { $0.group == "⚽ 体育" }.prefix(28))
     }
 
     private func loadTMDB() async {
@@ -326,18 +326,7 @@ struct ChannelTile: View {
     var body: some View {
         VStack(spacing: 6) {
             ZStack {
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(ZapColor.surface2)
-                    .frame(width: 124, height: 78)
-
-                if let logo = channel.logoURL {
-                    CachedAsyncImage(url: logo, contentMode: .fit)
-                        .frame(width: 100, height: 60)
-                        .clipped()
-                } else {
-                    Image(systemName: "tv").font(.system(size: 22))
-                        .foregroundColor(ZapColor.textTertiary)
-                }
+                ChannelLogoView(channel: channel, width: 124, height: 78, cornerRadius: 10)
 
                 if hovered {
                     RoundedRectangle(cornerRadius: 10).fill(.black.opacity(0.5))
