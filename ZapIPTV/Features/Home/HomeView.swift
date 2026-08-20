@@ -41,12 +41,12 @@ struct HomeView: View {
                 }
 
                 if !zhCN.isEmpty {
-                    HomeSection(title: "🇨🇳 中國大陸", icon: "tv.fill") {
+                    HomeSection(title: "🇨🇳 中国大陆", icon: "tv.fill") {
                         ChannelRow(channels: zhCN) { playback.playLive($0) }
                     }
                 }
                 if !cinema.isEmpty {
-                    HomeSection(title: "🎬 華語影視", icon: "film.fill") {
+                    HomeSection(title: "🎬 华语影视", icon: "film.fill") {
                         ChannelRow(channels: cinema) { playback.playLive($0) }
                     }
                 }
@@ -56,7 +56,7 @@ struct HomeView: View {
                     }
                 }
                 if !tw.isEmpty || !hk.isEmpty {
-                    HomeSection(title: "🇹🇼 台灣 · 🇭🇰 香港", icon: "tv.fill") {
+                    HomeSection(title: "🇹🇼 台湾 · 🇭🇰 香港", icon: "tv.fill") {
                         ChannelRow(channels: tw + hk) { playback.playLive($0) }
                     }
                 }
@@ -66,12 +66,12 @@ struct HomeView: View {
                     }
                 }
                 if !kr.isEmpty {
-                    HomeSection(title: "🇰🇷 韓國", icon: "tv.fill") {
+                    HomeSection(title: "🇰🇷 韩国", icon: "tv.fill") {
                         ChannelRow(channels: kr) { playback.playLive($0) }
                     }
                 }
                 if !sea.isEmpty {
-                    HomeSection(title: "🌏 東南亞", icon: "tv.fill") {
+                    HomeSection(title: "🌏 东南亚", icon: "tv.fill") {
                         ChannelRow(channels: sea) { playback.playLive($0) }
                     }
                 }

@@ -43,6 +43,7 @@ struct MoviesView: View {
     @State private var tmdbTrending: [TMDBMovie] = []
     @State private var tmdbSearchResults: [TMDBMovie] = []
     @State private var isSearchingTMDB = false
+    @State private var searchTask: Task<Void, Never>?
 
     private var genres: [String] {
         let all = sourceManager.movies.flatMap(\.genres)
@@ -246,13 +247,18 @@ struct MoviesView: View {
     }
 
     private func searchTMDB(_ query: String) {
+        searchTask?.cancel()
         guard !query.isEmpty, TMDBService.shared.isConfigured else {
             tmdbSearchResults = []
+            isSearchingTMDB = false
             return
         }
         isSearchingTMDB = true
-        Task {
+        searchTask = Task {
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            guard !Task.isCancelled else { return }
             let results = (try? await TMDBService.shared.searchMovies(query: query)) ?? []
+            guard !Task.isCancelled else { return }
             await MainActor.run { tmdbSearchResults = results; isSearchingTMDB = false }
         }
     }

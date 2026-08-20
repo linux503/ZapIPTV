@@ -73,12 +73,19 @@ struct M3UParser {
         let name = meta["tvg-name"] ?? meta["name"] ?? "Unknown"
         let logoString = meta["tvg-logo"] ?? ""
         return Channel(
-            id: "\(sourceId)-\(url.absoluteString.hashValue)",
+            id: stableChannelId(sourceId: sourceId, url: url.absoluteString),
             name: name,
             url: url,
             logoURL: URL(string: logoString),
             group: meta["group-title"] ?? "Uncategorized",
             epgId: meta["tvg-id"]
         )
+    }
+
+    /// Deterministic id — Swift `hashValue` is not stable across launches.
+    static func stableChannelId(sourceId: String, url: String) -> String {
+        var h: UInt64 = 5381
+        for b in url.utf8 { h = ((h << 5) &+ h) &+ UInt64(b) }
+        return "\(sourceId)-\(h)"
     }
 }

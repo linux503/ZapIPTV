@@ -43,6 +43,7 @@ struct SeriesView: View {
     @State private var selectedTVShow: TVmazeService.TVmazeShow?
     @State private var selectedTMDBTV: TMDBTVShow?
     @State private var isSearching = false
+    @State private var searchTask: Task<Void, Never>?
 
     private var localFiltered: [SeriesCatalogItem] {
         var list = sourceManager.seriesList
@@ -71,7 +72,9 @@ struct SeriesView: View {
                  "🇸🇬 新加坡", "🇵🇭 菲律宾"].contains($0.genres.first ?? "")
             }),
             ("🇮🇳 印度", "star.fill", list.filter { $0.genres.contains("🇮🇳 印度") }),
-            (loc.t("series.filter.vod"), "folder.fill", list.filter { $0.xtreamSeriesId != nil }),
+            (loc.t("series.filter.vod"), "folder.fill", list.filter {
+                $0.xtreamSeriesId != nil || $0.sourceId.hasSuffix("-m3u") || !$0.sourceId.hasPrefix("live-")
+            }),
         ].filter { !$0.items.isEmpty }
     }
 
@@ -222,10 +225,14 @@ struct SeriesView: View {
     }
 
     private func searchSeries(_ query: String) {
-        guard !query.isEmpty else { tvmazeResults = []; return }
+        searchTask?.cancel()
+        guard !query.isEmpty else { tvmazeResults = []; isSearching = false; return }
         isSearching = true
-        Task {
+        searchTask = Task {
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            guard !Task.isCancelled else { return }
             let results = (try? await TVmazeService.shared.search(query: query)) ?? []
+            guard !Task.isCancelled else { return }
             await MainActor.run { tvmazeResults = results; isSearching = false }
         }
     }

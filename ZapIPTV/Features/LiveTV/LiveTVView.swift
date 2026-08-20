@@ -163,7 +163,11 @@ struct LiveTVView: View {
                             ScrollView {
                                 LazyVStack(spacing: 0) {
                                     ForEach(filteredChannels) { ch in
-                                        ChannelListRow(channel: ch, isPlaying: selectedChannel?.id == ch.id)
+                                        ChannelListRow(
+                                            channel: ch,
+                                            isPlaying: selectedChannel?.id == ch.id,
+                                            onFavorite: { sourceManager.toggleFavorite(channelId: ch.id) }
+                                        )
                                             .id(ch.id)
                                             .background(
                                                 selectedChannel?.id == ch.id
@@ -278,7 +282,7 @@ struct LiveTVView: View {
                                 ProgressView().progressViewStyle(.circular)
                                     .scaleEffect(1.5).tint(ZapColor.accentStart)
                                 Text(sourceManager.loadingMessage.isEmpty
-                                     ? "Loading channels…" : sourceManager.loadingMessage)
+                                     ? loc.t("live.connecting") : sourceManager.loadingMessage)
                                     .font(.system(size: 15)).foregroundColor(.white.opacity(0.6))
                             }
                         } else {
@@ -299,9 +303,13 @@ struct LiveTVView: View {
         .background(ZapColor.bg)
         .onAppear {
             recomputeGroupCounts()
+            ensureValidGroup()
             consumePendingLive()
         }
-        .onChange(of: sourceManager.channels.count) { _ in recomputeGroupCounts() }
+        .onChange(of: sourceManager.channels.count) { _, _ in
+            recomputeGroupCounts()
+            ensureValidGroup()
+        }
         .onChange(of: playback.pendingLive?.id) { _ in consumePendingLive() }
         .onChange(of: playerEngine.error?.localizedDescription) { _ in
             guard playerEngine.error != nil, let ch = selectedChannel else { return }
@@ -323,15 +331,22 @@ struct LiveTVView: View {
         var counts: [String: Int] = [:]
         for ch in sourceManager.channels {
             let key = ch.group
-            // Skip foreign leftovers still tagged under mainland until catalog reloads
             if key == "🇨🇳 中国大陆", !ChinesePlaylist.isMainlandChannel(ch.name) { continue }
             counts[key, default: 0] += 1
         }
         groupCounts = counts
     }
 
+    private func ensureValidGroup() {
+        if countForGroup(selectedGroup) > 0 { return }
+        if let first = groups.first(where: { countForGroup($0) > 0 }) {
+            selectedGroup = first
+        }
+    }
+
     private func playChannel(_ ch: Channel) {
         selectedChannel = ch
+        sourceManager.markWatched(ch)
         playerEngine.load(url: ch.url)
         locateToken += 1
     }
@@ -425,6 +440,7 @@ struct GroupButton: View {
 struct ChannelListRow: View {
     let channel: Channel
     let isPlaying: Bool
+    var onFavorite: (() -> Void)? = nil
     @State private var hovered = false
 
     var body: some View {
@@ -450,6 +466,14 @@ struct ChannelListRow: View {
                     .font(.system(size: 10)).foregroundColor(ZapColor.textTertiary)
             }
             Spacer()
+            if let onFavorite {
+                Button(action: onFavorite) {
+                    Image(systemName: channel.isFavorite ? "heart.fill" : "heart")
+                        .font(.system(size: 11))
+                        .foregroundColor(channel.isFavorite ? ZapColor.accentStart : ZapColor.textTertiary)
+                }
+                .buttonStyle(.plain)
+            }
             if isPlaying {
                 Image(systemName: "waveform").font(.system(size: 11))
                     .foregroundColor(ZapColor.accentStart)

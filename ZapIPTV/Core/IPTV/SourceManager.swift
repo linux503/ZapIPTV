@@ -89,7 +89,7 @@ class SourceManager: ObservableObject {
     }
 
     // Bump when default catalog changes — triggers one-time channel reload
-    private static let catalogVersion = 11
+    private static let catalogVersion = 12
 
     private static let legacySourceNames: Set<String> = [
         "News (Global)", "Sports (Global)", "Movies & Films", "Kids & Family",
@@ -289,7 +289,27 @@ class SourceManager: ObservableObject {
         try? modelContext?.save()
         sources.removeAll { $0.id == source.id }
         channels.removeAll { $0.id.hasPrefix(source.id) }
+        movies.removeAll { $0.sourceId == source.id || $0.sourceId.hasPrefix(source.id + "-") }
+        seriesList.removeAll { $0.sourceId == source.id || $0.sourceId.hasPrefix(source.id + "-") }
+        syncLiveMovieCatalog()
+        syncLiveSeriesCatalog()
         updateGroups()
+        rebuildGroupIndex()
+    }
+
+    func markWatched(_ channel: Channel) {
+        guard let idx = channels.firstIndex(where: { $0.id == channel.id }) else { return }
+        channels[idx].lastWatched = Date()
+    }
+
+    func toggleFavorite(channelId: String) {
+        guard let idx = channels.firstIndex(where: { $0.id == channelId }) else { return }
+        channels[idx].isFavorite.toggle()
+    }
+
+    func toggleFavorite(movieId: String) {
+        guard let idx = movies.firstIndex(where: { $0.id == movieId }) else { return }
+        movies[idx].isFavorite.toggle()
     }
 
     // MARK: - Refresh
@@ -359,7 +379,7 @@ class SourceManager: ObservableObject {
         let sourceId = source.id
 
         var request = URLRequest(url: url, timeoutInterval: 30)
-        request.setValue("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) ZapIPTV/1.0", forHTTPHeaderField: "User-Agent")
+        request.setValue("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) ZapIPTV/2.0", forHTTPHeaderField: "User-Agent")
 
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
@@ -372,11 +392,12 @@ class SourceManager: ObservableObject {
             if !liveSources.isEmpty {
                 let asianLives = liveSources.filter { Self.isAsianLiveFeed($0) }
                 let feeds = asianLives.isEmpty ? liveSources : asianLives
+                var collected: [Channel] = []
                 for liveSource in feeds {
                     guard let liveURL = URL(string: liveSource.m3uURL) else { continue }
                     if Self.isWesternIPTVOrgURL(liveSource.m3uURL) { continue }
                     var liveRequest = URLRequest(url: liveURL, timeoutInterval: 20)
-                    liveRequest.setValue("ZapIPTV/1.0", forHTTPHeaderField: "User-Agent")
+                    liveRequest.setValue("ZapIPTV/2.0", forHTTPHeaderField: "User-Agent")
                     if let (liveData, liveResp) = try? await URLSession.shared.data(for: liveRequest),
                        let liveHTTP = liveResp as? HTTPURLResponse, liveHTTP.statusCode == 200 {
                         let content = String(data: liveData, encoding: .utf8) ?? ""
@@ -385,15 +406,17 @@ class SourceManager: ObservableObject {
                             let result = await Task.detached {
                                 M3UParser.parse(content: content, sourceId: liveSourceId)
                             }.value
-                            mergeChannels(result.channels, sourceId: source.id)
+                            collected.append(contentsOf: result.channels)
                         } else {
-                            // Some live.txt files use a simpler "Name,URL" or "#name\nurl" format
                             let chans = await Task.detached {
                                 SourceManager.parseSimpleLiveTxt(content: content, sourceId: sourceId, group: liveSource.name)
                             }.value
-                            mergeChannels(chans, sourceId: source.id)
+                            collected.append(contentsOf: chans)
                         }
                     }
+                }
+                if !collected.isEmpty {
+                    mergeChannels(collected, sourceId: source.id)
                 }
                 Task { await pruneUnplayableChannels(sourceId: source.id) }
                 return
@@ -490,7 +513,7 @@ class SourceManager: ObservableObject {
                 let urlStr = parts[1].trimmingCharacters(in: .whitespaces)
                 if let url = URL(string: urlStr), !name.isEmpty {
                     channels.append(Channel(
-                        id: "\(sourceId)-\(urlStr.hashValue)",
+                        id: M3UParser.stableChannelId(sourceId: sourceId, url: urlStr),
                         name: name, url: url,
                         logoURL: nil,
                         group: currentGroup
@@ -544,7 +567,26 @@ class SourceManager: ObservableObject {
     private func mergeChannels(_ new: [Channel], sourceId: String) {
         // Batch array mutation to minimise @Published triggers
         var updated = channels.filter { !$0.id.hasPrefix(sourceId) }
-        updated.append(contentsOf: ChannelQuality.optimize(new))
+        var optimized = ChannelQuality.optimize(new)
+        // Preserve CCTV → 卫视 order for mainland after quality dedupe
+        if optimized.contains(where: { $0.group == "🇨🇳 中国大陆" }) {
+            let mainland = ChinesePlaylist.curateMainland(optimized.filter { $0.group == "🇨🇳 中国大陆" })
+            let rest = optimized.filter { $0.group != "🇨🇳 中国大陆" }
+            optimized = mainland + rest
+        }
+        // Carry over favorites / lastWatched from previous entries with same URL
+        var prevByURL: [String: Channel] = [:]
+        for ch in channels where ch.id.hasPrefix(sourceId) {
+            prevByURL[ch.url.absoluteString] = ch
+        }
+        optimized = optimized.map { ch in
+            guard let old = prevByURL[ch.url.absoluteString] else { return ch }
+            var copy = ch
+            copy.isFavorite = old.isFavorite
+            copy.lastWatched = old.lastWatched
+            return copy
+        }
+        updated.append(contentsOf: optimized)
         channels = updated
         rebuildGroupIndex()
         if !suppressGroupUpdate {
@@ -555,15 +597,18 @@ class SourceManager: ObservableObject {
     /// Drop channels confirmed as FLV / HTML / 404. Keep unknowns so CDNs that
     /// reject Range still get a real AVPlayer attempt.
     private func pruneUnplayableChannels(sourceId: String) async {
-        let snapshot = channels.filter { $0.id.hasPrefix(sourceId) }
+        var snapshot = channels.filter { $0.id.hasPrefix(sourceId) }
         guard snapshot.count >= 6 else { return }
+        // Cap probes for launch speed — skip 春晚 / 华语影视 and take a sample
+        snapshot = snapshot.filter { $0.group != "🎆 春晚" && $0.group != "🎬 华语影视" }
+        if snapshot.count > 48 {
+            snapshot = Array(snapshot.prefix(48))
+        }
 
         let semaphore = AsyncSemaphore(6)
         var drop = Set<String>()
         await withTaskGroup(of: (String, StreamKind).self) { group in
             for ch in snapshot {
-                // 春晚 / 华语影视：HLS 点播或国内 CDN，Range 探测慢且易误杀
-                if ch.group == "🎆 春晚" || ch.group == "🎬 华语影视" { continue }
                 group.addTask {
                     await semaphore.wait()
                     defer { Task { await semaphore.signal() } }
@@ -578,8 +623,8 @@ class SourceManager: ObservableObject {
             }
         }
 
-        let remaining = snapshot.count - drop.count
-        guard remaining >= max(3, snapshot.count / 5) else { return }
+        let remaining = channels.filter { $0.id.hasPrefix(sourceId) }.count - drop.count
+        guard remaining >= 3 else { return }
         guard !drop.isEmpty else { return }
         channels.removeAll { drop.contains($0.id) }
         rebuildGroupIndex()
@@ -592,20 +637,21 @@ class SourceManager: ObservableObject {
         var index: [String: [Channel]] = [:]
         for ch in channels {
             index[ch.group, default: []].append(ch)
-            let norm = normaliseGroup(ch.group)
-            if norm != ch.group {
-                index[norm, default: []].append(ch)
-            }
+        }
+        // Cache curated mainland list so Live tab does not re-sort every render
+        if let mainland = index["🇨🇳 中国大陆"] {
+            index["🇨🇳 中国大陆"] = ChinesePlaylist.curateMainland(mainland)
         }
         channelsByGroup = index
     }
 
     private func mergeMoviesFromChannels(_ vod: [Channel], sourceId: String) {
+        let sid = sourceId + "-vod"
         let converted = vod.map { ch in
             Movie(id: ch.id, title: ch.name, url: ch.url, posterURL: ch.logoURL,
-                  genres: [ch.group], sourceId: sourceId)
+                  genres: [ch.group], sourceId: sid)
         }
-        movies.removeAll { $0.sourceId == sourceId + "-vod" }
+        movies.removeAll { $0.sourceId == sid }
         movies.append(contentsOf: converted)
     }
 
@@ -693,27 +739,22 @@ class SourceManager: ObservableObject {
     ]
 
     private nonisolated static let seriesChannelKeys = [
-        "drama", "series", "戲劇", "戏剧", "劇集", "剧集", "劇場", "剧场", "tvbs", "tvb", "kbs", "mbc", "sbs",
-        "tvn", "jtbc", "arirang", "gem ", "axn", "八大", "东森", "東森", "中天", "緯來", "纬来", "三立",
-        "偶像", "綜藝", "综艺", "entertain", "娛樂", "娱乐", "workpoint", "gmm", "one31", "kapamilya", "gma",
-        "colors", "zee", "star", "hbo", "fox", "warnertv", "warner", "viu", "hoy", "八大", "民視", "民视",
-        "台视", "台視", "中视", "中視", "华视", "華視", "靖天", "龙华", "龍華", "翡翠", "明珠", "凤凰", "鳳凰",
-        "bollywood", "ebs", "드라마",
-    ]
-
-    private nonisolated static let seriesRegionalGroups: Set<String> = [
-        "🇹🇼 台湾", "🇭🇰 香港", "🇰🇷 韩国", "🇯🇵 日本",
-        "🇹🇭 泰国", "🇻🇳 越南", "🇮🇩 印尼", "🇲🇾 马来西亚",
-        "🇸🇬 新加坡", "🇵🇭 菲律宾", "🇮🇳 印度",
+        "drama", "series", "戲劇", "戏剧", "劇集", "剧集", "劇場", "剧场",
+        "tvbs", "tvb", "kbs", "mbc drama", "sbs drama", "tvn", "jtbc", "arirang",
+        "gem drama", "gem series", "axn", "八大", "东森戏剧", "東森戲劇", "中天娱乐", "中天娛樂",
+        "緯來戏剧", "纬来戏剧", "三立", "偶像", "綜藝", "综艺", "entertain", "娛樂", "娱乐",
+        "workpoint", "gmm", "one31", "kapamilya", "gma", "colors", "zee cinema", "star plus",
+        "warnertv", "viu", "hoy", "民視", "民视", "台视", "台視", "中视", "中視",
+        "华视", "華視", "靖天", "龙华", "龍華", "翡翠", "明珠", "凤凰", "鳳凰",
+        "bollywood", "드라마", "映画", "影剧", "影劇",
     ]
 
     private nonisolated static func isSeriesChannel(_ ch: Channel) -> Bool {
         if isMovieChannel(ch) { return false }
         let n = ch.name.lowercased()
         if seriesDropKeys.contains(where: { n.contains($0) }) { return false }
-        if seriesChannelKeys.contains(where: { n.contains($0.lowercased()) }) { return true }
-        if seriesRegionalGroups.contains(ch.group) { return true }
-        return false
+        // Require drama / entertainment signal — do not dump entire regional live lists
+        return seriesChannelKeys.contains(where: { n.contains($0.lowercased()) })
     }
 
     private func updateGroups() {
@@ -836,18 +877,14 @@ class SourceManager: ObservableObject {
 
     func channels(inGroup group: String) -> [Channel] {
         guard group != "All" else { return channels }
-        // Prefer exact group label so "中国大陆" does not pull mis-normalised foreign feeds.
-        let exact = channels.filter { $0.group == group }
-        if !exact.isEmpty {
-            if group == "🇨🇳 中国大陆" {
-                return ChinesePlaylist.curateMainland(exact)
-            }
-            return exact
-        }
         if let cached = channelsByGroup[group], !cached.isEmpty {
             return cached
         }
-        return channels.filter { normaliseGroup($0.group) == group }
+        let exact = channels.filter { $0.group == group }
+        if group == "🇨🇳 中国大陆" {
+            return ChinesePlaylist.curateMainland(exact)
+        }
+        return exact
     }
 
     func search(query: String) -> [Channel] {

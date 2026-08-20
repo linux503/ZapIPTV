@@ -46,6 +46,7 @@ struct FavoritesView: View {
                                 HStack(spacing: 10) {
                                     ForEach(favoriteMovies) { m in
                                         PosterCard(posterURL: m.posterURL, title: m.title, subtitle: m.year)
+                                            .onTapGesture { playback.playInline(url: m.url, title: m.title) }
                                     }
                                 }
                                 .padding(.horizontal, 24)

@@ -119,6 +119,10 @@ enum ChinesePlaylist {
         // Religious / foreign Chinese diaspora feeds often misfiled under cn.m3u
         "angel tv", "abn china", "abn ", "god tv", "tbn", "daystar", "ewtn", "cbn ",
         "hope channel", "3abn", "llbn",
+        // Taiwan / HK / overseas Chinese that should not sit under mainland
+        "公视", "公視", "三立", "东森", "東森", "中天", "tvbs", "八大", "纬来", "緯來",
+        "民视", "民視", "台视", "台視", "中视", "中視", "华视", "華視", "翡翠", "明珠",
+        "无线", "無線", "viutv", "viu tv", "hoy tv", "凤凰卫视香港", "鳳凰衛視香港",
         // Geo markers
         "geo-blocked", "[geo",
     ]
@@ -146,12 +150,12 @@ enum ChinesePlaylist {
         if n.contains("卫视") || n.contains("衛視") { return true }
         if mainlandPositiveKeys.contains(where: { n.localizedCaseInsensitiveContains($0) }) { return true }
 
-        // Chinese script + looks like a local station (台 / 频道)
+        // Chinese script + looks like a local station (台 / 频道) — not any short Han title
         let hasHan = n.unicodeScalars.contains { $0.value >= 0x4E00 && $0.value <= 0x9FFF }
         if hasHan {
-            if ["台", "频道", "頻道", "广播", "廣播"].contains(where: { n.contains($0) }) { return true }
-            // Short Chinese titles (地方台)
-            if n.count <= 12 { return true }
+            if ["台", "频道", "頻道", "广播", "廣播", "卫视", "衛視"].contains(where: { n.contains($0) }) {
+                return true
+            }
         }
         return false
     }

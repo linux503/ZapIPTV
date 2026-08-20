@@ -27,8 +27,8 @@ targets:
         CFBundleName: ZapIPTV
         CFBundleDisplayName: ZapIPTV
         CFBundleIdentifier: com.zapiptv.app
-        CFBundleVersion: "40"
-        CFBundleShortVersionString: "2.0.4"
+        CFBundleVersion: "41"
+        CFBundleShortVersionString: "2.0.5"
         CFBundleDevelopmentRegion: zh-Hant
         CFBundleLocalizations: [zh-Hant, zh-Hans, en]
         NSHumanReadableCopyright: "© 2026 ZapIPTV"
