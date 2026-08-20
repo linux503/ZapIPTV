@@ -33,7 +33,7 @@ ZapIPTV 目前 **macOS** 可下载（Apple Silicon + Intel）。**Windows** 与 
 - 默认地区：🇨🇳 中国大陆 · 🇹🇼 台湾 · 🇭🇰 香港 · 🇯🇵 日本 · 🇰🇷 韩国 · 东南亚
 - Live TV 进入后默认 **中国大陆**
 - 另有国内直播列表（央视 / 卫视 / 地方台）
-- 华语影视：CCTV-6、CCTV-8、CHC、剧场等线性频道
+- 华语影视：CCTV-6、CHC、电影轮播频道、历年春晚
 - 支持自己导入 **M3U / Xtream / 本地文件**
 - 打不开的频道会跳过，避免卡在转圈
 
@@ -45,7 +45,7 @@ ZapIPTV 目前 **macOS** 可下载（Apple Silicon + Intel）。**Windows** 与 
 2. 把 **ZapIPTV.app** 拖进 **应用程序**
 3. 第一次打开若提示无法验证开发者：系统设置 → 隐私与安全性 → 仍要打开，或右键 App 选「打开」
 
-当前版本：**1.1.8**（Universal，约 4 MB）
+当前版本：**1.1.14**（Universal）
 
 ## 功能概览
 
