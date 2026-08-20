@@ -1,0 +1,15 @@
+# Local application source — do not publish
+/ZapIPTV/
+/ZapIPTV.xcodeproj/
+/project.yml/
+/project.yml
+/cross-platform/
+/Windows/
+/scripts/
+/dist/
+*.xcuserstate
+xcuserdata/
+DerivedData/
+.DS_Store
+**/local.properties
+**/release/
