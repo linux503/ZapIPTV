@@ -45,7 +45,7 @@ ZapIPTV 目前 **macOS** 可下载（Apple Silicon + Intel）。**Windows** 与 
 2. 把 **ZapIPTV.app** 拖进 **应用程序**
 3. 第一次打开若提示无法验证开发者：系统设置 → 隐私与安全性 → 仍要打开，或右键 App 选「打开」
 
-当前版本：**1.1.15**（Universal）
+当前版本：**1.1.16**（Universal）
 
 ## 功能概览
 
