@@ -93,7 +93,7 @@ struct SplashView: View {
 
     var body: some View {
         ZStack {
-            ZapColor.bg.ignoresSafeArea()
+            ZapBackdrop()
             VStack(spacing: 24) {
                 ZStack {
                     Circle()

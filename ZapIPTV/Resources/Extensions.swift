@@ -53,7 +53,13 @@ struct WindowFSConfigurator: NSViewRepresentable {
         guard let window = view.window else { return }
         AppWindowFS.enable(window)
         window.appearance = NSAppearance(named: scheme == .light ? .aqua : .darkAqua)
-        window.backgroundColor = NSColor(hexString: scheme == .light ? "#F6F3EE" : "#0A0A0A")
+        if scheme == .light {
+            window.isOpaque = false
+            window.backgroundColor = NSColor(hexString: "#F6F3EE").withAlphaComponent(0.78)
+        } else {
+            window.isOpaque = true
+            window.backgroundColor = NSColor(hexString: "#0A0A0A")
+        }
         window.titlebarAppearsTransparent = true
     }
 }
@@ -94,6 +100,125 @@ enum ZapColor {
 
     static let live   = Color.adaptive(light: "#15803D", dark: "#22C55E")
     static let orange = Color.adaptive(light: "#C2410C", dark: "#FF6B35")
+}
+
+// MARK: - Light-mode glass surfaces
+
+struct ZapBackdrop: View {
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        if colorScheme == .light {
+            ZStack {
+                LinearGradient(
+                    colors: [Color(hex: "#FAF6F1"), Color(hex: "#E8E0D6"), Color(hex: "#F4EBE3")],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                Circle()
+                    .fill(ZapColor.accentStart.opacity(0.09))
+                    .frame(width: 440, height: 440)
+                    .offset(x: -260, y: -200)
+                    .blur(radius: 2)
+                Circle()
+                    .fill(ZapColor.accentEnd.opacity(0.07))
+                    .frame(width: 380, height: 380)
+                    .offset(x: 300, y: 220)
+                    .blur(radius: 2)
+            }
+            .ignoresSafeArea()
+        } else {
+            ZapColor.bg.ignoresSafeArea()
+        }
+    }
+}
+
+struct ZapGlassPanelModifier: ViewModifier {
+    @Environment(\.colorScheme) private var colorScheme
+    var cornerRadius: CGFloat
+
+    func body(content: Content) -> some View {
+        if colorScheme == .light {
+            content
+                .background {
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .fill(.ultraThinMaterial)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                                .fill(Color.white.opacity(0.38))
+                        )
+                        .shadow(color: .black.opacity(0.06), radius: 14, y: 5)
+                }
+                .overlay(
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.58), lineWidth: 1)
+                )
+        } else {
+            content
+                .background(ZapColor.surface, in: RoundedRectangle(cornerRadius: cornerRadius))
+                .overlay(RoundedRectangle(cornerRadius: cornerRadius).stroke(ZapColor.border, lineWidth: 1))
+        }
+    }
+}
+
+struct ZapGlassSurfaceModifier: ViewModifier {
+    @Environment(\.colorScheme) private var colorScheme
+
+    func body(content: Content) -> some View {
+        if colorScheme == .light {
+            content.background {
+                ZStack {
+                    Rectangle().fill(.thinMaterial)
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.44), Color.white.opacity(0.14)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                }
+            }
+        } else {
+            content.background(ZapColor.surface)
+        }
+    }
+}
+
+struct ZapGlassInsetModifier: ViewModifier {
+    @Environment(\.colorScheme) private var colorScheme
+    var cornerRadius: CGFloat
+
+    func body(content: Content) -> some View {
+        if colorScheme == .light {
+            content
+                .background {
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .fill(.ultraThinMaterial)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                                .fill(Color.white.opacity(0.32))
+                        )
+                }
+                .overlay(
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.52), lineWidth: 0.5)
+                )
+        } else {
+            content.background(ZapColor.surface2, in: RoundedRectangle(cornerRadius: cornerRadius))
+        }
+    }
+}
+
+extension View {
+    func zapGlassPanel(cornerRadius: CGFloat = 12) -> some View {
+        modifier(ZapGlassPanelModifier(cornerRadius: cornerRadius))
+    }
+
+    func zapGlassSurface() -> some View {
+        modifier(ZapGlassSurfaceModifier())
+    }
+
+    func zapGlassInset(cornerRadius: CGFloat = 8) -> some View {
+        modifier(ZapGlassInsetModifier(cornerRadius: cornerRadius))
+    }
 }
 
 extension Color {
@@ -233,8 +358,7 @@ struct ZapCard<Content: View>: View {
     init(@ViewBuilder content: () -> Content) { self.content = content() }
     var body: some View {
         content
-            .background(ZapColor.surface, in: RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(ZapColor.border, lineWidth: 1))
+            .zapGlassPanel(cornerRadius: 12)
     }
 }
 

@@ -1,7 +1,7 @@
 import SwiftUI
 
 private enum MovieFilter: String, CaseIterable, Identifiable {
-    case all, zh, twHK, jpKR, sea, india, vod
+    case all, zh, twHK, jpKR, sea, india, live, vod
 
     var id: String { rawValue }
 
@@ -14,6 +14,7 @@ private enum MovieFilter: String, CaseIterable, Identifiable {
         case .jpKR:  return loc.t("movies.filter.jpk")
         case .sea:   return loc.t("movies.filter.sea")
         case .india: return loc.t("movies.filter.india")
+        case .live:  return loc.t("movies.filter.live")
         case .vod:   return loc.t("movies.filter.vod")
         }
     }
@@ -28,6 +29,7 @@ private enum MovieFilter: String, CaseIterable, Identifiable {
         case .sea:   return ["🇹🇭 泰国", "🇻🇳 越南", "🇮🇩 印尼", "🇲🇾 马来西亚",
                               "🇸🇬 新加坡", "🇵🇭 菲律宾"].contains(g)
         case .india: return g == "🇮🇳 印度"
+        case .live:  return movie.sourceId.hasPrefix("live-")
         case .vod:   return !movie.sourceId.hasPrefix("live-")
         }
     }
@@ -36,62 +38,90 @@ private enum MovieFilter: String, CaseIterable, Identifiable {
 struct MoviesView: View {
     @EnvironmentObject private var sourceManager: SourceManager
     @EnvironmentObject private var loc: LanguageManager
+    @EnvironmentObject private var playback: PlaybackRouter
     @State private var searchText = ""
     @State private var selectedMovie: Movie?
-    @State private var selectedGenre = "All"
     @State private var selectedFilter: MovieFilter = .all
+    @State private var expandedSection: String?
     @State private var tmdbTrending: [TMDBMovie] = []
+    @State private var tmdbPopular: [TMDBMovie] = []
     @State private var tmdbSearchResults: [TMDBMovie] = []
     @State private var isSearchingTMDB = false
     @State private var searchTask: Task<Void, Never>?
 
-    private var genres: [String] {
-        let all = sourceManager.movies.flatMap(\.genres)
-        return ["All"] + Array(Set(all)).sorted()
-    }
-
     private var localFiltered: [Movie] {
         var list = sourceManager.movies
         if selectedFilter != .all { list = list.filter { selectedFilter.matches($0) } }
-        if selectedGenre != "All" { list = list.filter { $0.genres.contains(selectedGenre) } }
         if !searchText.isEmpty {
             list = list.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
         }
         return list
     }
 
-    private var showSectionedLayout: Bool {
-        searchText.isEmpty && selectedFilter == .all && selectedGenre == "All"
+    private var favoriteMovies: [Movie] {
+        sourceManager.movies.filter(\.isFavorite)
     }
 
-    private var movieSections: [(title: String, icon: String, items: [Movie])] {
-        let list = localFiltered
-        return [
-            ("🎬 华语影视", "film.fill", list.filter { $0.genres.contains("🎬 华语影视") }),
-            ("🇹🇼 台湾 · 🇭🇰 香港", "tv.fill", list.filter {
-                $0.genres.contains("🇹🇼 台湾") || $0.genres.contains("🇭🇰 香港")
-            }),
-            ("🇰🇷 韩国 · 🇯🇵 日本", "sparkles", list.filter {
-                $0.genres.contains("🇰🇷 韩国") || $0.genres.contains("🇯🇵 日本")
-            }),
-            ("🌏 东南亚", "globe.asia.australia.fill", list.filter {
-                ["🇹🇭 泰国", "🇻🇳 越南", "🇮🇩 印尼", "🇲🇾 马来西亚",
-                 "🇸🇬 新加坡", "🇵🇭 菲律宾"].contains($0.genres.first ?? "")
-            }),
-            ("🇮🇳 印度", "star.fill", list.filter { $0.genres.contains("🇮🇳 印度") }),
-            (loc.t("movies.filter.vod"), "folder.fill", list.filter { !$0.sourceId.hasPrefix("live-") }),
-        ].filter { !$0.items.isEmpty }
+    private var continueWatching: [Movie] {
+        sourceManager.movies.filter { $0.watchPosition > 0 }
+            .sorted { $0.watchPosition > $1.watchPosition }
+    }
+
+    private var liveCount: Int {
+        sourceManager.movies.filter { $0.sourceId.hasPrefix("live-") }.count
+    }
+
+    private var vodCount: Int {
+        sourceManager.movies.count - liveCount
+    }
+
+    private var showSectionedLayout: Bool {
+        searchText.isEmpty && selectedFilter == .all && expandedSection == nil
+    }
+
+    private func movies(for key: String) -> [Movie] {
+        let list = sourceManager.movies
+        switch key {
+        case "favorites": return favoriteMovies
+        case "continue":  return continueWatching
+        case "zh":        return list.filter { MovieFilter.zh.matches($0) }
+        case "twHK":      return list.filter { MovieFilter.twHK.matches($0) }
+        case "jpKR":      return list.filter { MovieFilter.jpKR.matches($0) }
+        case "sea":       return list.filter { MovieFilter.sea.matches($0) }
+        case "india":     return list.filter { MovieFilter.india.matches($0) }
+        case "live":      return list.filter { MovieFilter.live.matches($0) }
+        case "vod":       return list.filter { MovieFilter.vod.matches($0) }
+        case "filter":    return localFiltered
+        default:          return []
+        }
+    }
+
+    private func title(for key: String) -> String {
+        switch key {
+        case "favorites": return loc.t("movies.favorites")
+        case "continue":  return loc.t("movies.continue")
+        case "zh":        return "🎬 华语影视"
+        case "twHK":      return "🇹🇼 台湾 · 🇭🇰 香港"
+        case "jpKR":      return "🇰🇷 韩国 · 🇯🇵 日本"
+        case "sea":       return "🌏 东南亚"
+        case "india":     return "🇮🇳 印度"
+        case "live":      return loc.t("movies.filter.live")
+        case "vod":       return loc.t("movies.filter.vod")
+        case "filter":    return loc.t("movies.results")
+        default:          return key
+        }
     }
 
     var body: some View {
         VStack(spacing: 0) {
             moviesHeader
             filterBar
-            if searchText.isEmpty { genreBar }
 
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 28) {
-                    if !searchText.isEmpty {
+                    if let key = expandedSection {
+                        expandedContent(key: key)
+                    } else if !searchText.isEmpty {
                         searchResultsContent
                     } else if showSectionedLayout {
                         browseContent
@@ -102,9 +132,11 @@ struct MoviesView: View {
                 .padding(.bottom, 36)
             }
         }
-        .background(ZapColor.bg)
+        .background(ZapBackdrop())
         .sheet(item: $selectedMovie) { MovieDetailView(movie: $0) }
-        .task { await loadTrending() }
+        .task { await loadCatalog() }
+        .onChange(of: selectedFilter) { _, _ in expandedSection = nil }
+        .onChange(of: searchText) { _, _ in expandedSection = nil }
     }
 
     // MARK: - Header
@@ -117,7 +149,8 @@ struct MoviesView: View {
                         .font(.system(size: 26, weight: .bold))
                         .foregroundColor(ZapColor.textPrimary)
                     if !sourceManager.movies.isEmpty {
-                        Text(String(format: loc.t("movies.count"), sourceManager.movies.count))
+                        Text(String(format: loc.t("movies.count_split"),
+                                     sourceManager.movies.count, liveCount, vodCount))
                             .font(.system(size: 12))
                             .foregroundColor(ZapColor.textTertiary)
                     }
@@ -129,13 +162,23 @@ struct MoviesView: View {
                     TextField(loc.t("home.search_movies"), text: $searchText)
                         .textFieldStyle(.plain)
                         .foregroundColor(ZapColor.textPrimary)
-                        .frame(width: 220)
+                        .frame(width: 200)
                         .onChange(of: searchText) { _, q in searchTMDB(q) }
+                    if !searchText.isEmpty {
+                        Button {
+                            searchText = ""
+                            tmdbSearchResults = []
+                            isSearchingTMDB = false
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(ZapColor.textTertiary)
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
-                .background(ZapColor.surface2, in: RoundedRectangle(cornerRadius: 10))
-                .overlay(RoundedRectangle(cornerRadius: 10).stroke(ZapColor.border))
+                .zapGlassInset(cornerRadius: 10)
             }
         }
         .padding(.horizontal, 24)
@@ -157,49 +200,92 @@ struct MoviesView: View {
         .padding(.bottom, 10)
     }
 
-    private var genreBar: some View {
-        Group {
-            if genres.count > 2 {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(genres, id: \.self) { genre in
-                            GenreChip(title: genre == "All" ? loc.t("movies.filter.all") : genre,
-                                      isSelected: selectedGenre == genre) {
-                                selectedGenre = genre
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 24)
-                }
-                .padding(.bottom, 12)
-            }
-        }
-    }
-
     // MARK: - Content layouts
 
     @ViewBuilder
     private var browseContent: some View {
+        if let hero = tmdbTrending.first {
+            MoviesFeaturedHero(movie: hero)
+                .padding(.horizontal, 24)
+        } else if let local = favoriteMovies.first ?? continueWatching.first ?? sourceManager.movies.first {
+            LocalMoviesFeaturedHero(movie: local) {
+                playback.playInline(url: local.url, title: local.title)
+            } onSelect: {
+                selectedMovie = local
+            }
+            .padding(.horizontal, 24)
+        }
+
+        catalogSection(title: loc.t("movies.favorites"), icon: "heart.fill", key: "favorites",
+                       movies: favoriteMovies)
+        catalogSection(title: loc.t("movies.continue"), icon: "play.circle.fill", key: "continue",
+                       movies: continueWatching)
+
         if !tmdbTrending.isEmpty {
-            if let hero = tmdbTrending.first {
-                MoviesFeaturedHero(movie: hero)
-                    .padding(.horizontal, 24)
-            }
             HomeSection(title: loc.t("home.trending_movies"), icon: "flame.fill") {
-                TMDBMoviePosterRow(movies: tmdbTrending)
+                TMDBMoviePosterRow(movies: tmdbTrending, large: true)
+            }
+        }
+        if !tmdbPopular.isEmpty {
+            HomeSection(title: loc.t("movies.popular"), icon: "star.fill") {
+                TMDBMoviePosterRow(movies: tmdbPopular, large: true)
             }
         }
 
-        ForEach(movieSections, id: \.title) { section in
-            HomeSection(title: section.title, icon: section.icon) {
-                LocalMoviePosterRow(movies: section.items, onSelect: { selectedMovie = $0 })
-            }
-        }
+        catalogSection(title: "🎬 华语影视", icon: "film.fill", key: "zh",
+                       movies: movies(for: "zh"))
+        catalogSection(title: "🇹🇼 台湾 · 🇭🇰 香港", icon: "tv.fill", key: "twHK",
+                       movies: movies(for: "twHK"))
+        catalogSection(title: "🇰🇷 韩国 · 🇯🇵 日本", icon: "sparkles", key: "jpKR",
+                       movies: movies(for: "jpKR"))
+        catalogSection(title: "🌏 东南亚", icon: "globe.asia.australia.fill", key: "sea",
+                       movies: movies(for: "sea"))
+        catalogSection(title: "🇮🇳 印度", icon: "star.fill", key: "india",
+                       movies: movies(for: "india"))
+        catalogSection(title: loc.t("movies.filter.live"), icon: "antenna.radiowaves.left.and.right",
+                       key: "live", movies: movies(for: "live"))
+        catalogSection(title: loc.t("movies.filter.vod"), icon: "folder.fill", key: "vod",
+                       movies: movies(for: "vod"))
 
-        if localFiltered.isEmpty && tmdbTrending.isEmpty {
+        if sourceManager.movies.isEmpty && tmdbTrending.isEmpty && tmdbPopular.isEmpty {
             EmptyMoviesView(hasSource: !sourceManager.sources.isEmpty)
                 .padding(.top, 48)
         }
+    }
+
+    @ViewBuilder
+    private func catalogSection(title: String, icon: String, key: String, movies: [Movie]) -> some View {
+        if !movies.isEmpty {
+            HomeSection(title: title, icon: icon, trailing: {
+                if movies.count > 10 {
+                    Button(loc.t("movies.see_all")) { expandedSection = key }
+                        .buttonStyle(.plain)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(ZapColor.accentEnd)
+                }
+            }) {
+                LocalMoviePosterRow(movies: Array(movies.prefix(24)), onSelect: { selectedMovie = $0 }, large: true)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func expandedContent(key: String) -> some View {
+        HStack {
+            Button {
+                expandedSection = nil
+            } label: {
+                Label(loc.t("movies.back"), systemImage: "chevron.left")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(ZapColor.accentEnd)
+            }
+            .buttonStyle(.plain)
+            Spacer()
+        }
+        .padding(.horizontal, 24)
+
+        MoviesSectionHeader(title: title(for: key), subtitle: "\(movies(for: key).count)", icon: "square.grid.2x2")
+        LocalMovieGrid(movies: movies(for: key), onSelect: { selectedMovie = $0 })
     }
 
     @ViewBuilder
@@ -239,10 +325,15 @@ struct MoviesView: View {
         }
     }
 
-    private func loadTrending() async {
+    private func loadCatalog() async {
         guard TMDBService.shared.isConfigured else { return }
-        if let movies = try? await TMDBService.shared.trendingMovies() {
-            await MainActor.run { tmdbTrending = movies }
+        async let trendingTask = TMDBService.shared.trendingMovies()
+        async let popularTask = TMDBService.shared.popularMovies()
+        let trending = try? await trendingTask
+        let popular = try? await popularTask
+        await MainActor.run {
+            if let trending { tmdbTrending = trending }
+            if let popular { tmdbPopular = popular }
         }
     }
 
@@ -263,6 +354,7 @@ struct MoviesView: View {
         }
     }
 }
+
 
 // MARK: - Featured hero
 
@@ -335,6 +427,93 @@ struct MoviesFeaturedHero: View {
     }
 }
 
+
+// MARK: - Local featured hero
+
+struct LocalMoviesFeaturedHero: View {
+    let movie: Movie
+    var onPlay: () -> Void
+    var onSelect: (() -> Void)? = nil
+
+    var body: some View {
+        Button { onSelect?() } label: {
+            ZStack(alignment: .bottomLeading) {
+                Group {
+                    if let backdrop = movie.backdropURL ?? movie.posterURL {
+                        AsyncImage(url: backdrop) { img in
+                            img.resizable().scaledToFill()
+                        } placeholder: { ZapColor.surface2 }
+                    } else {
+                        ZapColor.surface2
+                    }
+                }
+                .frame(height: 200)
+                .clipped()
+
+                LinearGradient(
+                    colors: [.clear, .black.opacity(0.75), .black.opacity(0.92)],
+                    startPoint: .top, endPoint: .bottom
+                )
+
+                HStack(alignment: .bottom, spacing: 16) {
+                    if let poster = movie.posterURL {
+                        AsyncImage(url: poster) { img in
+                            img.resizable().scaledToFill()
+                        } placeholder: { ZapColor.surface2 }
+                        .frame(width: 72, height: 108)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .shadow(radius: 12)
+                    }
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(movie.title)
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(.white)
+                            .lineLimit(2)
+                        HStack(spacing: 8) {
+                            if let year = movie.year {
+                                Text(year).font(.system(size: 11, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.7))
+                            }
+                            if let rating = movie.rating, !rating.isEmpty {
+                                Text("★ \(rating)")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundColor(ZapColor.accentStart)
+                            }
+                            if let g = movie.genres.first {
+                                Text(g).font(.system(size: 11))
+                                    .foregroundColor(.white.opacity(0.55))
+                                    .lineLimit(1)
+                            }
+                        }
+                        if let plot = movie.plot, !plot.isEmpty {
+                            Text(plot)
+                                .font(.system(size: 12))
+                                .foregroundColor(.white.opacity(0.55))
+                                .lineLimit(2)
+                        }
+                        Button(action: onPlay) {
+                            Label("Play", systemImage: "play.fill")
+                                .font(.system(size: 12, weight: .semibold))
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 6)
+                                .background(ZapColor.accentEnd, in: Capsule())
+                                .foregroundColor(.white)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.top, 4)
+                    }
+                    Spacer(minLength: 0)
+                }
+                .padding(16)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .overlay(RoundedRectangle(cornerRadius: 14).stroke(ZapColor.border))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 // MARK: - Section header
 
 struct MoviesSectionHeader: View {
@@ -377,13 +556,20 @@ struct SectionHeader: View {
 struct LocalMoviePosterRow: View {
     let movies: [Movie]
     let onSelect: (Movie) -> Void
+    var large: Bool = false
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             LazyHStack(spacing: 14) {
                 ForEach(movies) { m in
-                    PosterCard(posterURL: m.posterURL, title: m.title, subtitle: m.year ?? m.genres.first)
-                        .onTapGesture { onSelect(m) }
+                    PosterCard(
+                        posterURL: m.posterURL,
+                        title: m.title,
+                        subtitle: m.year ?? m.genres.first,
+                        width: large ? 128 : 112,
+                        height: large ? 192 : 168
+                    )
+                    .onTapGesture { onSelect(m) }
                 }
             }
             .padding(.horizontal, 24)
@@ -393,6 +579,7 @@ struct LocalMoviePosterRow: View {
 
 struct TMDBMoviePosterRow: View {
     let movies: [TMDBMovie]
+    var large: Bool = false
     @State private var selected: TMDBMovie?
 
     var body: some View {
@@ -403,7 +590,9 @@ struct TMDBMoviePosterRow: View {
                         posterURL: t.posterURL,
                         title: t.title,
                         subtitle: t.year,
-                        badge: t.ratingStr.isEmpty ? nil : "★ \(t.ratingStr)"
+                        badge: t.ratingStr.isEmpty ? nil : "★ \(t.ratingStr)",
+                        width: large ? 128 : 112,
+                        height: large ? 192 : 168
                     )
                     .onTapGesture { selected = t }
                 }
@@ -451,7 +640,7 @@ struct LocalMovieGrid: View {
 
     var body: some View {
         LazyVGrid(
-            columns: [GridItem(.adaptive(minimum: 118, maximum: 148), spacing: 18)],
+            columns: [GridItem(.adaptive(minimum: 128, maximum: 160), spacing: 18)],
             spacing: 22
         ) {
             ForEach(movies) { m in

@@ -78,7 +78,7 @@ struct SettingsView: View {
                 .padding(28)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(ZapColor.bg)
+            .background(ZapBackdrop())
         }
     }
 }
@@ -261,7 +261,7 @@ struct SettingsPlayback: View {
         }
         .toggleStyle(.switch)
         .padding(14)
-        .background(ZapColor.surface2, in: RoundedRectangle(cornerRadius: 10))
+        .zapGlassInset(cornerRadius: 10)
     }
 }
 
@@ -286,7 +286,7 @@ struct SettingsUpdate: View {
                     .fontWeight(.semibold)
             }
             .padding(14)
-            .background(ZapColor.surface2, in: RoundedRectangle(cornerRadius: 10))
+            .zapGlassInset(cornerRadius: 10)
 
             statusText
 
@@ -299,7 +299,7 @@ struct SettingsUpdate: View {
                         .foregroundColor(ZapColor.textPrimary)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
-                        .background(ZapColor.surface2, in: RoundedRectangle(cornerRadius: 8))
+                        .zapGlassInset(cornerRadius: 8)
                 }
                 .buttonStyle(.plain)
                 .disabled(updater.status == .checking || updater.status == .downloading)

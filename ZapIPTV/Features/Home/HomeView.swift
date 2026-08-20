@@ -29,6 +29,16 @@ struct HomeView: View {
             .prefix(10).map { $0 }
     }
 
+    /// Prefer favorites and items with artwork for the home library shelf.
+    private var libraryMovies: [Movie] {
+        sourceManager.movies.sorted { a, b in
+            if a.isFavorite != b.isFavorite { return a.isFavorite && !b.isFavorite }
+            let ap = a.posterURL != nil, bp = b.posterURL != nil
+            if ap != bp { return ap && !bp }
+            return a.title.localizedStandardCompare(b.title) == .orderedAscending
+        }
+    }
+
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 28) {
@@ -116,16 +126,27 @@ struct HomeView: View {
                 }
 
                 if !sourceManager.movies.isEmpty {
-                    HomeSection(title: loc.t("home.library"), icon: "folder.fill") {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            LazyHStack(spacing: 12) {
-                                ForEach(Array(sourceManager.movies.prefix(20))) { m in
-                                    PosterCard(posterURL: m.posterURL, title: m.title, subtitle: m.year)
-                                        .onTapGesture { selectedMovie = m }
+                    HomeSection(
+                        title: loc.t("home.library"),
+                        icon: "folder.fill",
+                        trailing: {
+                            HStack(spacing: 10) {
+                                Text(String(format: loc.t("home.library_count"), sourceManager.movies.count))
+                                    .font(.system(size: 11, weight: .medium))
+                                    .foregroundColor(ZapColor.textTertiary)
+                                Button(loc.t("movies.see_all")) {
+                                    playback.selectedTab = .movies
                                 }
+                                .buttonStyle(.plain)
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(ZapColor.accentStart)
                             }
-                            .padding(.horizontal, 24)
                         }
+                    ) {
+                        HomeLibraryRow(
+                            movies: libraryMovies,
+                            onSelect: { selectedMovie = $0 }
+                        )
                     }
                 }
 
@@ -137,7 +158,7 @@ struct HomeView: View {
             .padding(.top, 20)
             .padding(.bottom, 48)
         }
-        .background(ZapColor.bg)
+        .background(ZapBackdrop())
         .sheet(item: $selectedMovie) { MovieDetailView(movie: $0) }
         .sheet(item: $selectedTMDBMovie) { TMDBMovieDetailView(movie: $0) }
         .sheet(item: $selectedTMDBTV) { TMDBTVDetailView(show: $0) }
@@ -209,8 +230,7 @@ struct HeroBanner: View {
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(ZapColor.surface, in: RoundedRectangle(cornerRadius: 16))
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(ZapColor.border))
+        .zapGlassPanel(cornerRadius: 16)
         .padding(.horizontal, 24)
     }
 }
@@ -234,19 +254,32 @@ struct HeroBadge: View {
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
         .frame(maxWidth: .infinity)
-        .background(ZapColor.surface2, in: RoundedRectangle(cornerRadius: 10))
+        .zapGlassInset(cornerRadius: 10)
     }
 }
 
 // MARK: - Section wrapper
 
-struct HomeSection<Content: View>: View {
+struct HomeSection<Content: View, Trailing: View>: View {
     let title: String
     let icon: String
+    let trailing: Trailing
     let content: Content
 
-    init(title: String, icon: String, @ViewBuilder content: () -> Content) {
-        self.title = title; self.icon = icon; self.content = content()
+    init(title: String, icon: String, @ViewBuilder content: () -> Content) where Trailing == EmptyView {
+        self.title = title
+        self.icon = icon
+        self.trailing = EmptyView()
+        self.content = content()
+    }
+
+    init(title: String, icon: String,
+         @ViewBuilder trailing: () -> Trailing,
+         @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.icon = icon
+        self.trailing = trailing()
+        self.content = content()
     }
 
     var body: some View {
@@ -258,6 +291,8 @@ struct HomeSection<Content: View>: View {
                 Text(title)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(ZapColor.textPrimary)
+                Spacer(minLength: 8)
+                trailing
             }
             .padding(.horizontal, 24)
             content
@@ -329,6 +364,170 @@ struct ChannelTile: View {
     }
 }
 
+// MARK: - Home library shelf
+
+struct HomeLibraryRow: View {
+    let movies: [Movie]
+    let onSelect: (Movie) -> Void
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            LazyHStack(alignment: .top, spacing: 14) {
+                ForEach(Array(movies.prefix(28))) { movie in
+                    LibraryMovieCard(movie: movie)
+                        .onTapGesture { onSelect(movie) }
+                }
+            }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 2)
+        }
+    }
+}
+
+struct LibraryMovieCard: View {
+    let movie: Movie
+    @Environment(\.colorScheme) private var colorScheme
+    @State private var hovered = false
+
+    private var isLive: Bool { movie.sourceId.hasPrefix("live-") }
+    private let cardW: CGFloat = 148
+    private let artH: CGFloat = 210
+
+    private var genreLabel: String? {
+        guard let g = movie.genres.first, !g.isEmpty else { return nil }
+        if let space = g.firstIndex(of: " ") {
+            return String(g[g.index(after: space)...])
+        }
+        return g
+    }
+
+    private var subtitle: String {
+        var parts: [String] = []
+        if let year = movie.year, !year.isEmpty { parts.append(year) }
+        if let genre = genreLabel { parts.append(genre) }
+        if let rating = movie.rating, !rating.isEmpty { parts.append("★ \(rating)") }
+        return parts.joined(separator: " · ")
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ZStack(alignment: .topTrailing) {
+                artwork
+                    .frame(width: cardW, height: artH)
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .strokeBorder(
+                                hovered ? ZapColor.accentStart.opacity(0.9) : Color.white.opacity(colorScheme == .light ? 0.45 : 0.08),
+                                lineWidth: hovered ? 1.5 : 1
+                            )
+                    )
+                    .shadow(color: .black.opacity(hovered ? 0.28 : 0.14), radius: hovered ? 16 : 8, y: hovered ? 8 : 4)
+
+                badgeStack
+                    .padding(8)
+
+                if hovered {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [.black.opacity(0.05), .black.opacity(0.55)],
+                                startPoint: .top, endPoint: .bottom
+                            )
+                        )
+                    Image(systemName: "play.circle.fill")
+                        .font(.system(size: 36))
+                        .foregroundStyle(.white)
+                        .shadow(radius: 8)
+                }
+            }
+            .frame(width: cardW, height: artH)
+            .scaleEffect(hovered ? 1.03 : 1)
+            .animation(.easeOut(duration: 0.15), value: hovered)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(movie.title)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(ZapColor.textPrimary)
+                    .lineLimit(2)
+                    .frame(width: cardW, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                if !subtitle.isEmpty {
+                    Text(subtitle)
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(ZapColor.textTertiary)
+                        .lineLimit(1)
+                        .frame(width: cardW, alignment: .leading)
+                }
+            }
+        }
+        .frame(width: cardW, alignment: .topLeading)
+        .contentShape(Rectangle())
+        .onHover { hovered = $0 }
+    }
+
+    @ViewBuilder
+    private var artwork: some View {
+        if movie.posterURL != nil {
+            if isLive {
+                ZStack {
+                    placeholderGradient
+                    CachedAsyncImage(url: movie.posterURL, contentMode: .fit)
+                        .padding(18)
+                }
+            } else {
+                CachedAsyncImage(url: movie.posterURL, contentMode: .fill)
+            }
+        } else {
+            ZStack {
+                placeholderGradient
+                VStack(spacing: 10) {
+                    Text(String(movie.title.prefix(1)).uppercased())
+                        .font(.system(size: 42, weight: .black, design: .rounded))
+                        .foregroundColor(.white.opacity(0.92))
+                    Image(systemName: isLive ? "tv.fill" : "film.fill")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.55))
+                }
+            }
+        }
+    }
+
+    private var placeholderGradient: some View {
+        LinearGradient(
+            colors: [
+                ZapColor.accentStart.opacity(0.75),
+                ZapColor.accentEnd.opacity(0.55),
+                Color(hex: colorScheme == .light ? "#2A2220" : "#1A1412"),
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    @ViewBuilder
+    private var badgeStack: some View {
+        VStack(alignment: .trailing, spacing: 4) {
+            Text(isLive ? "LIVE" : "VOD")
+                .font(.system(size: 9, weight: .bold))
+                .foregroundColor(.white)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 3)
+                .background(
+                    (isLive ? ZapColor.live : ZapColor.accentStart).opacity(0.92),
+                    in: Capsule()
+                )
+            if movie.isFavorite {
+                Image(systemName: "heart.fill")
+                    .font(.system(size: 10))
+                    .foregroundColor(.white)
+                    .padding(5)
+                    .background(Color.black.opacity(0.45), in: Circle())
+            }
+        }
+    }
+}
+
 // MARK: - Universal Poster Card
 
 struct PosterCard: View {
@@ -336,6 +535,8 @@ struct PosterCard: View {
     let title: String
     let subtitle: String?
     var badge: String? = nil
+    var width: CGFloat = 112
+    var height: CGFloat = 168
     @State private var hovered = false
 
     var body: some View {
@@ -343,16 +544,16 @@ struct PosterCard: View {
             ZStack(alignment: .bottomLeading) {
                 RoundedRectangle(cornerRadius: 8)
                     .fill(ZapColor.surface2)
-                    .frame(width: 112, height: 168)
+                    .frame(width: width, height: height)
 
                 if posterURL != nil {
                     CachedAsyncImage(url: posterURL, contentMode: .fill)
-                        .frame(width: 112, height: 168)
+                        .frame(width: width, height: height)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                 } else {
                     Image(systemName: "photo").font(.system(size: 26))
                         .foregroundColor(ZapColor.textTertiary)
-                        .frame(width: 112, height: 168)
+                        .frame(width: width, height: height)
                 }
 
                 if let badge {
@@ -373,7 +574,7 @@ struct PosterCard: View {
                             .font(.system(size: 24)).foregroundColor(.white)
                         Spacer()
                     }
-                    .frame(height: 168)
+                    .frame(height: height)
                 }
             }
             .overlay(
@@ -387,9 +588,11 @@ struct PosterCard: View {
 
             Text(title)
                 .font(.system(size: 11, weight: .medium)).foregroundColor(ZapColor.textPrimary)
-                .lineLimit(1).frame(width: 112)
+                .lineLimit(2)
+                .frame(width: width, alignment: .leading)
             if let sub = subtitle {
                 Text(sub).font(.system(size: 10)).foregroundColor(ZapColor.textTertiary)
+                    .lineLimit(1).frame(width: width, alignment: .leading)
             }
         }
         .contentShape(Rectangle())

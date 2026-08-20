@@ -56,6 +56,6 @@ struct FavoritesView: View {
                 }
             }
         }
-        .background(ZapColor.bg)
+        .background(ZapBackdrop())
     }
 }

@@ -1,7 +1,7 @@
 import SwiftUI
 
 private enum SeriesFilter: String, CaseIterable, Identifiable {
-    case all, twHK, krJP, sea, india, vod
+    case all, zh, twHK, krJP, sea, india, live, vod
 
     var id: String { rawValue }
 
@@ -9,10 +9,12 @@ private enum SeriesFilter: String, CaseIterable, Identifiable {
     func title(_ loc: LanguageManager) -> String {
         switch self {
         case .all:   return loc.t("series.filter.all")
+        case .zh:    return loc.t("series.filter.zh")
         case .twHK:  return loc.t("series.filter.twhk")
         case .krJP:  return loc.t("series.filter.krjp")
         case .sea:   return loc.t("series.filter.sea")
         case .india: return loc.t("series.filter.india")
+        case .live:  return loc.t("series.filter.live")
         case .vod:   return loc.t("series.filter.vod")
         }
     }
@@ -21,11 +23,13 @@ private enum SeriesFilter: String, CaseIterable, Identifiable {
         let g = item.genres.first ?? ""
         switch self {
         case .all:   return true
+        case .zh:    return g == "🎬 华语影视" || g == "🇨🇳 中国大陆" || g == "🎮 娱乐"
         case .twHK:  return g == "🇹🇼 台湾" || g == "🇭🇰 香港"
         case .krJP:  return g == "🇰🇷 韩国" || g == "🇯🇵 日本"
         case .sea:   return ["🇹🇭 泰国", "🇻🇳 越南", "🇮🇩 印尼", "🇲🇾 马来西亚",
                               "🇸🇬 新加坡", "🇵🇭 菲律宾"].contains(g)
         case .india: return g == "🇮🇳 印度"
+        case .live:  return item.sourceId.hasPrefix("live-")
         case .vod:   return item.xtreamSeriesId != nil || !item.sourceId.hasPrefix("live-")
         }
     }
@@ -34,8 +38,10 @@ private enum SeriesFilter: String, CaseIterable, Identifiable {
 struct SeriesView: View {
     @EnvironmentObject private var sourceManager: SourceManager
     @EnvironmentObject private var loc: LanguageManager
+    @EnvironmentObject private var playback: PlaybackRouter
     @State private var searchText = ""
     @State private var selectedFilter: SeriesFilter = .all
+    @State private var expandedSection: String?
     @State private var selectedSeries: SeriesCatalogItem?
     @State private var tmdbTrendingTV: [TMDBTVShow] = []
     @State private var tvmazeBrowse: [TVmazeService.TVmazeShow] = []
@@ -54,28 +60,45 @@ struct SeriesView: View {
         return list
     }
 
-    private var showSectionedLayout: Bool {
-        searchText.isEmpty && selectedFilter == .all
+    private var liveCount: Int {
+        sourceManager.seriesList.filter { $0.sourceId.hasPrefix("live-") }.count
     }
 
-    private var seriesSections: [(title: String, icon: String, items: [SeriesCatalogItem])] {
-        let list = localFiltered
-        return [
-            ("🇹🇼 台湾 · 🇭🇰 香港", "tv.fill", list.filter {
-                $0.genres.contains("🇹🇼 台湾") || $0.genres.contains("🇭🇰 香港")
-            }),
-            ("🇰🇷 韩国 · 🇯🇵 日本", "sparkles", list.filter {
-                $0.genres.contains("🇰🇷 韩国") || $0.genres.contains("🇯🇵 日本")
-            }),
-            ("🌏 东南亚", "globe.asia.australia.fill", list.filter {
-                ["🇹🇭 泰国", "🇻🇳 越南", "🇮🇩 印尼", "🇲🇾 马来西亚",
-                 "🇸🇬 新加坡", "🇵🇭 菲律宾"].contains($0.genres.first ?? "")
-            }),
-            ("🇮🇳 印度", "star.fill", list.filter { $0.genres.contains("🇮🇳 印度") }),
-            (loc.t("series.filter.vod"), "folder.fill", list.filter {
-                $0.xtreamSeriesId != nil || $0.sourceId.hasSuffix("-m3u") || !$0.sourceId.hasPrefix("live-")
-            }),
-        ].filter { !$0.items.isEmpty }
+    private var vodCount: Int {
+        sourceManager.seriesList.count - liveCount
+    }
+
+    private var showSectionedLayout: Bool {
+        searchText.isEmpty && selectedFilter == .all && expandedSection == nil
+    }
+
+    private func items(for key: String) -> [SeriesCatalogItem] {
+        let list = sourceManager.seriesList
+        switch key {
+        case "zh":     return list.filter { SeriesFilter.zh.matches($0) }
+        case "twHK":   return list.filter { SeriesFilter.twHK.matches($0) }
+        case "krJP":   return list.filter { SeriesFilter.krJP.matches($0) }
+        case "sea":    return list.filter { SeriesFilter.sea.matches($0) }
+        case "india":  return list.filter { SeriesFilter.india.matches($0) }
+        case "live":   return list.filter { SeriesFilter.live.matches($0) }
+        case "vod":    return list.filter { SeriesFilter.vod.matches($0) }
+        case "filter": return localFiltered
+        default:       return []
+        }
+    }
+
+    private func title(for key: String) -> String {
+        switch key {
+        case "zh":     return "🇨🇳 华语剧场"
+        case "twHK":   return "🇹🇼 台湾 · 🇭🇰 香港"
+        case "krJP":   return "🇰🇷 韩国 · 🇯🇵 日本"
+        case "sea":    return "🌏 东南亚"
+        case "india":  return "🇮🇳 印度"
+        case "live":   return loc.t("series.filter.live")
+        case "vod":    return loc.t("series.filter.vod")
+        case "filter": return loc.t("series.results")
+        default:       return key
+        }
     }
 
     var body: some View {
@@ -85,7 +108,9 @@ struct SeriesView: View {
 
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 28) {
-                    if !searchText.isEmpty {
+                    if let key = expandedSection {
+                        expandedContent(key: key)
+                    } else if !searchText.isEmpty {
                         searchContent
                     } else if showSectionedLayout {
                         browseContent
@@ -96,11 +121,13 @@ struct SeriesView: View {
                 .padding(.bottom, 36)
             }
         }
-        .background(ZapColor.bg)
+        .background(ZapBackdrop())
         .sheet(item: $selectedSeries) { SeriesCatalogDetailView(item: $0) }
         .sheet(item: $selectedTVShow) { TVShowDetailView(show: $0) }
         .sheet(item: $selectedTMDBTV) { TMDBTVDetailView(show: $0) }
         .task { await loadBrowse() }
+        .onChange(of: selectedFilter) { _, _ in expandedSection = nil }
+        .onChange(of: searchText) { _, _ in expandedSection = nil }
     }
 
     // MARK: - Header
@@ -112,7 +139,8 @@ struct SeriesView: View {
                     .font(.system(size: 26, weight: .bold))
                     .foregroundColor(ZapColor.textPrimary)
                 if !sourceManager.seriesList.isEmpty {
-                    Text(String(format: loc.t("series.count"), sourceManager.seriesList.count))
+                    Text(String(format: loc.t("series.count_split"),
+                                 sourceManager.seriesList.count, liveCount, vodCount))
                         .font(.system(size: 12))
                         .foregroundColor(ZapColor.textTertiary)
                 }
@@ -123,13 +151,23 @@ struct SeriesView: View {
                 TextField(loc.t("series.search"), text: $searchText)
                     .textFieldStyle(.plain)
                     .foregroundColor(ZapColor.textPrimary)
-                    .frame(width: 220)
+                    .frame(width: 200)
                     .onChange(of: searchText) { _, q in searchSeries(q) }
+                if !searchText.isEmpty {
+                    Button {
+                        searchText = ""
+                        tvmazeResults = []
+                        isSearching = false
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(ZapColor.textTertiary)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(ZapColor.surface2, in: RoundedRectangle(cornerRadius: 10))
-            .overlay(RoundedRectangle(cornerRadius: 10).stroke(ZapColor.border))
+            .zapGlassInset(cornerRadius: 10)
         }
         .padding(.horizontal, 24)
         .padding(.top, 18)
@@ -154,28 +192,82 @@ struct SeriesView: View {
 
     @ViewBuilder
     private var browseContent: some View {
+        if let hero = tmdbTrendingTV.first {
+            SeriesTMDBFeaturedHero(show: hero) { selectedTMDBTV = $0 }
+                .padding(.horizontal, 24)
+        } else if let hero = tvmazeBrowse.first {
+            SeriesTVmazeFeaturedHero(show: hero) { selectedTVShow = $0 }
+                .padding(.horizontal, 24)
+        } else if let local = sourceManager.seriesList.first {
+            LocalSeriesFeaturedHero(item: local) {
+                if let url = local.playURL {
+                    playback.playInline(url: url, title: local.name)
+                }
+            } onSelect: {
+                selectedSeries = local
+            }
+            .padding(.horizontal, 24)
+        }
+
         if !tmdbTrendingTV.isEmpty {
             HomeSection(title: loc.t("home.trending_tv"), icon: "flame.fill") {
-                TMDBTVPosterRow(shows: tmdbTrendingTV, onSelect: { selectedTMDBTV = $0 })
+                TMDBTVPosterRow(shows: tmdbTrendingTV, onSelect: { selectedTMDBTV = $0 }, large: true)
             }
         }
 
-        if !tvmazeBrowse.isEmpty && tmdbTrendingTV.isEmpty {
+        if !tvmazeBrowse.isEmpty {
             HomeSection(title: loc.t("series.popular"), icon: "star.fill") {
-                TVmazePosterRow(shows: tvmazeBrowse, onSelect: { selectedTVShow = $0 })
+                TVmazePosterRow(shows: tvmazeBrowse, onSelect: { selectedTVShow = $0 }, large: true)
             }
         }
 
-        ForEach(seriesSections, id: \.title) { section in
-            HomeSection(title: section.title, icon: section.icon) {
-                SeriesPosterRow(items: section.items, onSelect: { selectedSeries = $0 })
-            }
-        }
+        catalogSection(title: "🇨🇳 华语剧场", icon: "film.fill", key: "zh", items: items(for: "zh"))
+        catalogSection(title: "🇹🇼 台湾 · 🇭🇰 香港", icon: "tv.fill", key: "twHK", items: items(for: "twHK"))
+        catalogSection(title: "🇰🇷 韩国 · 🇯🇵 日本", icon: "sparkles", key: "krJP", items: items(for: "krJP"))
+        catalogSection(title: "🌏 东南亚", icon: "globe.asia.australia.fill", key: "sea", items: items(for: "sea"))
+        catalogSection(title: "🇮🇳 印度", icon: "star.fill", key: "india", items: items(for: "india"))
+        catalogSection(title: loc.t("series.filter.live"), icon: "antenna.radiowaves.left.and.right",
+                       key: "live", items: items(for: "live"))
+        catalogSection(title: loc.t("series.filter.vod"), icon: "folder.fill", key: "vod",
+                       items: items(for: "vod"))
 
-        if localFiltered.isEmpty && tmdbTrendingTV.isEmpty && tvmazeBrowse.isEmpty {
+        if sourceManager.seriesList.isEmpty && tmdbTrendingTV.isEmpty && tvmazeBrowse.isEmpty {
             EmptySeriesView(hasSource: !sourceManager.sources.isEmpty)
                 .padding(.top, 48)
         }
+    }
+
+    @ViewBuilder
+    private func catalogSection(title: String, icon: String, key: String, items: [SeriesCatalogItem]) -> some View {
+        if !items.isEmpty {
+            HomeSection(title: title, icon: icon, trailing: {
+                if items.count > 10 {
+                    Button(loc.t("series.see_all")) { expandedSection = key }
+                        .buttonStyle(.plain)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(ZapColor.accentEnd)
+                }
+            }) {
+                SeriesPosterRow(items: Array(items.prefix(24)), onSelect: { selectedSeries = $0 }, large: true)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func expandedContent(key: String) -> some View {
+        HStack {
+            Button { expandedSection = nil } label: {
+                Label(loc.t("series.back"), systemImage: "chevron.left")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(ZapColor.accentEnd)
+            }
+            .buttonStyle(.plain)
+            Spacer()
+        }
+        .padding(.horizontal, 24)
+
+        MoviesSectionHeader(title: title(for: key), subtitle: "\(items(for: key).count)", icon: "square.grid.2x2")
+        SeriesCatalogGrid(items: items(for: key), onSelect: { selectedSeries = $0 })
     }
 
     @ViewBuilder
@@ -220,8 +312,12 @@ struct SeriesView: View {
            let shows = try? await TMDBService.shared.trendingTV() {
             await MainActor.run { tmdbTrendingTV = shows }
         }
-        let browse = (try? await TVmazeService.shared.browseShows(page: 0)) ?? []
-        await MainActor.run { tvmazeBrowse = Array(browse.prefix(24)) }
+        async let page0 = TVmazeService.shared.browseShows(page: 0)
+        async let page1 = TVmazeService.shared.browseShows(page: 1)
+        let p0 = (try? await page0) ?? []
+        let p1 = (try? await page1) ?? []
+        let merged = Array((p0 + p1).prefix(48))
+        await MainActor.run { tvmazeBrowse = merged }
     }
 
     private func searchSeries(_ query: String) {
@@ -238,11 +334,211 @@ struct SeriesView: View {
     }
 }
 
+// MARK: - Featured heroes
+
+struct SeriesTMDBFeaturedHero: View {
+    let show: TMDBTVShow
+    var onSelect: (TMDBTVShow) -> Void
+
+    var body: some View {
+        Button { onSelect(show) } label: {
+            ZStack(alignment: .bottomLeading) {
+                Group {
+                    if let backdrop = show.backdropURL ?? show.posterURL {
+                        AsyncImage(url: backdrop) { img in
+                            img.resizable().scaledToFill()
+                        } placeholder: { ZapColor.surface2 }
+                    } else {
+                        ZapColor.surface2
+                    }
+                }
+                .frame(height: 200)
+                .clipped()
+
+                LinearGradient(
+                    colors: [.clear, .black.opacity(0.75), .black.opacity(0.92)],
+                    startPoint: .top, endPoint: .bottom
+                )
+
+                HStack(alignment: .bottom, spacing: 16) {
+                    if let poster = show.posterURL {
+                        AsyncImage(url: poster) { img in
+                            img.resizable().scaledToFill()
+                        } placeholder: { ZapColor.surface2 }
+                        .frame(width: 72, height: 108)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .shadow(radius: 12)
+                    }
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(show.name)
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(.white)
+                            .lineLimit(2)
+                        HStack(spacing: 8) {
+                            if let year = show.year {
+                                Text(year).font(.system(size: 11, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.7))
+                            }
+                        }
+                        if let overview = show.overview, !overview.isEmpty {
+                            Text(overview)
+                                .font(.system(size: 12))
+                                .foregroundColor(.white.opacity(0.55))
+                                .lineLimit(2)
+                        }
+                    }
+                    Spacer(minLength: 0)
+                }
+                .padding(16)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .overlay(RoundedRectangle(cornerRadius: 14).stroke(ZapColor.border))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+struct SeriesTVmazeFeaturedHero: View {
+    let show: TVmazeService.TVmazeShow
+    var onSelect: (TVmazeService.TVmazeShow) -> Void
+
+    var body: some View {
+        Button { onSelect(show) } label: {
+            ZStack(alignment: .bottomLeading) {
+                Group {
+                    if let backdrop = show.backdropURL ?? show.posterURL {
+                        AsyncImage(url: backdrop) { img in
+                            img.resizable().scaledToFill()
+                        } placeholder: { ZapColor.surface2 }
+                    } else {
+                        ZapColor.surface2
+                    }
+                }
+                .frame(height: 200)
+                .clipped()
+
+                LinearGradient(
+                    colors: [.clear, .black.opacity(0.75), .black.opacity(0.92)],
+                    startPoint: .top, endPoint: .bottom
+                )
+
+                HStack(alignment: .bottom, spacing: 16) {
+                    if let poster = show.posterURL {
+                        AsyncImage(url: poster) { img in
+                            img.resizable().scaledToFill()
+                        } placeholder: { ZapColor.surface2 }
+                        .frame(width: 72, height: 108)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .shadow(radius: 12)
+                    }
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(show.name)
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(.white)
+                            .lineLimit(2)
+                        HStack(spacing: 8) {
+                            if let year = show.year {
+                                Text(year).font(.system(size: 11, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.7))
+                            }
+                            if !show.ratingStr.isEmpty {
+                                Text("★ \(show.ratingStr)")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundColor(ZapColor.accentStart)
+                            }
+                        }
+                        if let summary = show.summary {
+                            Text(summary.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression))
+                                .font(.system(size: 12))
+                                .foregroundColor(.white.opacity(0.55))
+                                .lineLimit(2)
+                        }
+                    }
+                    Spacer(minLength: 0)
+                }
+                .padding(16)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .overlay(RoundedRectangle(cornerRadius: 14).stroke(ZapColor.border))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+struct LocalSeriesFeaturedHero: View {
+    let item: SeriesCatalogItem
+    var onPlay: () -> Void
+    var onSelect: (() -> Void)? = nil
+
+    var body: some View {
+        Button { onSelect?() } label: {
+            ZStack(alignment: .bottomLeading) {
+                Group {
+                    if let poster = item.posterURL {
+                        AsyncImage(url: poster) { img in
+                            img.resizable().scaledToFill()
+                        } placeholder: { ZapColor.surface2 }
+                    } else {
+                        ZapColor.surface2
+                    }
+                }
+                .frame(height: 200)
+                .clipped()
+
+                LinearGradient(
+                    colors: [.clear, .black.opacity(0.75), .black.opacity(0.92)],
+                    startPoint: .top, endPoint: .bottom
+                )
+
+                HStack(alignment: .bottom, spacing: 16) {
+                    if let poster = item.posterURL {
+                        AsyncImage(url: poster) { img in
+                            img.resizable().scaledToFill()
+                        } placeholder: { ZapColor.surface2 }
+                        .frame(width: 72, height: 108)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .shadow(radius: 12)
+                    }
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(item.name)
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(.white)
+                            .lineLimit(2)
+                        if let g = item.genres.first {
+                            Text(g).font(.system(size: 11))
+                                .foregroundColor(.white.opacity(0.55))
+                        }
+                        if item.playURL != nil {
+                            Button(action: onPlay) {
+                                Label("Play", systemImage: "play.fill")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 6)
+                                    .background(ZapColor.accentEnd, in: Capsule())
+                                    .foregroundColor(.white)
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.top, 4)
+                        }
+                    }
+                    Spacer(minLength: 0)
+                }
+                .padding(16)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .overlay(RoundedRectangle(cornerRadius: 14).stroke(ZapColor.border))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+
 // MARK: - Rows & grids
 
 struct SeriesPosterRow: View {
     let items: [SeriesCatalogItem]
     let onSelect: (SeriesCatalogItem) -> Void
+    var large: Bool = false
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -252,7 +548,9 @@ struct SeriesPosterRow: View {
                         posterURL: item.posterURL,
                         title: item.name,
                         subtitle: item.genres.first,
-                        badge: item.rating.flatMap { $0.isEmpty ? nil : "★ \($0)" }
+                        badge: item.rating.flatMap { $0.isEmpty ? nil : "★ \($0)" },
+                        width: large ? 128 : 112,
+                        height: large ? 192 : 168
                     )
                     .onTapGesture { onSelect(item) }
                 }
@@ -268,7 +566,7 @@ struct SeriesCatalogGrid: View {
 
     var body: some View {
         LazyVGrid(
-            columns: [GridItem(.adaptive(minimum: 118, maximum: 148), spacing: 18)],
+            columns: [GridItem(.adaptive(minimum: 128, maximum: 160), spacing: 18)],
             spacing: 22
         ) {
             ForEach(items) { item in
@@ -288,16 +586,23 @@ struct SeriesCatalogGrid: View {
 struct TMDBTVPosterRow: View {
     let shows: [TMDBTVShow]
     var onSelect: ((TMDBTVShow) -> Void)? = nil
+    var large: Bool = false
     @State private var selected: TMDBTVShow?
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             LazyHStack(spacing: 14) {
                 ForEach(shows) { show in
-                    PosterCard(posterURL: show.posterURL, title: show.name, subtitle: show.year)
-                        .onTapGesture {
-                            if let onSelect { onSelect(show) } else { selected = show }
-                        }
+                    PosterCard(
+                        posterURL: show.posterURL,
+                        title: show.name,
+                        subtitle: show.year,
+                        width: large ? 128 : 112,
+                        height: large ? 192 : 168
+                    )
+                    .onTapGesture {
+                        if let onSelect { onSelect(show) } else { selected = show }
+                    }
                 }
             }
             .padding(.horizontal, 24)
@@ -309,6 +614,7 @@ struct TMDBTVPosterRow: View {
 struct TVmazePosterRow: View {
     let shows: [TVmazeService.TVmazeShow]
     let onSelect: (TVmazeService.TVmazeShow) -> Void
+    var large: Bool = false
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -318,7 +624,9 @@ struct TVmazePosterRow: View {
                         posterURL: show.posterURL,
                         title: show.name,
                         subtitle: show.year,
-                        badge: show.ratingStr.isEmpty ? nil : "★ \(show.ratingStr)"
+                        badge: show.ratingStr.isEmpty ? nil : "★ \(show.ratingStr)",
+                        width: large ? 128 : 112,
+                        height: large ? 192 : 168
                     )
                     .onTapGesture { onSelect(show) }
                 }
@@ -421,7 +729,7 @@ struct SeriesCatalogDetailView: View {
         }
         .padding(24)
         .frame(minWidth: 480, minHeight: 320)
-        .background(ZapColor.bg)
+        .background(ZapBackdrop())
     }
 }
 

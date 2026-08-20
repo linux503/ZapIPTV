@@ -35,7 +35,7 @@ struct ContentView: View {
                 SidebarView(selectedTab: $playback.selectedTab)
             } detail: {
                 ZStack {
-                    ZapColor.bg.ignoresSafeArea()
+                    ZapBackdrop()
                     switch playback.selectedTab {
                     case .home:      HomeView()
                     case .live:      LiveTVView()
@@ -53,8 +53,16 @@ struct ContentView: View {
             }
         }
         .background(WindowFSConfigurator(scheme: theme.theme.scheme))
-        .onChange(of: playback.playerFullScreen) { on in
-            sidebarVisible = on ? .detailOnly : .all
+        .onAppear { syncAppSidebar() }
+        .onChange(of: playback.playerFullScreen) { _, _ in syncAppSidebar() }
+        .onChange(of: playback.showAppSidebar) { _, _ in syncAppSidebar() }
+        .onChange(of: playback.selectedTab) { _, tab in
+            if tab == .live {
+                playback.showAppSidebar = false
+            } else {
+                playback.showAppSidebar = true
+            }
+            syncAppSidebar()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSWindow.didEnterFullScreenNotification)) { _ in
             playback.playerFullScreen = true
@@ -64,6 +72,14 @@ struct ContentView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .zapOpenSettings)) { _ in
             playback.selectedTab = .settings
+        }
+    }
+
+    private func syncAppSidebar() {
+        let collapse = playback.playerFullScreen
+            || (playback.selectedTab == .live && !playback.showAppSidebar)
+        withAnimation(.easeOut(duration: 0.2)) {
+            sidebarVisible = collapse ? .detailOnly : .all
         }
     }
 }
@@ -179,7 +195,7 @@ struct SidebarView: View {
             }
             .padding(.bottom, 8)
         }
-        .background(ZapColor.surface)
+        .zapGlassSurface()
         .frame(minWidth: 188, idealWidth: 204, maxWidth: 220)
     }
 }

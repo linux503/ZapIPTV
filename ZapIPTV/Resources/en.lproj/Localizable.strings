@@ -55,6 +55,7 @@
 "home.trending_movies" = "Trending movies";
 "home.trending_tv" = "Trending series";
 "home.library" = "My library";
+"home.library_count" = "%d titles";
 "home.loading_hint" = "Sources are loading in the background. Hang tight.";
 "home.search_movies" = "Search movies";
 
@@ -67,6 +68,8 @@
 "live.count" = "%d channels";
 "live.hide_list" = "Hide channel list";
 "live.show_list" = "Show channel list";
+"live.show_menu" = "Show app menu";
+"live.hide_menu" = "Hide app menu";
 "live.now_playing" = "Now playing";
 "live.locate" = "Jump to current channel";
 "live.no_channels" = "No channels found";
@@ -82,6 +85,13 @@
 "movies.filter.sea" = "Southeast Asia";
 "movies.filter.india" = "India";
 "movies.filter.vod" = "VOD library";
+"movies.back" = "Back";
+"movies.see_all" = "See all";
+"movies.popular" = "Popular";
+"movies.continue" = "Continue watching";
+"movies.favorites" = "Favorites";
+"movies.count_split" = "%d titles · %d live · %d VOD";
+"movies.filter.live" = "Live cinema";
 "movies.empty_loaded" = "No movies yet — wait for loading or change filters";
 "movies.empty_no_source" = "Add a source with VOD or movie channels";
 "series.title" = "Series";
@@ -95,6 +105,12 @@
 "series.filter.sea" = "Southeast Asia";
 "series.filter.india" = "India";
 "series.filter.vod" = "VOD library";
+"series.count_split" = "%d titles · %d live · %d VOD";
+"series.back" = "Back";
+"series.see_all" = "See all";
+"series.favorites" = "Favorites";
+"series.filter.live" = "Live drama";
+"series.filter.zh" = "Chinese";
 "series.empty_loaded" = "No series yet — wait for loading or change filters";
 "series.empty_no_source" = "Add a source with drama or entertainment channels";
 "series.xtream_hint" = "Xtream series details coming soon";

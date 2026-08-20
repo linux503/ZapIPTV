@@ -41,40 +41,36 @@ struct LiveTVView: View {
     var body: some View {
         HStack(spacing: 0) {
 
-            // ── Category sidebar ──
-            if !playback.playerFullScreen {
-            VStack(spacing: 0) {
-                Text(loc.t("live.categories"))
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundColor(ZapColor.textTertiary)
-                    .padding(.top, 16).padding(.horizontal, 12)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                ScrollView {
-                    VStack(spacing: 2) {
-                        ForEach(groups, id: \.self) { group in
-                            GroupButton(
-                                group: group,
-                                count: countForGroup(group),
-                                isSelected: selectedGroup == group
-                            ) {
-                                selectedGroup = group
-                            }
-                        }
-                    }
-                    .padding(.top, 8)
-                }
-            }
-            .frame(width: 148)
-            .background(ZapColor.surface)
-
-            Divider().background(ZapColor.hairline)
-            }
-
-            // ── Channel list ──
+            // ── Channel list (category + channels in one panel) ──
             if showChannelList && !playback.playerFullScreen {
                 VStack(spacing: 0) {
-                    // Search bar
+                    HStack(spacing: 6) {
+                        appSidebarToggleButton()
+                        Spacer(minLength: 0)
+                        if selectedChannel != nil {
+                            Button(action: locateCurrent) {
+                                Image(systemName: "location.viewfinder")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(ZapColor.accentStart)
+                                    .frame(width: 32, height: 32)
+                                    .background(ZapColor.accentStart.opacity(0.15), in: RoundedRectangle(cornerRadius: 8))
+                            }
+                            .buttonStyle(.plain)
+                            .help(loc.t("live.locate"))
+                        }
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.top, 10)
+                    .padding(.bottom, 6)
+
+                    LiveCategoryPicker(
+                        groups: groups,
+                        selectedGroup: $selectedGroup,
+                        countForGroup: { countForGroup($0) }
+                    )
+                    .padding(.horizontal, 10)
+                    .padding(.bottom, 8)
+
                     HStack(spacing: 6) {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(ZapColor.textTertiary)
@@ -84,45 +80,10 @@ struct LiveTVView: View {
                             .foregroundColor(ZapColor.textPrimary)
                             .font(.system(size: 13))
                     }
-                    .padding(.horizontal, 12).padding(.vertical, 9)
-                    .background(ZapColor.surface2).cornerRadius(8)
+                    .padding(.horizontal, 12).padding(.vertical, 8)
+                    .zapGlassInset(cornerRadius: 8)
                     .padding(.horizontal, 10)
-                    .padding(.top, 10)
-                    .padding(.bottom, selectedChannel == nil ? 10 : 6)
-
-                    if let playing = selectedChannel {
-                        Button(action: locateCurrent) {
-                            HStack(spacing: 8) {
-                                Image(systemName: "dot.radiowaves.left.and.right")
-                                    .font(.system(size: 12, weight: .semibold))
-                                    .foregroundColor(ZapColor.live)
-                                VStack(alignment: .leading, spacing: 1) {
-                                    Text(loc.t("live.now_playing"))
-                                        .font(.system(size: 9, weight: .medium))
-                                        .foregroundColor(ZapColor.textTertiary)
-                                    Text(playing.name)
-                                        .font(.system(size: 12, weight: .semibold))
-                                        .foregroundColor(ZapColor.textPrimary)
-                                        .lineLimit(1)
-                                }
-                                Spacer(minLength: 4)
-                                Image(systemName: "location.viewfinder")
-                                    .font(.system(size: 13))
-                                    .foregroundColor(ZapColor.accentStart)
-                            }
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 8)
-                            .background(ZapColor.accentStart.opacity(0.18), in: RoundedRectangle(cornerRadius: 8))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(ZapColor.accentStart.opacity(0.35), lineWidth: 1)
-                            )
-                        }
-                        .buttonStyle(.plain)
-                        .help(loc.t("live.locate"))
-                        .padding(.horizontal, 10)
-                        .padding(.bottom, 8)
-                    }
+                    .padding(.bottom, 8)
 
                     // Loading banner
                     if sourceManager.isLoading {
@@ -187,8 +148,8 @@ struct LiveTVView: View {
                         }
                     }
                 }
-                .frame(width: 220)
-                .background(ZapColor.bg)
+                .frame(width: 196)
+                .zapGlassSurface()
 
                 Divider().background(ZapColor.hairline)
             }
@@ -259,19 +220,21 @@ struct LiveTVView: View {
                                 .background(ZapColor.live.opacity(0.12), in: RoundedRectangle(cornerRadius: 5))
                             }
 
+                            appSidebarToggleButton()
+
                             // Toggle channel list
                             Button(action: { withAnimation(.easeInOut(duration: 0.2)) { showChannelList.toggle() } }) {
                                 Image(systemName: showChannelList ? "sidebar.left" : "sidebar.right")
                                     .font(.system(size: 14))
                                     .foregroundColor(ZapColor.textSecondary)
                                     .padding(6)
-                                    .background(ZapColor.surface2, in: RoundedRectangle(cornerRadius: 6))
+                                    .zapGlassInset(cornerRadius: 6)
                             }
                             .buttonStyle(.plain)
                             .help(showChannelList ? loc.t("live.hide_list") : loc.t("live.show_list"))
                         }
                         .padding(.horizontal, 16).padding(.vertical, 10)
-                        .background(ZapColor.surface.opacity(0.95))
+                        .zapGlassSurface()
                         }
                     }
                 } else {
@@ -300,7 +263,7 @@ struct LiveTVView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .background(ZapColor.bg)
+        .background(ZapBackdrop())
         .onAppear {
             recomputeGroupCounts()
             ensureValidGroup()
@@ -369,6 +332,23 @@ struct LiveTVView: View {
         }
     }
 
+    @ViewBuilder
+    private func appSidebarToggleButton() -> some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                playback.showAppSidebar.toggle()
+            }
+        } label: {
+            Image(systemName: playback.showAppSidebar ? "sidebar.left" : "line.3.horizontal")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(playback.showAppSidebar ? ZapColor.textSecondary : ZapColor.accentStart)
+                .frame(width: 32, height: 32)
+                .zapGlassInset(cornerRadius: 8)
+        }
+        .buttonStyle(.plain)
+        .help(playback.showAppSidebar ? loc.t("live.hide_menu") : loc.t("live.show_menu"))
+    }
+
     private func playNext() {
         let list = filteredChannels.filter { !failedChannelIDs.contains($0.id) }
         guard !list.isEmpty else { return }
@@ -381,8 +361,6 @@ struct LiveTVView: View {
     }
 }
 
-// MARK: - Group Button
-
 enum LiveGroupLabel {
     static func split(_ group: String) -> (flag: String, title: String) {
         if let space = group.firstIndex(of: " ") {
@@ -392,46 +370,361 @@ enum LiveGroupLabel {
         }
         return ("📡", group)
     }
+
+    static func title(of group: String) -> String { split(group).title }
 }
 
-struct GroupButton: View {
+// MARK: - Realistic group icons
+
+struct LiveGroupIcon: View {
     let group: String
-    var count: Int = 0
+    var size: CGFloat = 28
+
+    var body: some View {
+        Group {
+            switch group {
+            case "🇨🇳 中国大陆":
+                ChinaFlagIcon()
+            case "🎬 华语影视":
+                HuayuCinemaIcon()
+            case "🎆 春晚":
+                ChunwanLanternIcon()
+            case "🇹🇼 台湾":
+                TaiwanFlagIcon()
+            case "🇭🇰 香港":
+                HongKongFlagIcon()
+            default:
+                emojiFallback
+            }
+        }
+        .frame(width: size, height: size)
+        .clipShape(RoundedRectangle(cornerRadius: size * 0.22, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: size * 0.22, style: .continuous)
+                .strokeBorder(Color.white.opacity(0.22), lineWidth: 0.5)
+        )
+        .shadow(color: .black.opacity(0.18), radius: 2, y: 1)
+    }
+
+    private var emojiFallback: some View {
+        ZStack {
+            LinearGradient(
+                colors: [Color(hex: "#3A3230"), Color(hex: "#1C1614")],
+                startPoint: .topLeading, endPoint: .bottomTrailing
+            )
+            Text(LiveGroupLabel.split(group).flag)
+                .font(.system(size: size * 0.55))
+        }
+    }
+}
+
+/// PRC flag — red field + yellow stars
+private struct ChinaFlagIcon: View {
+    var body: some View {
+        GeometryReader { geo in
+            let s = min(geo.size.width, geo.size.height)
+            ZStack(alignment: .topLeading) {
+                Color(hex: "#DE2910")
+                Image(systemName: "star.fill")
+                    .font(.system(size: s * 0.30))
+                    .foregroundColor(Color(hex: "#FFDE00"))
+                    .position(x: s * 0.26, y: s * 0.36)
+                Group {
+                    star(at: CGPoint(x: 0.52, y: 0.18), size: s * 0.10)
+                    star(at: CGPoint(x: 0.62, y: 0.30), size: s * 0.10)
+                    star(at: CGPoint(x: 0.62, y: 0.46), size: s * 0.10)
+                    star(at: CGPoint(x: 0.52, y: 0.58), size: s * 0.10)
+                }
+            }
+            .frame(width: geo.size.width, height: geo.size.height)
+        }
+    }
+
+    private func star(at p: CGPoint, size: CGFloat) -> some View {
+        GeometryReader { geo in
+            Image(systemName: "star.fill")
+                .font(.system(size: size))
+                .foregroundColor(Color(hex: "#FFDE00"))
+                .position(x: geo.size.width * p.x, y: geo.size.height * p.y)
+        }
+    }
+}
+
+/// Taiwan (ROC) flag — red field, blue canton, white sun
+private struct TaiwanFlagIcon: View {
+    var body: some View {
+        GeometryReader { geo in
+            let w = geo.size.width
+            let h = geo.size.height
+            ZStack(alignment: .topLeading) {
+                Color(hex: "#FE0000")
+                ZStack {
+                    Color(hex: "#000095")
+                    ZStack {
+                        ForEach(0..<12, id: \.self) { i in
+                            Capsule()
+                                .fill(Color.white)
+                                .frame(width: max(1.5, w * 0.04), height: h * 0.20)
+                                .offset(y: -h * 0.09)
+                                .rotationEffect(.degrees(Double(i) * 30))
+                        }
+                        Circle()
+                            .fill(Color.white)
+                            .frame(width: w * 0.18, height: h * 0.18)
+                        Circle()
+                            .strokeBorder(Color(hex: "#000095"), lineWidth: max(1, w * 0.03))
+                            .frame(width: w * 0.18, height: h * 0.18)
+                    }
+                }
+                .frame(width: w * 0.5, height: h * 0.5)
+            }
+        }
+    }
+}
+
+/// Hong Kong flag — red field + white Bauhinia (simplified flower)
+private struct HongKongFlagIcon: View {
+    var body: some View {
+        ZStack {
+            Color(hex: "#DE2910")
+            ZStack {
+                ForEach(0..<5, id: \.self) { i in
+                    Capsule()
+                        .fill(Color.white)
+                        .frame(width: 4, height: 11)
+                        .offset(y: -5)
+                        .rotationEffect(.degrees(Double(i) * 72))
+                }
+                Circle()
+                    .fill(Color(hex: "#DE2910"))
+                    .frame(width: 5, height: 5)
+            }
+        }
+    }
+}
+
+/// 华语影视 — cinema clapper / film look
+private struct HuayuCinemaIcon: View {
+    var body: some View {
+        ZStack {
+            LinearGradient(
+                colors: [Color(hex: "#1A1A1A"), Color(hex: "#3D1A14"), Color(hex: "#8B1520")],
+                startPoint: .topLeading, endPoint: .bottomTrailing
+            )
+            // Film strip edge marks
+            HStack {
+                VStack(spacing: 3) {
+                    ForEach(0..<4, id: \.self) { _ in
+                        RoundedRectangle(cornerRadius: 1)
+                            .fill(Color.white.opacity(0.35))
+                            .frame(width: 3, height: 3)
+                    }
+                }
+                .padding(.leading, 3)
+                Spacer()
+                VStack(spacing: 3) {
+                    ForEach(0..<4, id: \.self) { _ in
+                        RoundedRectangle(cornerRadius: 1)
+                            .fill(Color.white.opacity(0.35))
+                            .frame(width: 3, height: 3)
+                    }
+                }
+                .padding(.trailing, 3)
+            }
+            Image(systemName: "movieclapper.fill")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [Color(hex: "#FFD36A"), Color(hex: "#F24A1A")],
+                        startPoint: .top, endPoint: .bottom
+                    )
+                )
+                .shadow(color: .black.opacity(0.4), radius: 1, y: 1)
+        }
+    }
+}
+
+/// 春晚 — festive red lantern
+private struct ChunwanLanternIcon: View {
+    var body: some View {
+        ZStack {
+            LinearGradient(
+                colors: [Color(hex: "#4A0A10"), Color(hex: "#C41E3A"), Color(hex: "#8B0000")],
+                startPoint: .top, endPoint: .bottom
+            )
+            VStack(spacing: 0) {
+                Capsule()
+                    .fill(Color(hex: "#FFD36A"))
+                    .frame(width: 8, height: 3)
+                Ellipse()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color(hex: "#FF4D4D"), Color(hex: "#B01020")],
+                            startPoint: .top, endPoint: .bottom
+                        )
+                    )
+                    .frame(width: 16, height: 18)
+                    .overlay(
+                        Text("福")
+                            .font(.system(size: 8, weight: .black, design: .rounded))
+                            .foregroundColor(Color(hex: "#FFD36A"))
+                    )
+                Capsule()
+                    .fill(Color(hex: "#FFD36A"))
+                    .frame(width: 3, height: 4)
+            }
+            .offset(y: 1)
+        }
+    }
+}
+
+// MARK: - Category picker (expandable 2-column icon grid)
+
+struct LiveCategoryPicker: View {
+    let groups: [String]
+    @Binding var selectedGroup: String
+    let countForGroup: (String) -> Int
+    @EnvironmentObject private var loc: LanguageManager
+    @Environment(\.colorScheme) private var colorScheme
+    @State private var expanded = false
+
+    private var selectedTitle: String { LiveGroupLabel.title(of: selectedGroup) }
+    private var selectedCount: Int { countForGroup(selectedGroup) }
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Button {
+                withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
+                    expanded.toggle()
+                }
+            } label: {
+                HStack(spacing: 10) {
+                    LiveGroupIcon(group: selectedGroup, size: 32)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(loc.t("live.categories"))
+                            .font(.system(size: 9, weight: .semibold))
+                            .foregroundColor(ZapColor.textTertiary)
+                        HStack(spacing: 6) {
+                            Text(selectedTitle)
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundColor(ZapColor.textPrimary)
+                                .lineLimit(1)
+                            if selectedCount > 0 {
+                                Text("\(selectedCount)")
+                                    .font(.system(size: 10, weight: .medium))
+                                    .foregroundColor(ZapColor.textTertiary)
+                                    .monospacedDigit()
+                            }
+                        }
+                    }
+                    Spacer(minLength: 4)
+                    Image(systemName: expanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(ZapColor.textTertiary)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 8)
+                .zapGlassInset(cornerRadius: 10)
+            }
+            .buttonStyle(.plain)
+
+            if expanded {
+                LazyVGrid(
+                    columns: [
+                        GridItem(.flexible(), spacing: 8),
+                        GridItem(.flexible(), spacing: 8),
+                    ],
+                    spacing: 8
+                ) {
+                    ForEach(groups, id: \.self) { group in
+                        LiveCategoryTile(
+                            group: group,
+                            count: countForGroup(group),
+                            isSelected: selectedGroup == group
+                        ) {
+                            withAnimation(.easeOut(duration: 0.15)) {
+                                selectedGroup = group
+                                expanded = false
+                            }
+                        }
+                    }
+                }
+                .padding(8)
+                .background(panelBackground)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var panelBackground: some View {
+        if colorScheme == .light {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(Color.white.opacity(0.35))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.55), lineWidth: 1)
+                )
+        } else {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(ZapColor.surface2)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .strokeBorder(ZapColor.border, lineWidth: 1)
+                )
+        }
+    }
+}
+
+struct LiveCategoryTile: View {
+    let group: String
+    let count: Int
     let isSelected: Bool
     let action: () -> Void
+    @Environment(\.colorScheme) private var colorScheme
     @State private var hovered = false
 
-    private var parts: (flag: String, title: String) { LiveGroupLabel.split(group) }
+    private var title: String { LiveGroupLabel.title(of: group) }
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 8) {
-                Text(parts.flag)
-                    .font(.system(size: 18))
-                    .frame(width: 26, alignment: .center)
-                Text(parts.title)
-                    .font(.system(size: 12, weight: isSelected ? .semibold : .regular))
+            VStack(spacing: 6) {
+                LiveGroupIcon(group: group, size: 36)
+                Text(title)
+                    .font(.system(size: 11, weight: isSelected ? .semibold : .medium))
                     .foregroundColor(isSelected ? ZapColor.textPrimary : ZapColor.textSecondary)
                     .lineLimit(1)
-                Spacer(minLength: 2)
-                if count > 0 {
-                    Text(count >= 1000 ? "\(count/1000)k" : "\(count)")
-                        .font(.system(size: 9, weight: .medium))
-                        .foregroundColor(isSelected ? ZapColor.textSecondary : ZapColor.textTertiary)
-                        .monospacedDigit()
-                }
+                    .minimumScaleFactor(0.8)
+                Text(count > 0 ? (count >= 1000 ? "\(count / 1000)k" : "\(count)") : "—")
+                    .font(.system(size: 9, weight: .medium))
+                    .foregroundColor(ZapColor.textTertiary)
+                    .monospacedDigit()
             }
-            .padding(.horizontal, 10).padding(.vertical, 8)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+            .padding(.horizontal, 4)
             .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(isSelected ? ZapColor.accentStart.opacity(0.18) : (hovered ? ZapColor.hover : .clear))
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(tileFill)
             )
-            .padding(.horizontal, 6)
-            .contentShape(Rectangle())
+            .overlay(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .strokeBorder(isSelected ? ZapColor.accentStart : Color.clear, lineWidth: 1.5)
+            )
         }
         .buttonStyle(.plain)
         .help(group)
         .onHover { hovered = $0 }
+    }
+
+    private var tileFill: Color {
+        if isSelected { return ZapColor.accentStart.opacity(0.16) }
+        if hovered { return ZapColor.hover }
+        return colorScheme == .light ? Color.white.opacity(0.35) : ZapColor.surface.opacity(0.6)
     }
 }
 
@@ -457,14 +750,10 @@ struct ChannelListRow: View {
                         .foregroundColor(ZapColor.textTertiary)
                 }
             }
-            VStack(alignment: .leading, spacing: 2) {
-                Text(channel.name)
-                    .font(.system(size: 12, weight: isPlaying ? .semibold : .regular))
-                    .foregroundColor(isPlaying ? ZapColor.textPrimary : ZapColor.textSecondary)
-                    .lineLimit(1)
-                Text(channel.group)
-                    .font(.system(size: 10)).foregroundColor(ZapColor.textTertiary)
-            }
+            Text(channel.name)
+                .font(.system(size: 12, weight: isPlaying ? .semibold : .regular))
+                .foregroundColor(isPlaying ? ZapColor.textPrimary : ZapColor.textSecondary)
+                .lineLimit(1)
             Spacer()
             if let onFavorite {
                 Button(action: onFavorite) {

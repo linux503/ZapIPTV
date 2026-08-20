@@ -55,6 +55,7 @@
 "home.trending_movies" = "热门电影";
 "home.trending_tv" = "热门剧集";
 "home.library" = "我的片库";
+"home.library_count" = "共 %d 部";
 "home.loading_hint" = "源正在后台加载，稍等片刻。";
 "home.search_movies" = "搜索电影";
 
@@ -67,6 +68,8 @@
 "live.count" = "%d 个频道";
 "live.hide_list" = "隐藏频道列表";
 "live.show_list" = "显示频道列表";
+"live.show_menu" = "显示菜单";
+"live.hide_menu" = "隐藏菜单";
 "live.now_playing" = "正在播放";
 "live.locate" = "定位到当前频道";
 "live.no_channels" = "没有找到频道";
@@ -82,6 +85,13 @@
 "movies.filter.sea" = "东南亚";
 "movies.filter.india" = "印度";
 "movies.filter.vod" = "点播片库";
+"movies.back" = "返回";
+"movies.see_all" = "查看全部";
+"movies.popular" = "热门推荐";
+"movies.continue" = "继续观看";
+"movies.favorites" = "收藏";
+"movies.count_split" = "共 %d 部 · 直播 %d · 点播 %d";
+"movies.filter.live" = "直播影院";
 "movies.empty_loaded" = "暂无电影内容，请稍候加载或切换筛选";
 "movies.empty_no_source" = "添加含 VOD 或电影频道的片源";
 "series.title" = "剧集";
@@ -95,6 +105,12 @@
 "series.filter.sea" = "东南亚";
 "series.filter.india" = "印度";
 "series.filter.vod" = "点播片库";
+"series.count_split" = "共 %d 部 · 直播 %d · 点播 %d";
+"series.back" = "返回";
+"series.see_all" = "查看全部";
+"series.favorites" = "收藏";
+"series.filter.live" = "直播剧场";
+"series.filter.zh" = "华语";
 "series.empty_loaded" = "暂无剧集，请稍候加载或切换筛选";
 "series.empty_no_source" = "添加含剧集或娱乐频道的片源";
 "series.xtream_hint" = "Xtream 点播剧集详情即将支持";

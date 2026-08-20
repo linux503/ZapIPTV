@@ -680,7 +680,9 @@ class SourceManager: ObservableObject {
         "movie", "movies", "film", "cinema", "影视", "影視", "電影", "电影", "影院", "剧场", "劇場",
         "bollywood", "chc", "hbo", "axn", "celestial", "cinema one", "tap movies", "viva cinema",
         "on movies", "gem film", "mbc movie", "영화", "洋片", "美亚", "美亞", "星河", "龙华", "龍華",
-        "viu", "now movies", "persiana cinema",
+        "viu", "now movies", "persiana cinema", "cinemax", "stars movies", "warner", "hollywood film",
+        "thrill", "hits movies", "scm", "卫视电影", "衛視電影", "东森电影", "東森電影", "纬来电影", "緯來電影",
+        "好莱坞", "好萊塢", "高清电影", "高清電影", "imax", "4k电影", "4k電影", "movie channel",
     ]
 
     private nonisolated static func isMovieChannel(_ ch: Channel) -> Bool {
@@ -739,22 +741,32 @@ class SourceManager: ObservableObject {
     ]
 
     private nonisolated static let seriesChannelKeys = [
-        "drama", "series", "戲劇", "戏剧", "劇集", "剧集", "劇場", "剧场",
-        "tvbs", "tvb", "kbs", "mbc drama", "sbs drama", "tvn", "jtbc", "arirang",
-        "gem drama", "gem series", "axn", "八大", "东森戏剧", "東森戲劇", "中天娱乐", "中天娛樂",
-        "緯來戏剧", "纬来戏剧", "三立", "偶像", "綜藝", "综艺", "entertain", "娛樂", "娱乐",
-        "workpoint", "gmm", "one31", "kapamilya", "gma", "colors", "zee cinema", "star plus",
+        "drama", "series", "戲劇", "戏剧", "劇集", "剧集", "劇場", "剧场", "连续剧", "連續劇",
+        "tvbs", "tvb", "kbs", "mbc", "sbs", "tvn", "jtbc", "arirang", "ena", "ocn",
+        "gem drama", "gem series", "axn", "八大", "东森戏剧", "東森戲劇", "东森综合", "東森綜合",
+        "中天娱乐", "中天娛樂", "中天综合", "中天綜合", "緯來戏剧", "纬来戏剧", "纬来综合", "緯來綜合",
+        "三立", "偶像", "綜藝", "综艺", "entertain", "娛樂", "娱乐", "life", "生活",
+        "workpoint", "gmm", "one31", "kapamilya", "gma", "colors", "zee", "star plus", "star world",
         "warnertv", "viu", "hoy", "民視", "民视", "台视", "台視", "中视", "中視",
-        "华视", "華視", "靖天", "龙华", "龍華", "翡翠", "明珠", "凤凰", "鳳凰",
-        "bollywood", "드라마", "映画", "影剧", "影劇",
+        "华视", "華視", "靖天", "龙华", "龍華", "翡翠", "明珠", "凤凰", "鳳凰", "无线", "無線",
+        "bollywood", "드라마", "映画", "影剧", "影劇", "soap", "romance", "都市", "言情",
+        "卫视中文", "衛視中文", "tvb plus", "j2", "翡翠台", "明珠台", "now 华剧", "now華劇",
+        "tvbs欢乐", "tvbs歡樂", "东森超视", "東森超視", "三立都会", "三立都會", "三立台湾", "三立台灣",
+        "湖南卫视", "浙江卫视", "江苏卫视", "东方卫视", "安徽卫视", "北京卫视",
     ]
 
     private nonisolated static func isSeriesChannel(_ ch: Channel) -> Bool {
         if isMovieChannel(ch) { return false }
         let n = ch.name.lowercased()
         if seriesDropKeys.contains(where: { n.contains($0) }) { return false }
-        // Require drama / entertainment signal — do not dump entire regional live lists
-        return seriesChannelKeys.contains(where: { n.contains($0.lowercased()) })
+        if seriesChannelKeys.contains(where: { n.contains($0.lowercased()) }) { return true }
+        // Soft fill: drama markets keep entertainment channels with logo / known brands
+        let dramaGroups: Set<String> = ["🇹🇼 台湾", "🇭🇰 香港", "🇰🇷 韩国", "🇯🇵 日本"]
+        if dramaGroups.contains(ch.group), ch.logoURL != nil {
+            let soft = ["tv", "channel", "台", "频道", "頻道", "ch", "hd", "uhd"]
+            return soft.contains(where: { n.contains($0) })
+        }
+        return false
     }
 
     private func updateGroups() {
