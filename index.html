@@ -1,140 +1,247 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-Hans">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ZapIPTV — 亚洲娱乐，三个系统都能看</title>
-    <meta name="description" content="ZapIPTV：亚洲直播与华语影视。现已提供 macOS。Windows 与 Android 即将上线。" />
+    <title>ZapIPTV</title>
+    <meta name="description" content="macOS 用的亚洲影视与直播应用。Windows 与 Android 即将推出。" />
     <link rel="canonical" href="https://linux503.github.io/ZapIPTV/" />
-    <meta property="og:title" content="ZapIPTV — macOS / Windows / Android" />
-    <meta property="og:description" content="打开就是亚洲频道。Mac 现已可下，Windows 与 Android 即将推出。" />
+    <meta property="og:title" content="ZapIPTV" />
+    <meta property="og:description" content="macOS 用的亚洲影视与直播应用。" />
     <meta property="og:url" content="https://linux503.github.io/ZapIPTV/" />
+    <link rel="icon" href="./website/app-icon.png" />
     <link rel="stylesheet" href="./website/styles.css" />
   </head>
   <body>
     <header class="bar">
       <a class="brand" href="#top">
-        <img src="./website/app-icon.png" width="36" height="36" alt="" />
-        ZapIPTV
+        <img src="./website/app-icon.png" width="36" height="36" alt="ZapIPTV" />
+        <span>
+          <strong>ZapIPTV</strong>
+          <small data-i18n="tagline">macOS 用的亚洲影视与直播应用。</small>
+        </span>
       </a>
       <nav>
-        <a href="#apps">下载</a>
-        <a href="#why">产品</a>
-        <a href="#faq">说明</a>
+        <a href="#apps" data-i18n="nav.apps">下载</a>
+        <a href="#why" data-i18n="nav.why">产品</a>
+        <a href="#faq" data-i18n="nav.faq">说明</a>
         <a href="https://github.com/linux503/ZapIPTV">GitHub</a>
       </nav>
+      <div class="lang">
+        <button type="button" id="btn-hans">简体</button>
+        <button type="button" id="btn-hant">繁體</button>
+      </div>
     </header>
 
     <main id="top">
       <section class="hero">
-        <p class="eyebrow">亚洲娱乐中心 · 跨端</p>
-        <h1>一台设备一种安装包。<br />目录还是亚洲的。</h1>
-        <p class="lead">
-          中国大陆、港澳台、日韩、东南亚。直播默认中国大陆。
-          Mac 已经可以装；Windows 安装包和 Android APK 正在做同一套目录。
-        </p>
-        <div class="hero-cta">
-          <a class="btn solid" href="#apps">选系统下载</a>
-          <a class="btn ghost" href="https://github.com/linux503/ZapIPTV/releases">全部 Release</a>
+        <div>
+          <p class="eyebrow" data-i18n="eyebrow">亚洲直播 · 华语影视 · 三个系统</p>
+          <h1 data-i18n="h1">打开就是亚洲频道。</h1>
+          <p class="lead" data-i18n="lead">macOS 用的亚洲影视与直播应用。默认中国大陆、港澳台、日韩和东南亚。Windows 与 Android 正在做同一套目录。</p>
+          <div class="hero-cta">
+            <a class="btn solid" href="https://github.com/linux503/ZapIPTV/releases/download/v1.1.8/ZapIPTV-1.1.8-universal-installer.dmg" data-i18n="cta.mac">下载 macOS</a>
+            <a class="btn ghost" href="#apps" data-i18n="cta.other">Windows / Android</a>
+          </div>
+          <ul class="chips">
+            <li>🇨🇳 中国大陆</li>
+            <li>🎬 华语影视</li>
+            <li>🇹🇼 台湾</li>
+            <li>🇭🇰 香港</li>
+            <li>🇯🇵 日本</li>
+            <li>🇰🇷 韩国</li>
+            <li data-i18n="chip.sea">东南亚</li>
+          </ul>
         </div>
+        <aside class="poster" aria-hidden="true">
+          <img src="./website/app-icon.png" width="120" height="120" alt="" />
+          <p>ZapIPTV</p>
+          <span data-i18n="tagline">macOS 用的亚洲影视与直播应用。</span>
+        </aside>
       </section>
 
       <section id="apps" class="apps">
-        <h2>下载</h2>
-        <p class="hint">点对应系统。没有安装包的会显示预计形态，避免下到空链。</p>
-
+        <div class="sec-head">
+          <h2 data-i18n="apps.title">按系统下载</h2>
+          <p data-i18n="apps.hint">Mac 可直接安装。另外两端上线后，按钮会变成安装包直链。</p>
+        </div>
         <div class="os-grid">
           <article class="os is-ready">
             <div class="os-top">
               <span class="os-name">macOS</span>
-              <span class="tag on">可下载</span>
+              <span class="tag on" data-i18n="tag.ready">可下载</span>
             </div>
-            <p>Universal DMG，Apple Silicon 与 Intel。拖进应用程序即可。</p>
+            <p data-i18n="mac.desc">Universal DMG，Apple Silicon 与 Intel。拖进「应用程序」。</p>
             <ul>
-              <li>系统 macOS 14+</li>
-              <li>体积约 4 MB</li>
-              <li>当前 v1.1.8</li>
+              <li>macOS 14+</li>
+              <li data-i18n="mac.size">约 4 MB</li>
+              <li>v1.1.8</li>
             </ul>
-            <a class="btn solid wide" href="https://github.com/linux503/ZapIPTV/releases/download/v1.1.8/ZapIPTV-1.1.8-universal-installer.dmg">
-              下载 .dmg
-            </a>
-            <p class="fine">未验证开发者：系统设置 → 隐私与安全性 → 仍要打开。</p>
+            <a class="btn solid wide" href="https://github.com/linux503/ZapIPTV/releases/download/v1.1.8/ZapIPTV-1.1.8-universal-installer.dmg" data-i18n="mac.btn">下载 .dmg</a>
+            <p class="fine" data-i18n="mac.gate">若提示未验证：系统设置 → 隐私与安全性 → 仍要打开。</p>
           </article>
-
           <article class="os">
             <div class="os-top">
               <span class="os-name">Windows</span>
-              <span class="tag">即将推出</span>
+              <span class="tag" data-i18n="tag.soon">即将推出</span>
             </div>
-            <p>桌面客户端，内嵌播放。目录与 macOS 同一套亚洲分区。</p>
+            <p data-i18n="win.desc">Windows 10 / 11 桌面版，窗口内播放，目录与 Mac 一致。</p>
             <ul>
-              <li>计划 Windows 10 / 11</li>
-              <li>安装包 .exe / .msi</li>
-              <li>播放走本地播放引擎</li>
+              <li>.exe / .msi</li>
+              <li data-i18n="win.play">内嵌播放器</li>
+              <li data-i18n="win.cat">亚洲分区</li>
             </ul>
-            <a class="btn ghost wide" href="https://github.com/linux503/ZapIPTV/releases">关注 Release</a>
-            <p class="fine">上线后会出现在 GitHub Releases，本页按钮会改成直链。</p>
+            <a class="btn ghost wide" href="https://github.com/linux503/ZapIPTV/releases" data-i18n="watch">关注 Release</a>
+            <p class="fine" data-i18n="soon.note">安装包会先发到 GitHub Releases。</p>
           </article>
-
           <article class="os">
             <div class="os-top">
               <span class="os-name">Android</span>
-              <span class="tag">即将推出</span>
+              <span class="tag" data-i18n="tag.soon">即将推出</span>
             </div>
-            <p>手机 / 盒子都能装的 APK。同样默认中国大陆与华语影视。</p>
+            <p data-i18n="and.desc">手机和电视盒子都能装。默认中国大陆与华语影视。</p>
             <ul>
-              <li>计划 Android 8+</li>
-              <li>侧载 APK，后续上应用商店</li>
-              <li>遥控器友好的直播列表</li>
+              <li>Android 8+</li>
+              <li>APK</li>
+              <li data-i18n="and.tv">适合遥控器列表</li>
             </ul>
-            <a class="btn ghost wide" href="https://github.com/linux503/ZapIPTV/releases">关注 Release</a>
-            <p class="fine">APK 发布后，这里会提供直接下载与版本号。</p>
+            <a class="btn ghost wide" href="https://github.com/linux503/ZapIPTV/releases" data-i18n="watch">关注 Release</a>
+            <p class="fine" data-i18n="soon.note">安装包会先发到 GitHub Releases。</p>
           </article>
         </div>
       </section>
 
       <section id="why" class="why">
-        <h2>三个系统，同一套内容</h2>
+        <h2 data-i18n="why.title">同一套亚洲目录</h2>
         <div class="why-grid">
-          <div>
-            <h3>地区</h3>
-            <p>🇨🇳 中国大陆 · 🎬 华语影视 · 🇹🇼 台湾 · 🇭🇰 香港 · 🇯🇵 日本 · 🇰🇷 韩国 · 东南亚</p>
-          </div>
-          <div>
-            <h3>直播</h3>
-            <p>打开就是中国大陆。国内还有央视 / 卫视 / 地方台。打不开会跳下一条。</p>
-          </div>
-          <div>
-            <h3>影视</h3>
-            <p>CCTV-6、CCTV-8、CHC、剧场。自己的片库用 M3U / Xtream 导入。</p>
-          </div>
-          <div>
-            <h3>安装</h3>
-            <p>Mac 覆盖安装即可。Windows、Android 发布后同样只保留一个主窗口播放，不弹独立播放器。</p>
-          </div>
+          <article>
+            <h3 data-i18n="why.live">直播</h3>
+            <p data-i18n="why.live.p">第一屏就是中国大陆。另有央视、卫视、地方台。打不开会跳下一条。</p>
+          </article>
+          <article>
+            <h3 data-i18n="why.vod">影视</h3>
+            <p data-i18n="why.vod.p">CCTV-6、CCTV-8、CHC、剧场。完整片库用你自己的 M3U / Xtream。</p>
+          </article>
+          <article>
+            <h3 data-i18n="why.lang">语言</h3>
+            <p data-i18n="why.lang.p">App 内支持简体中文和繁体中文，侧栏可切换。</p>
+          </article>
+          <article>
+            <h3 data-i18n="why.play">播放</h3>
+            <p data-i18n="why.play.p">在主窗口里播，不另开播放窗口。</p>
+          </article>
         </div>
       </section>
 
       <section id="faq" class="faq">
-        <h2>说明</h2>
+        <h2 data-i18n="faq.title">说明</h2>
         <details open>
-          <summary>Windows / Android 什么时候能下？</summary>
-          <p>官网已经按三端预留入口。安装包会先发到 <a href="https://github.com/linux503/ZapIPTV/releases">GitHub Releases</a>，再把本页按钮换成直链。请 Watch 仓库或看 Releases。</p>
+          <summary data-i18n="faq.q1">Windows / Android 什么时候能下？</summary>
+          <p data-i18n="faq.a1">会先放到 GitHub Releases，再把本页改成直链。可 Watch 仓库。</p>
         </details>
         <details>
-          <summary>Mac 第一次打不开？</summary>
-          <p>ad-hoc 签名。右键 App → 打开，或到隐私与安全性点仍要打开。</p>
+          <summary data-i18n="faq.q2">Mac 提示无法打开？</summary>
+          <p data-i18n="faq.a2">右键 App 选打开，或到系统设置 → 隐私与安全性 → 仍要打开。</p>
         </details>
         <details>
-          <summary>三个系统源一不一样？</summary>
-          <p>目录规划一致：亚洲优先，默认中国大陆。各端播放器用系统或 VLC，体验会略有差别。</p>
+          <summary data-i18n="faq.q3">三个系统内容一样吗？</summary>
+          <p data-i18n="faq.a3">目录规划一致：亚洲优先，默认中国大陆。播放器按系统会略有差别。</p>
         </details>
       </section>
     </main>
 
     <footer>
       <span>© 2026 ZapIPTV</span>
-      <span>macOS 现已提供 · Windows · Android 即将推出</span>
+      <span data-i18n="foot">macOS 可下载 · Windows · Android 即将推出</span>
     </footer>
+
+    <script>
+      const copy = {
+        hans: {
+          tagline: "macOS 用的亚洲影视与直播应用。",
+          "nav.apps": "下载", "nav.why": "产品", "nav.faq": "说明",
+          eyebrow: "亚洲直播 · 华语影视 · 三个系统",
+          h1: "打开就是亚洲频道。",
+          lead: "macOS 用的亚洲影视与直播应用。默认中国大陆、港澳台、日韩和东南亚。Windows 与 Android 正在做同一套目录。",
+          "cta.mac": "下载 macOS", "cta.other": "Windows / Android",
+          "chip.sea": "东南亚",
+          "apps.title": "按系统下载",
+          "apps.hint": "Mac 可直接安装。另外两端上线后，按钮会变成安装包直链。",
+          "tag.ready": "可下载", "tag.soon": "即将推出",
+          "mac.desc": "Universal DMG，Apple Silicon 与 Intel。拖进「应用程序」。",
+          "mac.size": "约 4 MB", "mac.btn": "下载 .dmg",
+          "mac.gate": "若提示未验证：系统设置 → 隐私与安全性 → 仍要打开。",
+          "win.desc": "Windows 10 / 11 桌面版，窗口内播放，目录与 Mac 一致。",
+          "win.play": "内嵌播放器", "win.cat": "亚洲分区",
+          "and.desc": "手机和电视盒子都能装。默认中国大陆与华语影视。",
+          "and.tv": "适合遥控器列表",
+          watch: "关注 Release", "soon.note": "安装包会先发到 GitHub Releases。",
+          "why.title": "同一套亚洲目录",
+          "why.live": "直播", "why.live.p": "第一屏就是中国大陆。另有央视、卫视、地方台。打不开会跳下一条。",
+          "why.vod": "影视", "why.vod.p": "CCTV-6、CCTV-8、CHC、剧场。完整片库用你自己的 M3U / Xtream。",
+          "why.lang": "语言", "why.lang.p": "App 内支持简体中文和繁体中文，侧栏可切换。",
+          "why.play": "播放", "why.play.p": "在主窗口里播，不另开播放窗口。",
+          "faq.title": "说明",
+          "faq.q1": "Windows / Android 什么时候能下？",
+          "faq.a1": "会先放到 GitHub Releases，再把本页改成直链。可 Watch 仓库。",
+          "faq.q2": "Mac 提示无法打开？",
+          "faq.a2": "右键 App 选打开，或到系统设置 → 隐私与安全性 → 仍要打开。",
+          "faq.q3": "三个系统内容一样吗？",
+          "faq.a3": "目录规划一致：亚洲优先，默认中国大陆。播放器按系统会略有差别。",
+          foot: "macOS 可下载 · Windows · Android 即将推出"
+        },
+        hant: {
+          tagline: "macOS 用的亞洲影視與直播應用。",
+          "nav.apps": "下載", "nav.why": "產品", "nav.faq": "說明",
+          eyebrow: "亞洲直播 · 華語影視 · 三個系統",
+          h1: "打開就是亞洲頻道。",
+          lead: "macOS 用的亞洲影視與直播應用。預設中國大陸、港澳台、日韓和東南亞。Windows 與 Android 正在做同一套目錄。",
+          "cta.mac": "下載 macOS", "cta.other": "Windows / Android",
+          "chip.sea": "東南亞",
+          "apps.title": "按系統下載",
+          "apps.hint": "Mac 可直接安裝。另外兩端上線後，按鈕會變成安裝包直鏈。",
+          "tag.ready": "可下載", "tag.soon": "即將推出",
+          "mac.desc": "Universal DMG，Apple Silicon 與 Intel。拖進「應用程式」。",
+          "mac.size": "約 4 MB", "mac.btn": "下載 .dmg",
+          "mac.gate": "若提示未驗證：系統設定 → 隱私與安全性 → 仍要打開。",
+          "win.desc": "Windows 10 / 11 桌面版，視窗內播放，目錄與 Mac 一致。",
+          "win.play": "內嵌播放器", "win.cat": "亞洲分區",
+          "and.desc": "手機和電視盒子都能裝。預設中國大陸與華語影視。",
+          "and.tv": "適合遙控器列表",
+          watch: "關注 Release", "soon.note": "安裝包會先發到 GitHub Releases。",
+          "why.title": "同一套亞洲目錄",
+          "why.live": "直播", "why.live.p": "第一屏就是中國大陸。另有央視、衛視、地方台。打不開會跳下一條。",
+          "why.vod": "影視", "why.vod.p": "CCTV-6、CCTV-8、CHC、劇場。完整片庫用你自己的 M3U / Xtream。",
+          "why.lang": "語言", "why.lang.p": "App 內支援簡體中文和繁體中文，側欄可切換。",
+          "why.play": "播放", "why.play.p": "在主視窗裡播，不另開播放視窗。",
+          "faq.title": "說明",
+          "faq.q1": "Windows / Android 什麼時候能下？",
+          "faq.a1": "會先放到 GitHub Releases，再把本頁改成直鏈。可 Watch 倉庫。",
+          "faq.q2": "Mac 提示無法打開？",
+          "faq.a2": "右鍵 App 選打開，或到系統設定 → 隱私與安全性 → 仍要打開。",
+          "faq.q3": "三個系統內容一樣嗎？",
+          "faq.a3": "目錄規劃一致：亞洲優先，預設中國大陸。播放器按系統會略有差別。",
+          foot: "macOS 可下載 · Windows · Android 即將推出"
+        }
+      };
+
+      function apply(lang) {
+        const dict = copy[lang];
+        document.documentElement.lang = lang === "hant" ? "zh-Hant" : "zh-Hans";
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+          const v = dict[el.getAttribute("data-i18n")];
+          if (v) el.textContent = v;
+        });
+        document.getElementById("btn-hans").classList.toggle("on", lang === "hans");
+        document.getElementById("btn-hant").classList.toggle("on", lang === "hant");
+        localStorage.setItem("zap-lang", lang);
+      }
+
+      const start = localStorage.getItem("zap-lang")
+        || ((navigator.language || "").match(/tw|hk|hant/i) ? "hant" : "hans");
+      apply(start);
+      document.getElementById("btn-hans").onclick = () => apply("hans");
+      document.getElementById("btn-hant").onclick = () => apply("hant");
+    </script>
   </body>
 </html>
