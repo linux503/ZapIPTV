@@ -94,9 +94,19 @@
         <a href="#faq" data-i18n="nav.faq">說明</a>
         <a href="https://github.com/linux503/ZapIPTV">GitHub</a>
       </nav>
-      <div class="lang">
-        <button type="button" id="btn-hant">繁體</button>
-        <button type="button" id="btn-hans">简体</button>
+      <div class="lang-dd" id="lang-dd">
+        <button type="button" class="lang-toggle" id="lang-toggle" aria-haspopup="listbox" aria-expanded="false">
+          <span class="lang-ico" aria-hidden="true">文A</span>
+          <span class="lang-current" id="lang-current">繁體</span>
+          <svg class="lang-chevron" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+            <path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <ul class="lang-menu" id="lang-menu" role="listbox" hidden>
+          <li><button type="button" role="option" data-lang="hant"><span>繁</span>繁體中文</button></li>
+          <li><button type="button" role="option" data-lang="hans"><span>简</span>简体中文</button></li>
+          <li><button type="button" role="option" data-lang="en"><span>EN</span>English</button></li>
+        </ul>
       </div>
     </header>
 
@@ -118,12 +128,12 @@
             </a>
           </div>
           <ul class="regions">
-            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-cn"></use></svg></span>中國大陸</li>
-            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-gala"></use></svg></span>春晚</li>
-            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-tw"></use></svg></span>台灣</li>
-            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-hk"></use></svg></span>香港</li>
-            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-jp"></use></svg></span>日本</li>
-            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-kr"></use></svg></span>韓國</li>
+            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-cn"></use></svg></span><span data-i18n="chip.cn">中國大陸</span></li>
+            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-gala"></use></svg></span><span data-i18n="chip.gala">春晚</span></li>
+            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-tw"></use></svg></span><span data-i18n="chip.tw">台灣</span></li>
+            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-hk"></use></svg></span><span data-i18n="chip.hk">香港</span></li>
+            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-jp"></use></svg></span><span data-i18n="chip.jp">日本</span></li>
+            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-kr"></use></svg></span><span data-i18n="chip.kr">韓國</span></li>
             <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-sea"></use></svg></span><span data-i18n="chip.sea">東南亞</span></li>
           </ul>
         </div>
@@ -167,9 +177,9 @@
             <ul>
               <li>macOS 14+</li>
               <li data-i18n="mac.size">約 4 MB</li>
-              <li>v2.0.3</li>
+              <li>v2.0.4</li>
             </ul>
-            <a class="btn solid wide" href="https://github.com/linux503/ZapIPTV/releases/download/v2.0.3/ZapIPTV-2.0.3-universal-installer.dmg" data-i18n="mac.btn">下載 .dmg</a>
+            <a class="btn solid wide" href="https://github.com/linux503/ZapIPTV/releases/download/v2.0.4/ZapIPTV-2.0.4-universal-installer.dmg" data-i18n="mac.btn">下載 .dmg</a>
             <p class="fine" data-i18n="mac.gate">若提示未驗證：系統設定 → 隱私與安全性 → 仍要打開。</p>
           </article>
           <article class="os is-ready">
@@ -182,9 +192,9 @@
             <ul>
               <li>Windows 10 / 11</li>
               <li data-i18n="win.play">內嵌播放器</li>
-              <li>v2.0.3</li>
+              <li>v2.0.4</li>
             </ul>
-            <a class="btn solid wide" href="https://github.com/linux503/ZapIPTV/releases/download/v2.0.3/ZapIPTV-2.0.3-win-x64.exe" data-i18n="win.btn">下載 .exe</a>
+            <a class="btn solid wide" href="https://github.com/linux503/ZapIPTV/releases/download/v2.0.4/ZapIPTV-2.0.4-win-x64.exe" data-i18n="win.btn">下載 .exe</a>
             <p class="fine" data-i18n="win.note">免安裝便攜版，雙擊即可用。</p>
           </article>
           <article class="os is-ready">
@@ -197,9 +207,9 @@
             <ul>
               <li>Android 8+</li>
               <li>APK</li>
-              <li>v2.0.3</li>
+              <li>v2.0.4</li>
             </ul>
-            <a class="btn solid wide" href="https://github.com/linux503/ZapIPTV/releases/download/v2.0.3/ZapIPTV-2.0.3-android.apk" data-i18n="and.btn">下載 APK</a>
+            <a class="btn solid wide" href="https://github.com/linux503/ZapIPTV/releases/download/v2.0.4/ZapIPTV-2.0.4-android.apk" data-i18n="and.btn">下載 APK</a>
             <p class="fine" data-i18n="and.note">需允許安裝未知來源。</p>
           </article>
         </div>
@@ -257,6 +267,12 @@
     </footer>
 
     <script>
+      const LANG_META = {
+        hant: { label: "繁體", htmlLang: "zh-Hant" },
+        hans: { label: "简体", htmlLang: "zh-Hans" },
+        en:   { label: "English", htmlLang: "en" },
+      };
+
       const copy = {
         hans: {
           "nav.apps": "下载", "nav.why": "产品", "nav.faq": "说明",
@@ -264,7 +280,8 @@
           h1: "亚洲影视与直播应用",
           lead: "默认中国大陆，还有港澳台、日韩和东南亚。自己的片库用 M3U / Xtream 导入。",
           "cta.download": "选择下载", "cta.choose": "macOS / Windows / Android",
-          "chip.sea": "东南亚",
+          "chip.cn": "中国大陆", "chip.gala": "春晚", "chip.tw": "台湾", "chip.hk": "香港",
+          "chip.jp": "日本", "chip.kr": "韩国", "chip.sea": "东南亚",
           "stat.platforms": "平台可下载", "stat.regions": "亚洲分区", "stat.version": "正式版",
           "apps.kicker": "一台设备一个安装包",
           "apps.title": "选系统下载",
@@ -281,7 +298,7 @@
           "why.title": "同一套亚洲目录",
           "why.live": "直播", "why.live.p": "第一屏就是中国大陆。央视、卫视、地方台。打不开会自动跳下一条。",
           "why.vod": "影视", "why.vod.p": "CCTV-6、CHC、周星驰电影轮播，还有历年春晚。",
-          "why.lang": "简繁", "why.lang.p": "App 和官网都支持简体、繁体，侧栏一键切换。",
+          "why.lang": "多语言", "why.lang.p": "App 和官网支持简体、繁体与英文，下拉一键切换。",
           "why.play": "一个窗口", "why.play.p": "点了就在主窗口里播，不另开播放器。",
           "why.src": "自己的片源", "why.src.p": "左侧「我的片源」只用来导入你自己的播放列表，和自带频道分开。",
           "faq.title": "说明",
@@ -291,7 +308,9 @@
           "faq.a2": "右键 App 选打开，或到系统设置 → 隐私与安全性 → 仍要打开。",
           "faq.q3": "三个系统内容一样吗？",
           "faq.a3": "目录规划一致：亚洲优先，默认中国大陆。播放器按系统会略有差别。",
-          foot: "macOS · Windows · Android 三端可下载"
+          foot: "macOS · Windows · Android 三端可下载",
+          "doc.title": "ZapIPTV — 亚洲影视与直播应用",
+          "doc.desc": "亚洲影视与直播应用。macOS / Windows / Android 三端可下载。"
         },
         hant: {
           "nav.apps": "下載", "nav.why": "產品", "nav.faq": "說明",
@@ -299,7 +318,8 @@
           h1: "亞洲影視與直播應用",
           lead: "預設中國大陸，還有港澳台、日韓和東南亞。自己的片庫用 M3U / Xtream 匯入。",
           "cta.download": "選擇下載", "cta.choose": "macOS / Windows / Android",
-          "chip.sea": "東南亞",
+          "chip.cn": "中國大陸", "chip.gala": "春晚", "chip.tw": "台灣", "chip.hk": "香港",
+          "chip.jp": "日本", "chip.kr": "韓國", "chip.sea": "東南亞",
           "stat.platforms": "平台可下載", "stat.regions": "亞洲分區", "stat.version": "正式版",
           "apps.kicker": "一台裝置一個安裝包",
           "apps.title": "選系統下載",
@@ -316,7 +336,7 @@
           "why.title": "同一套亞洲目錄",
           "why.live": "直播", "why.live.p": "第一屏就是中國大陸。央視、衛視、地方台。打不開會自動跳下一條。",
           "why.vod": "影視", "why.vod.p": "CCTV-6、CHC、周星馳電影輪播，還有歷年春晚。",
-          "why.lang": "簡繁", "why.lang.p": "App 和官網都支援簡體、繁體，側欄一鍵切換。",
+          "why.lang": "多語言", "why.lang.p": "App 和官網支援繁體、簡體與英文，下拉一鍵切換。",
           "why.play": "一個視窗", "why.play.p": "點了就在主視窗裡播，不另開播放器。",
           "why.src": "自己的片源", "why.src.p": "左側「我的片源」只用來匯入你自己的播放列表，和自帶頻道分開。",
           "faq.title": "說明",
@@ -326,26 +346,96 @@
           "faq.a2": "右鍵 App 選打開，或到系統設定 → 隱私與安全性 → 仍要打開。",
           "faq.q3": "三個系統內容一樣嗎？",
           "faq.a3": "目錄規劃一致：亞洲優先，預設中國大陸。播放器按系統會略有差別。",
-          foot: "macOS · Windows · Android 三端可下載"
+          foot: "macOS · Windows · Android 三端可下載",
+          "doc.title": "ZapIPTV — 亞洲影視與直播應用",
+          "doc.desc": "亞洲影視與直播應用。macOS / Windows / Android 三端可下載。"
+        },
+        en: {
+          "nav.apps": "Download", "nav.why": "Product", "nav.faq": "Help",
+          eyebrow: "Asian live TV, ready now",
+          h1: "Asian TV & streaming app",
+          lead: "Mainland China first, plus Hong Kong, Taiwan, Japan, Korea, and Southeast Asia. Import your own library with M3U / Xtream.",
+          "cta.download": "Choose download", "cta.choose": "macOS / Windows / Android",
+          "chip.cn": "Mainland China", "chip.gala": "Spring Festival Gala", "chip.tw": "Taiwan", "chip.hk": "Hong Kong",
+          "chip.jp": "Japan", "chip.kr": "Korea", "chip.sea": "Southeast Asia",
+          "stat.platforms": "platforms", "stat.regions": "Asian regions", "stat.version": "stable",
+          "apps.kicker": "One installer per device",
+          "apps.title": "Pick your system",
+          "apps.hint": "macOS, Windows, and Android builds are available. The Mac build supports Apple Silicon and Intel.",
+          "tag.ready": "Ready",
+          "mac.desc": "Universal DMG for Apple Silicon and Intel. Drag into Applications.",
+          "mac.size": "About 4 MB", "mac.btn": "Download .dmg",
+          "mac.gate": "If macOS blocks it: System Settings → Privacy & Security → Open Anyway.",
+          "win.desc": "Windows 10 / 11 desktop app with in-window playback and the same catalog as Mac.",
+          "win.play": "Built-in player", "win.btn": "Download .exe", "win.note": "Portable build — double-click to run.",
+          "and.desc": "Works on phones and TV boxes. Mainland China and Chinese cinema presets included.",
+          "and.btn": "Download APK", "and.note": "Allow installs from unknown sources.",
+          "why.kicker": "Three platforms",
+          "why.title": "One Asian catalog",
+          "why.live": "Live TV", "why.live.p": "Mainland China first: CCTV, provincial, and local channels. Auto-skips dead links.",
+          "why.vod": "Cinema", "why.vod.p": "CCTV-6, CHC, movie loops, plus Spring Festival Gala archives.",
+          "why.lang": "Languages", "why.lang.p": "App and website support Traditional Chinese, Simplified Chinese, and English.",
+          "why.play": "One window", "why.play.p": "Tap a channel and it plays in the main window — no extra player.",
+          "why.src": "Your sources", "why.src.p": "Add your own playlists under My Sources, separate from the built-in catalog.",
+          "faq.title": "Help",
+          "faq.q1": "Android says it can’t install?",
+          "faq.a1": "Allow Unknown sources / Install unknown apps in system settings, then install the APK again.",
+          "faq.q2": "Mac won’t open the app?",
+          "faq.a2": "Right-click → Open, or go to System Settings → Privacy & Security → Open Anyway.",
+          "faq.q3": "Are the three platforms the same?",
+          "faq.a3": "Same catalog focus: Asia first, Mainland China by default. Players differ slightly by OS.",
+          foot: "Available on macOS · Windows · Android",
+          "doc.title": "ZapIPTV — Asian TV & streaming app",
+          "doc.desc": "Asian TV and streaming app. Download for macOS, Windows, and Android."
         }
       };
 
+      const langDd = document.getElementById("lang-dd");
+      const langToggle = document.getElementById("lang-toggle");
+      const langMenu = document.getElementById("lang-menu");
+      const langCurrent = document.getElementById("lang-current");
+
+      function setOpen(open) {
+        langMenu.hidden = !open;
+        langToggle.setAttribute("aria-expanded", open ? "true" : "false");
+        langDd.classList.toggle("open", open);
+      }
+
       function apply(lang) {
+        if (!copy[lang]) lang = "hant";
         const dict = copy[lang];
-        document.documentElement.lang = lang === "hant" ? "zh-Hant" : "zh-Hans";
+        const meta = LANG_META[lang];
+        document.documentElement.lang = meta.htmlLang;
+        document.title = dict["doc.title"] || document.title;
+        const desc = document.querySelector('meta[name="description"]');
+        if (desc && dict["doc.desc"]) desc.setAttribute("content", dict["doc.desc"]);
         document.querySelectorAll("[data-i18n]").forEach((el) => {
           const v = dict[el.getAttribute("data-i18n")];
           if (v) el.textContent = v;
         });
-        document.getElementById("btn-hans").classList.toggle("on", lang === "hans");
-        document.getElementById("btn-hant").classList.toggle("on", lang === "hant");
+        langCurrent.textContent = meta.label;
+        langMenu.querySelectorAll("[data-lang]").forEach((btn) => {
+          btn.classList.toggle("on", btn.dataset.lang === lang);
+          btn.setAttribute("aria-selected", btn.dataset.lang === lang ? "true" : "false");
+        });
         localStorage.setItem("zap-lang", lang);
+        setOpen(false);
       }
+
+      langToggle.addEventListener("click", (e) => {
+        e.stopPropagation();
+        setOpen(langMenu.hidden);
+      });
+      langMenu.querySelectorAll("[data-lang]").forEach((btn) => {
+        btn.addEventListener("click", () => apply(btn.dataset.lang));
+      });
+      document.addEventListener("click", () => setOpen(false));
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") setOpen(false);
+      });
 
       const start = localStorage.getItem("zap-lang") || "hant";
       apply(start);
-      document.getElementById("btn-hans").onclick = () => apply("hans");
-      document.getElementById("btn-hant").onclick = () => apply("hant");
 
       // TV 频道轮播
       (function () {

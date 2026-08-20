@@ -44,7 +44,7 @@ class SourceManager: ObservableObject {
     @Published var sources: [PlaylistSource] = []
     @Published var channels: [Channel] = []
     @Published var movies: [Movie] = []
-    @Published var seriesList: [XtreamSeries] = []
+    @Published var seriesList: [SeriesCatalogItem] = []
     @Published var isLoading = false
     @Published var loadingMessage = ""
     @Published var loadError: String?
@@ -89,7 +89,7 @@ class SourceManager: ObservableObject {
     }
 
     // Bump when default catalog changes — triggers one-time channel reload
-    private static let catalogVersion = 10
+    private static let catalogVersion = 11
 
     private static let legacySourceNames: Set<String> = [
         "News (Global)", "Sports (Global)", "Movies & Films", "Kids & Family",
@@ -158,6 +158,7 @@ class SourceManager: ObservableObject {
         if changed || needsFullReload {
             channels = []
             movies = []
+            seriesList = []
             channelGroups = []
             for src in (try? context.fetch(descriptor)) ?? [] {
                 src.isLoaded = false
@@ -263,6 +264,7 @@ class SourceManager: ObservableObject {
         try? context.save()
         channels = []
         movies = []
+        seriesList = []
         channelGroups = []
         sources = []
         await seedDefaultSources()
@@ -314,6 +316,8 @@ class SourceManager: ObservableObject {
         suppressGroupUpdate = false
         updateGroups()
         rebuildGroupIndex()
+        syncLiveMovieCatalog()
+        syncLiveSeriesCatalog()
 
         isLoading = false
         loadingMessage = ""
@@ -413,16 +417,28 @@ class SourceManager: ObservableObject {
                 Channel(id: $0.id, name: $0.name, url: $0.url, logoURL: $0.logoURL,
                         group: og, lastWatched: $0.lastWatched)
             }
-            result.channels = RegionalPlaylist.curate(result.channels, group: og)
+            if og == "🇨🇳 中国大陆" {
+                result.channels = ChinesePlaylist.curateMainland(result.channels)
+            } else {
+                result.channels = RegionalPlaylist.curate(result.channels, group: og)
+            }
         } else {
             // Extra language / category feeds may already carry regional groups.
             let byGroup = Dictionary(grouping: result.channels, by: \.group)
-            result.channels = byGroup.flatMap { RegionalPlaylist.curate($0.value, group: $0.key) }
+            result.channels = byGroup.flatMap { group, list in
+                if group == "🇨🇳 中国大陆" {
+                    return ChinesePlaylist.curateMainland(list)
+                }
+                return RegionalPlaylist.curate(list, group: group)
+            }
         }
 
         mergeChannels(result.channels, sourceId: source.id)
         if !result.movies.isEmpty {
             mergeMoviesFromChannels(result.movies, sourceId: source.id)
+        }
+        if !result.series.isEmpty {
+            mergeSeriesFromM3U(result.series, sourceId: source.id)
         }
         Task { await pruneUnplayableChannels(sourceId: source.id) }
     }
@@ -504,6 +520,23 @@ class SourceManager: ObservableObject {
         let vod = try await api.getVODStreams()
         movies.removeAll { $0.sourceId == source.id }
         movies.append(contentsOf: vod)
+        if let xtreamSeries = try? await api.getSeriesList() {
+            seriesList.removeAll { $0.sourceId == source.id }
+            for s in xtreamSeries {
+                seriesList.append(SeriesCatalogItem(
+                    id: "\(source.id)-\(s.seriesId)",
+                    name: s.name,
+                    posterURL: s.cover.flatMap(URL.init),
+                    plot: s.plot,
+                    rating: s.rating,
+                    genres: s.genre.map { [$0] } ?? [],
+                    sourceId: source.id,
+                    playURL: nil,
+                    xtreamSeriesId: s.seriesId,
+                    xtreamSourceId: source.id
+                ))
+            }
+        }
     }
 
     // MARK: - Merge helpers
@@ -576,6 +609,113 @@ class SourceManager: ObservableObject {
         movies.append(contentsOf: converted)
     }
 
+    /// Pull movie / cinema live channels into the movies catalog for the Movies tab.
+    private func syncLiveMovieCatalog() {
+        var seen = Set(movies.filter { !$0.sourceId.hasPrefix("live-") }.map(\.url.absoluteString))
+        var live: [Movie] = []
+        for ch in channels where Self.isMovieChannel(ch) {
+            let key = ch.url.absoluteString
+            guard !seen.contains(key) else { continue }
+            seen.insert(key)
+            live.append(Movie(
+                id: "live-\(ch.id)",
+                title: ch.name,
+                url: ch.url,
+                posterURL: ch.logoURL,
+                genres: [ch.group],
+                sourceId: "live-\(ch.group)"
+            ))
+        }
+        movies.removeAll { $0.sourceId.hasPrefix("live-") }
+        movies.append(contentsOf: live)
+    }
+
+    private nonisolated static let movieChannelKeys = [
+        "movie", "movies", "film", "cinema", "影视", "影視", "電影", "电影", "影院", "剧场", "劇場",
+        "bollywood", "chc", "hbo", "axn", "celestial", "cinema one", "tap movies", "viva cinema",
+        "on movies", "gem film", "mbc movie", "영화", "洋片", "美亚", "美亞", "星河", "龙华", "龍華",
+        "viu", "now movies", "persiana cinema",
+    ]
+
+    private nonisolated static func isMovieChannel(_ ch: Channel) -> Bool {
+        if ch.group == "🎬 华语影视" { return true }
+        let n = ch.name.lowercased()
+        return movieChannelKeys.contains { n.contains($0) }
+    }
+
+    private func mergeSeriesFromM3U(_ items: [Channel], sourceId: String) {
+        let converted = items.map { ch in
+            SeriesCatalogItem(
+                id: ch.id,
+                name: ch.name,
+                posterURL: ch.logoURL,
+                plot: nil,
+                rating: nil,
+                genres: [ch.group],
+                sourceId: sourceId + "-m3u",
+                playURL: ch.url,
+                xtreamSeriesId: nil,
+                xtreamSourceId: nil
+            )
+        }
+        seriesList.removeAll { $0.sourceId == sourceId + "-m3u" }
+        seriesList.append(contentsOf: converted)
+    }
+
+    /// Pull drama / entertainment live channels into the series catalog.
+    private func syncLiveSeriesCatalog() {
+        var seen = Set(seriesList.filter { !$0.sourceId.hasPrefix("live-") }.compactMap(\.playURL?.absoluteString))
+        var live: [SeriesCatalogItem] = []
+        for ch in channels where Self.isSeriesChannel(ch) {
+            let key = ch.url.absoluteString
+            guard !seen.contains(key) else { continue }
+            seen.insert(key)
+            live.append(SeriesCatalogItem(
+                id: "live-\(ch.id)",
+                name: ch.name,
+                posterURL: ch.logoURL,
+                plot: nil,
+                rating: nil,
+                genres: [ch.group],
+                sourceId: "live-\(ch.group)",
+                playURL: ch.url,
+                xtreamSeriesId: nil,
+                xtreamSourceId: nil
+            ))
+        }
+        seriesList.removeAll { $0.sourceId.hasPrefix("live-") }
+        seriesList.append(contentsOf: live)
+    }
+
+    private nonisolated static let seriesDropKeys = [
+        "news", "新聞", "新闻", "sport", "体育", "體育", "shopping", "finance", "財經", "财经",
+        "stock", "股市", "weather", "天氣", "天气", "cartoon", "卡通", "kids", "兒童", "儿童",
+    ]
+
+    private nonisolated static let seriesChannelKeys = [
+        "drama", "series", "戲劇", "戏剧", "劇集", "剧集", "劇場", "剧场", "tvbs", "tvb", "kbs", "mbc", "sbs",
+        "tvn", "jtbc", "arirang", "gem ", "axn", "八大", "东森", "東森", "中天", "緯來", "纬来", "三立",
+        "偶像", "綜藝", "综艺", "entertain", "娛樂", "娱乐", "workpoint", "gmm", "one31", "kapamilya", "gma",
+        "colors", "zee", "star", "hbo", "fox", "warnertv", "warner", "viu", "hoy", "八大", "民視", "民视",
+        "台视", "台視", "中视", "中視", "华视", "華視", "靖天", "龙华", "龍華", "翡翠", "明珠", "凤凰", "鳳凰",
+        "bollywood", "ebs", "드라마",
+    ]
+
+    private nonisolated static let seriesRegionalGroups: Set<String> = [
+        "🇹🇼 台湾", "🇭🇰 香港", "🇰🇷 韩国", "🇯🇵 日本",
+        "🇹🇭 泰国", "🇻🇳 越南", "🇮🇩 印尼", "🇲🇾 马来西亚",
+        "🇸🇬 新加坡", "🇵🇭 菲律宾", "🇮🇳 印度",
+    ]
+
+    private nonisolated static func isSeriesChannel(_ ch: Channel) -> Bool {
+        if isMovieChannel(ch) { return false }
+        let n = ch.name.lowercased()
+        if seriesDropKeys.contains(where: { n.contains($0) }) { return false }
+        if seriesChannelKeys.contains(where: { n.contains($0.lowercased()) }) { return true }
+        if seriesRegionalGroups.contains(ch.group) { return true }
+        return false
+    }
+
     private func updateGroups() {
         // Use channel.group directly (already set via overrideGroup for built-in sources)
         // Only normalise groups that don't already look like our canonical labels
@@ -615,7 +755,7 @@ class SourceManager: ObservableObject {
         case s.contains("越南") || s.contains("vietnam") || s.contains("viet"):
             return "🇻🇳 越南"
         case s.contains("印尼") || s.contains("indonesia") || s.contains("indonesian"):
-            return "🇮🇩 印度尼西亚"
+            return "🇮🇩 印尼"
         case s.contains("菲律宾") || s.contains("philippine") || s.contains("filipino"):
             return "🇵🇭 菲律宾"
         case s.contains("马来") || s.contains("malaysia") || s.contains("malay"):
@@ -682,7 +822,7 @@ class SourceManager: ObservableObject {
     private let groupSortOrder = [
         "🇨🇳 中国大陆", "🎬 华语影视", "🎆 春晚", "🇹🇼 台湾", "🇭🇰 香港",
         "🇯🇵 日本", "🇰🇷 韩国", "🇹🇭 泰国", "🇻🇳 越南",
-        "🇮🇩 印度尼西亚", "🇲🇾 马来西亚", "🇸🇬 新加坡", "🇵🇭 菲律宾", "🇮🇳 印度",
+        "🇮🇩 印尼", "🇲🇾 马来西亚", "🇸🇬 新加坡", "🇵🇭 菲律宾", "🇮🇳 印度",
         "🌙 阿拉伯/中东", "🇹🇷 土耳其",
         "🇺🇸 美国/英语", "🇬🇧 英国", "🇩🇪 德国", "🇫🇷 法国", "🇷🇺 俄罗斯",
         "📺 新闻", "⚽ 体育", "🎬 电影", "🎮 娱乐", "🎵 音乐",
@@ -696,12 +836,18 @@ class SourceManager: ObservableObject {
 
     func channels(inGroup group: String) -> [Channel] {
         guard group != "All" else { return channels }
+        // Prefer exact group label so "中国大陆" does not pull mis-normalised foreign feeds.
+        let exact = channels.filter { $0.group == group }
+        if !exact.isEmpty {
+            if group == "🇨🇳 中国大陆" {
+                return ChinesePlaylist.curateMainland(exact)
+            }
+            return exact
+        }
         if let cached = channelsByGroup[group], !cached.isEmpty {
             return cached
         }
-        return channels.filter { ch in
-            ch.group == group || normaliseGroup(ch.group) == group
-        }
+        return channels.filter { normaliseGroup($0.group) == group }
     }
 
     func search(query: String) -> [Channel] {

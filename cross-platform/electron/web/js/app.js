@@ -31,6 +31,8 @@ function applyI18n() {
   $('#ver-label').textContent = t('version', L);
   $('#opt-hant').textContent = t('langHant', L);
   $('#opt-hans').textContent = t('langHans', L);
+  const optEn = $('#opt-en');
+  if (optEn) optEn.textContent = t('langEn', L);
   $('#opt-dark').textContent = t('themeDark', L);
   $('#opt-light').textContent = t('themeLight', L);
   $('#btn-refresh').textContent = t('refresh', L);

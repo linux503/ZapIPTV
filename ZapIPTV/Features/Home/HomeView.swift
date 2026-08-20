@@ -1,0 +1,421 @@
+import SwiftUI
+
+struct HomeView: View {
+    @EnvironmentObject private var sourceManager: SourceManager
+    @EnvironmentObject private var playerEngine: PlayerEngine
+    @EnvironmentObject private var playback: PlaybackRouter
+    @EnvironmentObject private var loc: LanguageManager
+    @State private var selectedMovie: Movie?
+    @State private var tmdbTrendingMovies: [TMDBMovie] = []
+    @State private var tmdbTrendingTV: [TMDBTVShow] = []
+    @State private var selectedTMDBMovie: TMDBMovie?
+    @State private var selectedTMDBTV: TMDBTVShow?
+
+    // Pre-computed channel groups — avoid recalculating in body every render
+    @State private var zhCN: [Channel] = []
+    @State private var cinema: [Channel] = []
+    @State private var tw: [Channel] = []
+    @State private var hk: [Channel] = []
+    @State private var jp: [Channel] = []
+    @State private var kr: [Channel] = []
+    @State private var sea: [Channel] = []
+    @State private var news: [Channel] = []
+    @State private var sport: [Channel] = []
+    @State private var gala: [Channel] = []
+
+    var recentChannels: [Channel] {
+        sourceManager.channels.filter { $0.lastWatched != nil }
+            .sorted { ($0.lastWatched ?? .distantPast) > ($1.lastWatched ?? .distantPast) }
+            .prefix(10).map { $0 }
+    }
+
+    var body: some View {
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 28) {
+                HeroBanner()
+
+                if !recentChannels.isEmpty {
+                    HomeSection(title: loc.t("home.continue"), icon: "play.circle.fill") {
+                        ChannelRow(channels: recentChannels) { playback.playLive($0) }
+                    }
+                }
+
+                if !zhCN.isEmpty {
+                    HomeSection(title: "🇨🇳 中國大陸", icon: "tv.fill") {
+                        ChannelRow(channels: zhCN) { playback.playLive($0) }
+                    }
+                }
+                if !cinema.isEmpty {
+                    HomeSection(title: "🎬 華語影視", icon: "film.fill") {
+                        ChannelRow(channels: cinema) { playback.playLive($0) }
+                    }
+                }
+                if !gala.isEmpty {
+                    HomeSection(title: "🎆 春晚", icon: "sparkles") {
+                        ChannelRow(channels: gala) { playback.playLive($0) }
+                    }
+                }
+                if !tw.isEmpty || !hk.isEmpty {
+                    HomeSection(title: "🇹🇼 台灣 · 🇭🇰 香港", icon: "tv.fill") {
+                        ChannelRow(channels: tw + hk) { playback.playLive($0) }
+                    }
+                }
+                if !jp.isEmpty {
+                    HomeSection(title: "🇯🇵 日本", icon: "tv.fill") {
+                        ChannelRow(channels: jp) { playback.playLive($0) }
+                    }
+                }
+                if !kr.isEmpty {
+                    HomeSection(title: "🇰🇷 韓國", icon: "tv.fill") {
+                        ChannelRow(channels: kr) { playback.playLive($0) }
+                    }
+                }
+                if !sea.isEmpty {
+                    HomeSection(title: "🌏 東南亞", icon: "tv.fill") {
+                        ChannelRow(channels: sea) { playback.playLive($0) }
+                    }
+                }
+                if !news.isEmpty {
+                    HomeSection(title: loc.t("home.news"), icon: "newspaper.fill") {
+                        ChannelRow(channels: news) { playback.playLive($0) }
+                    }
+                }
+                if !sport.isEmpty {
+                    HomeSection(title: loc.t("home.sport"), icon: "sportscourt.fill") {
+                        ChannelRow(channels: sport) { playback.playLive($0) }
+                    }
+                }
+
+                if !tmdbTrendingMovies.isEmpty {
+                    HomeSection(title: loc.t("home.trending_movies"), icon: "flame.fill") {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            LazyHStack(spacing: 12) {
+                                ForEach(tmdbTrendingMovies) { m in
+                                    PosterCard(posterURL: m.posterURL, title: m.title,
+                                               subtitle: m.year, badge: m.ratingStr.isEmpty ? nil : "★ \(m.ratingStr)")
+                                        .onTapGesture { selectedTMDBMovie = m }
+                                }
+                            }
+                            .padding(.horizontal, 24)
+                        }
+                    }
+                }
+
+                if !tmdbTrendingTV.isEmpty {
+                    HomeSection(title: loc.t("home.trending_tv"), icon: "star.fill") {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            LazyHStack(spacing: 12) {
+                                ForEach(tmdbTrendingTV) { s in
+                                    PosterCard(posterURL: s.posterURL, title: s.name, subtitle: s.year)
+                                        .onTapGesture { selectedTMDBTV = s }
+                                }
+                            }
+                            .padding(.horizontal, 24)
+                        }
+                    }
+                }
+
+                if !sourceManager.movies.isEmpty {
+                    HomeSection(title: loc.t("home.library"), icon: "folder.fill") {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            LazyHStack(spacing: 12) {
+                                ForEach(Array(sourceManager.movies.prefix(20))) { m in
+                                    PosterCard(posterURL: m.posterURL, title: m.title, subtitle: m.year)
+                                        .onTapGesture { selectedMovie = m }
+                                }
+                            }
+                            .padding(.horizontal, 24)
+                        }
+                    }
+                }
+
+                if zhCN.isEmpty && jp.isEmpty && news.isEmpty
+                    && tmdbTrendingMovies.isEmpty && !sourceManager.isLoading {
+                    FirstLaunchEmpty()
+                }
+            }
+            .padding(.top, 20)
+            .padding(.bottom, 48)
+        }
+        .background(ZapColor.bg)
+        .sheet(item: $selectedMovie) { MovieDetailView(movie: $0) }
+        .sheet(item: $selectedTMDBMovie) { TMDBMovieDetailView(movie: $0) }
+        .sheet(item: $selectedTMDBTV) { TMDBTVDetailView(show: $0) }
+        .task { await loadTMDB() }
+        .onChange(of: sourceManager.channels.count) { _ in recomputeGroups() }
+        .onAppear { recomputeGroups() }
+    }
+
+    // Called only when channel count changes — not every body render
+    private func recomputeGroups() {
+        let all = sourceManager.channels
+        zhCN  = Array(all.filter { $0.group == "🇨🇳 中国大陆" }.prefix(20))
+        cinema = Array(all.filter { $0.group == "🎬 华语影视" }.prefix(28))
+        gala  = Array(all.filter { $0.group == "🎆 春晚" }.prefix(24))
+        tw    = Array(all.filter { $0.group == "🇹🇼 台湾" }.prefix(12))
+        hk    = Array(all.filter { $0.group == "🇭🇰 香港" }.prefix(24))
+        jp    = Array(all.filter { $0.group == "🇯🇵 日本" }.prefix(20))
+        kr    = Array(all.filter { $0.group == "🇰🇷 韩国" }.prefix(20))
+        sea   = Array(all.filter { ["🇹🇭 泰国","🇻🇳 越南","🇮🇩 印尼","🇲🇾 马来西亚"].contains($0.group) }.prefix(20))
+        news  = Array(all.filter { $0.group == "📺 新闻" }.prefix(16))
+        sport = Array(all.filter { $0.group == "⚽ 体育" }.prefix(16))
+    }
+
+    private func loadTMDB() async {
+        guard TMDBService.shared.isConfigured else { return }
+        async let movies = TMDBService.shared.trendingMovies()
+        async let tv = TMDBService.shared.trendingTV()
+        tmdbTrendingMovies = (try? await movies) ?? []
+        tmdbTrendingTV = (try? await tv) ?? []
+    }
+}
+
+// MARK: - Hero Banner (no heavy blur)
+
+struct HeroBanner: View {
+    @EnvironmentObject private var sourceManager: SourceManager
+    @EnvironmentObject private var loc: LanguageManager
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("ZapIPTV")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(ZapColor.accentStart)
+                Text(loc.t("tagline"))
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(ZapColor.textPrimary)
+            }
+
+            if sourceManager.isLoading {
+                HStack(spacing: 8) {
+                    ProgressView().scaleEffect(0.7).tint(ZapColor.accentEnd)
+                    Text(sourceManager.loadingMessage.isEmpty ? loc.t("home.loading") : sourceManager.loadingMessage)
+                        .font(.system(size: 12))
+                        .foregroundColor(ZapColor.textSecondary)
+                }
+            } else if !sourceManager.channels.isEmpty {
+                HStack(spacing: 10) {
+                    HeroBadge(icon: "tv.fill",
+                              value: sourceManager.channels.count >= 1000
+                                ? String(format: "%.1fk", Double(sourceManager.channels.count)/1000)
+                                : "\(sourceManager.channels.count)",
+                              label: loc.t("nav.channels"))
+                    HeroBadge(icon: "film.fill", value: "\(sourceManager.movies.count)", label: loc.t("tab.movies"))
+                    HeroBadge(icon: "square.stack.3d.up.fill",
+                              value: "\(sourceManager.sources.count)", label: loc.t("settings.sources"))
+                }
+            }
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(ZapColor.surface, in: RoundedRectangle(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(ZapColor.border))
+        .padding(.horizontal, 24)
+    }
+}
+
+struct HeroBadge: View {
+    let icon: String
+    let value: String
+    let label: String
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 12))
+                .foregroundStyle(ZapColor.accentH)
+                .frame(width: 16)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(value).font(.system(size: 15, weight: .bold)).foregroundColor(ZapColor.textPrimary)
+                Text(label).font(.system(size: 10)).foregroundColor(ZapColor.textTertiary)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 12).padding(.vertical, 10)
+        .frame(maxWidth: .infinity)
+        .background(ZapColor.surface2, in: RoundedRectangle(cornerRadius: 10))
+    }
+}
+
+// MARK: - Section wrapper
+
+struct HomeSection<Content: View>: View {
+    let title: String
+    let icon: String
+    let content: Content
+
+    init(title: String, icon: String, @ViewBuilder content: () -> Content) {
+        self.title = title; self.icon = icon; self.content = content()
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(ZapColor.accentH)
+                Text(title)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(ZapColor.textPrimary)
+            }
+            .padding(.horizontal, 24)
+            content
+        }
+        .padding(.bottom, 24)
+    }
+}
+
+// MARK: - Channel Row (Lazy)
+
+struct ChannelRow: View {
+    let channels: [Channel]
+    let onSelect: (Channel) -> Void
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            LazyHStack(spacing: 12) {
+                ForEach(channels) { ch in
+                    ChannelTile(channel: ch).onTapGesture { onSelect(ch) }
+                }
+            }
+            .padding(.horizontal, 24)
+        }
+    }
+}
+
+struct ChannelTile: View {
+    let channel: Channel
+    @State private var hovered = false
+
+    var body: some View {
+        VStack(spacing: 6) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(ZapColor.surface2)
+                    .frame(width: 124, height: 78)
+
+                if let logo = channel.logoURL {
+                    CachedAsyncImage(url: logo, contentMode: .fit)
+                        .frame(width: 100, height: 60)
+                        .clipped()
+                } else {
+                    Image(systemName: "tv").font(.system(size: 22))
+                        .foregroundColor(ZapColor.textTertiary)
+                }
+
+                if hovered {
+                    RoundedRectangle(cornerRadius: 10).fill(.black.opacity(0.5))
+                    Image(systemName: "play.fill").font(.system(size: 16)).foregroundColor(.white)
+                }
+            }
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(hovered ? ZapColor.accentStart : ZapColor.border, lineWidth: 1.5)
+            )
+            .scaleEffect(hovered ? 1.04 : 1)
+            .animation(.easeOut(duration: 0.12), value: hovered)
+            .contentShape(Rectangle())
+            .onHover { hovered = $0 }
+
+            Text(channel.name)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(ZapColor.textPrimary)
+                .lineLimit(2)
+                .multilineTextAlignment(.center)
+                .frame(width: 124, height: 28, alignment: .top)
+        }
+        .contentShape(Rectangle())
+    }
+}
+
+// MARK: - Universal Poster Card
+
+struct PosterCard: View {
+    let posterURL: URL?
+    let title: String
+    let subtitle: String?
+    var badge: String? = nil
+    @State private var hovered = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            ZStack(alignment: .bottomLeading) {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(ZapColor.surface2)
+                    .frame(width: 112, height: 168)
+
+                if posterURL != nil {
+                    CachedAsyncImage(url: posterURL, contentMode: .fill)
+                        .frame(width: 112, height: 168)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                } else {
+                    Image(systemName: "photo").font(.system(size: 26))
+                        .foregroundColor(ZapColor.textTertiary)
+                        .frame(width: 112, height: 168)
+                }
+
+                if let badge {
+                    Text(badge)
+                        .font(.system(size: 9, weight: .bold)).foregroundColor(.white)
+                        .padding(.horizontal, 5).padding(.vertical, 2)
+                        .background(.black.opacity(0.7), in: RoundedRectangle(cornerRadius: 4))
+                        .padding(5)
+                }
+
+                if hovered {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(LinearGradient(colors: [.clear, .black.opacity(0.65)],
+                                             startPoint: .top, endPoint: .bottom))
+                    HStack {
+                        Spacer()
+                        Image(systemName: "play.circle.fill")
+                            .font(.system(size: 24)).foregroundColor(.white)
+                        Spacer()
+                    }
+                    .frame(height: 168)
+                }
+            }
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(hovered ? ZapColor.accentStart : ZapColor.border, lineWidth: 1.5)
+            )
+            .scaleEffect(hovered ? 1.03 : 1)
+            .animation(.easeOut(duration: 0.12), value: hovered)
+            .contentShape(Rectangle())
+            .onHover { hovered = $0 }
+
+            Text(title)
+                .font(.system(size: 11, weight: .medium)).foregroundColor(ZapColor.textPrimary)
+                .lineLimit(1).frame(width: 112)
+            if let sub = subtitle {
+                Text(sub).font(.system(size: 10)).foregroundColor(ZapColor.textTertiary)
+            }
+        }
+        .contentShape(Rectangle())
+        .onHover { hovered = $0 }
+    }
+}
+
+// MARK: - First-launch empty
+
+struct FirstLaunchEmpty: View {
+    @EnvironmentObject private var loc: LanguageManager
+    var body: some View {
+        VStack(spacing: 16) {
+            ZStack {
+                Circle().fill(ZapColor.accentStart.opacity(0.1)).frame(width: 90, height: 90)
+                Image(systemName: "antenna.radiowaves.left.and.right")
+                    .font(.system(size: 38))
+                    .foregroundStyle(ZapColor.accentH)
+            }
+            Text(loc.t("home.loading"))
+                .font(.system(size: 18, weight: .semibold)).foregroundColor(ZapColor.textPrimary)
+            Text(loc.t("home.loading_hint"))
+                .font(.system(size: 13)).foregroundColor(ZapColor.textSecondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 40)
+    }
+}

@@ -5,7 +5,8 @@ export const STRINGS = {
     loading: '正在載入頻道…', search: '搜尋頻道',
     categories: '分類', nowPlaying: '正在播放', locate: '定位到當前頻道',
     select: '選擇一個頻道開始觀看', language: '語言', theme: '外觀',
-    themeDark: '深色', themeLight: '淺色', langHant: '繁體', langHans: '簡體',
+    themeDark: '深色', themeLight: '淺色',
+    langHant: '繁體', langHans: '簡體', langEn: 'English',
     version: '版本', refresh: '重新整理片源',
   },
   hans: {
@@ -14,11 +15,22 @@ export const STRINGS = {
     loading: '正在加载频道…', search: '搜索频道',
     categories: '分类', nowPlaying: '正在播放', locate: '定位到当前频道',
     select: '选择一个频道开始观看', language: '语言', theme: '外观',
-    themeDark: '深色', themeLight: '浅色', langHant: '繁体', langHans: '简体',
+    themeDark: '深色', themeLight: '浅色',
+    langHant: '繁体', langHans: '简体', langEn: 'English',
     version: '版本', refresh: '重新整理片源',
+  },
+  en: {
+    tagline: 'Asian TV & streaming app',
+    home: 'Home', live: 'Live', settings: 'Settings',
+    loading: 'Loading channels…', search: 'Search channels',
+    categories: 'Categories', nowPlaying: 'Now playing', locate: 'Jump to current channel',
+    select: 'Pick a channel to start watching', language: 'Language', theme: 'Appearance',
+    themeDark: 'Dark', themeLight: 'Light',
+    langHant: '繁體', langHans: '简体', langEn: 'English',
+    version: 'Version', refresh: 'Refresh sources',
   },
 };
 
 export function t(key, lang = 'hant') {
-  return STRINGS[lang]?.[key] || STRINGS.hant[key] || key;
+  return STRINGS[lang]?.[key] || STRINGS.en[key] || STRINGS.hant[key] || key;
 }

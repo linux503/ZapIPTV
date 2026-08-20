@@ -1,0 +1,564 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0D86037F6F2B866C5805CE9C /* StreamProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F6453E3A8706BECD385CF0E /* StreamProbe.swift */; };
+		139F9EF143CDAE41EF654F21 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 65EB5E48382DF2E4A9F47D2D /* Localizable.strings */; };
+		250FE1BBFC26F0BBA4917FB8 /* AddSourceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EAEEB88B3261CC3D6796C6 /* AddSourceView.swift */; };
+		294FAA1931E99105679BE21A /* M3UParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F368AFDBDB1606BD8D4E16A /* M3UParser.swift */; };
+		2D7EE002EC775CF4BD5160DD /* MovieDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39FA772A93E644EF0A8BBD15 /* MovieDetailView.swift */; };
+		2E21D573B772E72ACD7B0C15 /* FavoritesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCCCEF057E950D6806115B5 /* FavoritesView.swift */; };
+		2EDB2BAE37655763099393FA /* ChinesePlaylist.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25FCF4145D7EA554DE22ABED /* ChinesePlaylist.swift */; };
+		392A496436855AFAB058764A /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9F902AFC4771D767BA4B44 /* UpdateChecker.swift */; };
+		3BA6FE3B7DCD1D8BB531BF09 /* TvBoxParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 213EB51A217AA04416137AD9 /* TvBoxParser.swift */; };
+		48F6C758BEEC2022507E851C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA16ED080602701F405ECFF6 /* ContentView.swift */; };
+		520E4619870DBAA53106DD86 /* PlayerEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 250387BBE5996312D82DEF9E /* PlayerEngine.swift */; };
+		5433FEAC39E1E902EC0EC7D2 /* SeriesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 768F4B9603D6D400B352D0D8 /* SeriesView.swift */; };
+		5DB37351E70BA9DB8915480E /* ZapIPTVApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 830F3FD7A0E23A414F570915 /* ZapIPTVApp.swift */; };
+		603F32CCCF9CA9F997614579 /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACBCB7950DC3811079B06591 /* ThemeManager.swift */; };
+		6EC7305E568CB090E6B7EDF7 /* TVmazeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5360F1C0D85D11BC146540 /* TVmazeService.swift */; };
+		798A8E45AE9343A44F43F8D3 /* PlayerSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99EEB2D619B854AB41F92913 /* PlayerSheetView.swift */; };
+		7C5D474B8D5BC4F642ECFA92 /* Channel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5C96A092FB2655850E08298 /* Channel.swift */; };
+		800CC8C1D51618EF29D46362 /* TMDBService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E78DDAF03816773B43D0489 /* TMDBService.swift */; };
+		81E229F18A02CB2BF56D49B6 /* RegionalPlaylist.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABACB9D4DB6CDD3441EDBD7C /* RegionalPlaylist.swift */; };
+		93F492F3069382414A229C6F /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E8211EF9105EABC531C8A58 /* Extensions.swift */; };
+		97F554365489A835823460E8 /* LiveTVView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22667B5E745D0B4C9F618612 /* LiveTVView.swift */; };
+		A10B6A1A2E184EE89C45D3B3 /* MoviesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56A7744246CE889268BE72CF /* MoviesView.swift */; };
+		AA40AE07F2B0A4543A8AE95C /* SourceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAD5F1EE449A10934DD3D4B1 /* SourceManager.swift */; };
+		AB08B5EA9BEFEE180A9D2893 /* HongKongPlaylist.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF07B30C935B0A498D34C290 /* HongKongPlaylist.swift */; };
+		C5FB906618C8186898B6E899 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D1C0F4B4D6E656D2C328294 /* AppEnvironment.swift */; };
+		C6438E64995164A3F6CCFD3D /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87E578522E1069417315406F /* HomeView.swift */; };
+		CA770D0950070432F70692F1 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA111BEC61D324A92F4CFBEF /* SettingsView.swift */; };
+		CCA36B3AF457C1E4F169188B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F3ED41A510EFD693AD8F8B1B /* Assets.xcassets */; };
+		DF962C1E8A434567D573FD7C /* XtreamCodesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2363EAC3A062BD7BE9DA6423 /* XtreamCodesAPI.swift */; };
+		EB35FFBBE1430B9B8ED0B2E6 /* LanguageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A34664F770500F3F67CAFCEC /* LanguageManager.swift */; };
+		FA55F1E64670733BB85EFF32 /* VideoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 601EDAFF48BA28808EE3ABF9 /* VideoPlayerView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0D1C0F4B4D6E656D2C328294 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
+		1E78DDAF03816773B43D0489 /* TMDBService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TMDBService.swift; sourceTree = "<group>"; };
+		213EB51A217AA04416137AD9 /* TvBoxParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TvBoxParser.swift; sourceTree = "<group>"; };
+		22667B5E745D0B4C9F618612 /* LiveTVView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveTVView.swift; sourceTree = "<group>"; };
+		2363EAC3A062BD7BE9DA6423 /* XtreamCodesAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XtreamCodesAPI.swift; sourceTree = "<group>"; };
+		250387BBE5996312D82DEF9E /* PlayerEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerEngine.swift; sourceTree = "<group>"; };
+		25FCF4145D7EA554DE22ABED /* ChinesePlaylist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChinesePlaylist.swift; sourceTree = "<group>"; };
+		39FA772A93E644EF0A8BBD15 /* MovieDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDetailView.swift; sourceTree = "<group>"; };
+		4F368AFDBDB1606BD8D4E16A /* M3UParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = M3UParser.swift; sourceTree = "<group>"; };
+		562B25344A4DF8F1B815B4F6 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		56A7744246CE889268BE72CF /* MoviesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoviesView.swift; sourceTree = "<group>"; };
+		601EDAFF48BA28808EE3ABF9 /* VideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerView.swift; sourceTree = "<group>"; };
+		63AD913E91514CFEE6BA53E9 /* ZapIPTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZapIPTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		768F4B9603D6D400B352D0D8 /* SeriesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeriesView.swift; sourceTree = "<group>"; };
+		802F532A3A32C2203E765051 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		830F3FD7A0E23A414F570915 /* ZapIPTVApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZapIPTVApp.swift; sourceTree = "<group>"; };
+		87E578522E1069417315406F /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		8C8B6815672DF8F552BFC265 /* ZapIPTV.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ZapIPTV.entitlements; sourceTree = "<group>"; };
+		8F6453E3A8706BECD385CF0E /* StreamProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamProbe.swift; sourceTree = "<group>"; };
+		99EEB2D619B854AB41F92913 /* PlayerSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerSheetView.swift; sourceTree = "<group>"; };
+		9E8211EF9105EABC531C8A58 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		A1F1CE7296D75079F298CA49 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A34664F770500F3F67CAFCEC /* LanguageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageManager.swift; sourceTree = "<group>"; };
+		AA5360F1C0D85D11BC146540 /* TVmazeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVmazeService.swift; sourceTree = "<group>"; };
+		ABACB9D4DB6CDD3441EDBD7C /* RegionalPlaylist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegionalPlaylist.swift; sourceTree = "<group>"; };
+		ABCCCEF057E950D6806115B5 /* FavoritesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesView.swift; sourceTree = "<group>"; };
+		ACBCB7950DC3811079B06591 /* ThemeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeManager.swift; sourceTree = "<group>"; };
+		B94BAEFB112211B86FDD808C /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		BA16ED080602701F405ECFF6 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		BF9F902AFC4771D767BA4B44 /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
+		C5C96A092FB2655850E08298 /* Channel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Channel.swift; sourceTree = "<group>"; };
+		CF07B30C935B0A498D34C290 /* HongKongPlaylist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HongKongPlaylist.swift; sourceTree = "<group>"; };
+		D3EAEEB88B3261CC3D6796C6 /* AddSourceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddSourceView.swift; sourceTree = "<group>"; };
+		DA111BEC61D324A92F4CFBEF /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		DAD5F1EE449A10934DD3D4B1 /* SourceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceManager.swift; sourceTree = "<group>"; };
+		F3ED41A510EFD693AD8F8B1B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		125BBEC5EA1A5A1501BF3056 /* IPTV */ = {
+			isa = PBXGroup;
+			children = (
+				25FCF4145D7EA554DE22ABED /* ChinesePlaylist.swift */,
+				CF07B30C935B0A498D34C290 /* HongKongPlaylist.swift */,
+				4F368AFDBDB1606BD8D4E16A /* M3UParser.swift */,
+				ABACB9D4DB6CDD3441EDBD7C /* RegionalPlaylist.swift */,
+				DAD5F1EE449A10934DD3D4B1 /* SourceManager.swift */,
+				8F6453E3A8706BECD385CF0E /* StreamProbe.swift */,
+				213EB51A217AA04416137AD9 /* TvBoxParser.swift */,
+				2363EAC3A062BD7BE9DA6423 /* XtreamCodesAPI.swift */,
+			);
+			path = IPTV;
+			sourceTree = "<group>";
+		};
+		3C7E8EDBA5020C072698A846 = {
+			isa = PBXGroup;
+			children = (
+				DA2B439A8557EB07A36FF46F /* ZapIPTV */,
+				F1BD19BA9D324B3D9D5A8BEA /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		3FE500230B35A259D1D51820 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				B227AFFF827863351EEFACAE /* Favorites */,
+				65A8837A67629FAF1353A5B2 /* Home */,
+				8C42949FEA0F91C5DD1C3F8A /* LiveTV */,
+				F5D2AB695D592DEB2A44FD0A /* Movies */,
+				FD669E317A68C75C09399379 /* Series */,
+				F941C62D67001E3D54FC1266 /* Settings */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		65A8837A67629FAF1353A5B2 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				87E578522E1069417315406F /* HomeView.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		732D637A1A3E002D70040D11 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F3ED41A510EFD693AD8F8B1B /* Assets.xcassets */,
+				9E8211EF9105EABC531C8A58 /* Extensions.swift */,
+				A34664F770500F3F67CAFCEC /* LanguageManager.swift */,
+				ACBCB7950DC3811079B06591 /* ThemeManager.swift */,
+				65EB5E48382DF2E4A9F47D2D /* Localizable.strings */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		8B8C439720A27222891AB12F /* Update */ = {
+			isa = PBXGroup;
+			children = (
+				BF9F902AFC4771D767BA4B44 /* UpdateChecker.swift */,
+			);
+			path = Update;
+			sourceTree = "<group>";
+		};
+		8C42949FEA0F91C5DD1C3F8A /* LiveTV */ = {
+			isa = PBXGroup;
+			children = (
+				22667B5E745D0B4C9F618612 /* LiveTVView.swift */,
+			);
+			path = LiveTV;
+			sourceTree = "<group>";
+		};
+		B227AFFF827863351EEFACAE /* Favorites */ = {
+			isa = PBXGroup;
+			children = (
+				ABCCCEF057E950D6806115B5 /* FavoritesView.swift */,
+			);
+			path = Favorites;
+			sourceTree = "<group>";
+		};
+		B4AF9062204A899695E9CFA4 /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				1E78DDAF03816773B43D0489 /* TMDBService.swift */,
+				AA5360F1C0D85D11BC146540 /* TVmazeService.swift */,
+			);
+			path = Network;
+			sourceTree = "<group>";
+		};
+		DA2B439A8557EB07A36FF46F /* ZapIPTV */ = {
+			isa = PBXGroup;
+			children = (
+				802F532A3A32C2203E765051 /* Info.plist */,
+				8C8B6815672DF8F552BFC265 /* ZapIPTV.entitlements */,
+				E0DA798FEEFAE75C97EE0D25 /* App */,
+				EB7C6C41248BEF1496FA2DA6 /* Core */,
+				3FE500230B35A259D1D51820 /* Features */,
+				FDB1D5F751BBB884B75A43F3 /* Models */,
+				732D637A1A3E002D70040D11 /* Resources */,
+			);
+			path = ZapIPTV;
+			sourceTree = "<group>";
+		};
+		E0DA798FEEFAE75C97EE0D25 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				0D1C0F4B4D6E656D2C328294 /* AppEnvironment.swift */,
+				BA16ED080602701F405ECFF6 /* ContentView.swift */,
+				99EEB2D619B854AB41F92913 /* PlayerSheetView.swift */,
+				830F3FD7A0E23A414F570915 /* ZapIPTVApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		EB7C6C41248BEF1496FA2DA6 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				125BBEC5EA1A5A1501BF3056 /* IPTV */,
+				B4AF9062204A899695E9CFA4 /* Network */,
+				F8D06FA15C025DE983F64192 /* Player */,
+				8B8C439720A27222891AB12F /* Update */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		F1BD19BA9D324B3D9D5A8BEA /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				63AD913E91514CFEE6BA53E9 /* ZapIPTV.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F5D2AB695D592DEB2A44FD0A /* Movies */ = {
+			isa = PBXGroup;
+			children = (
+				39FA772A93E644EF0A8BBD15 /* MovieDetailView.swift */,
+				56A7744246CE889268BE72CF /* MoviesView.swift */,
+			);
+			path = Movies;
+			sourceTree = "<group>";
+		};
+		F8D06FA15C025DE983F64192 /* Player */ = {
+			isa = PBXGroup;
+			children = (
+				250387BBE5996312D82DEF9E /* PlayerEngine.swift */,
+				601EDAFF48BA28808EE3ABF9 /* VideoPlayerView.swift */,
+			);
+			path = Player;
+			sourceTree = "<group>";
+		};
+		F941C62D67001E3D54FC1266 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				D3EAEEB88B3261CC3D6796C6 /* AddSourceView.swift */,
+				DA111BEC61D324A92F4CFBEF /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		FD669E317A68C75C09399379 /* Series */ = {
+			isa = PBXGroup;
+			children = (
+				768F4B9603D6D400B352D0D8 /* SeriesView.swift */,
+			);
+			path = Series;
+			sourceTree = "<group>";
+		};
+		FDB1D5F751BBB884B75A43F3 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				C5C96A092FB2655850E08298 /* Channel.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		CA4387D10029C931BE1FCC8D /* ZapIPTV */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 97BD18013C9DFAC24CADB2FF /* Build configuration list for PBXNativeTarget "ZapIPTV" */;
+			buildPhases = (
+				444803AF8A0EEDCB55187F4C /* Sources */,
+				2793E43C8550B1F93A2EA471 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ZapIPTV;
+			packageProductDependencies = (
+			);
+			productName = ZapIPTV;
+			productReference = 63AD913E91514CFEE6BA53E9 /* ZapIPTV.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		07B1BB09CFB43C25F14CF500 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = FCCE0F5D868C29DC46A81868 /* Build configuration list for PBXProject "ZapIPTV" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+				"zh-Hans",
+				"zh-Hant",
+			);
+			mainGroup = 3C7E8EDBA5020C072698A846;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = F1BD19BA9D324B3D9D5A8BEA /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				CA4387D10029C931BE1FCC8D /* ZapIPTV */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		2793E43C8550B1F93A2EA471 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CCA36B3AF457C1E4F169188B /* Assets.xcassets in Resources */,
+				139F9EF143CDAE41EF654F21 /* Localizable.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		444803AF8A0EEDCB55187F4C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				250FE1BBFC26F0BBA4917FB8 /* AddSourceView.swift in Sources */,
+				C5FB906618C8186898B6E899 /* AppEnvironment.swift in Sources */,
+				7C5D474B8D5BC4F642ECFA92 /* Channel.swift in Sources */,
+				2EDB2BAE37655763099393FA /* ChinesePlaylist.swift in Sources */,
+				48F6C758BEEC2022507E851C /* ContentView.swift in Sources */,
+				93F492F3069382414A229C6F /* Extensions.swift in Sources */,
+				2E21D573B772E72ACD7B0C15 /* FavoritesView.swift in Sources */,
+				C6438E64995164A3F6CCFD3D /* HomeView.swift in Sources */,
+				AB08B5EA9BEFEE180A9D2893 /* HongKongPlaylist.swift in Sources */,
+				EB35FFBBE1430B9B8ED0B2E6 /* LanguageManager.swift in Sources */,
+				97F554365489A835823460E8 /* LiveTVView.swift in Sources */,
+				294FAA1931E99105679BE21A /* M3UParser.swift in Sources */,
+				2D7EE002EC775CF4BD5160DD /* MovieDetailView.swift in Sources */,
+				A10B6A1A2E184EE89C45D3B3 /* MoviesView.swift in Sources */,
+				520E4619870DBAA53106DD86 /* PlayerEngine.swift in Sources */,
+				798A8E45AE9343A44F43F8D3 /* PlayerSheetView.swift in Sources */,
+				81E229F18A02CB2BF56D49B6 /* RegionalPlaylist.swift in Sources */,
+				5433FEAC39E1E902EC0EC7D2 /* SeriesView.swift in Sources */,
+				CA770D0950070432F70692F1 /* SettingsView.swift in Sources */,
+				AA40AE07F2B0A4543A8AE95C /* SourceManager.swift in Sources */,
+				0D86037F6F2B866C5805CE9C /* StreamProbe.swift in Sources */,
+				800CC8C1D51618EF29D46362 /* TMDBService.swift in Sources */,
+				6EC7305E568CB090E6B7EDF7 /* TVmazeService.swift in Sources */,
+				603F32CCCF9CA9F997614579 /* ThemeManager.swift in Sources */,
+				3BA6FE3B7DCD1D8BB531BF09 /* TvBoxParser.swift in Sources */,
+				392A496436855AFAB058764A /* UpdateChecker.swift in Sources */,
+				FA55F1E64670733BB85EFF32 /* VideoPlayerView.swift in Sources */,
+				DF962C1E8A434567D573FD7C /* XtreamCodesAPI.swift in Sources */,
+				5DB37351E70BA9DB8915480E /* ZapIPTVApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		65EB5E48382DF2E4A9F47D2D /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				A1F1CE7296D75079F298CA49 /* en */,
+				562B25344A4DF8F1B815B4F6 /* zh-Hans */,
+				B94BAEFB112211B86FDD808C /* zh-Hant */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		4706E31DD2E5E38D46278ACA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "arm64 x86_64";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSET_CATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = YES;
+				CODE_SIGN_ENTITLEMENTS = ZapIPTV/ZapIPTV.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = ZapIPTV/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.zapiptv.app;
+				PRODUCT_NAME = ZapIPTV;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		5CE878F4930F39D2C64A0271 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		964009336F78168FDE3691F5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		B0B7E351BC330FF76776E4CC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "arm64 x86_64";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSET_CATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = YES;
+				CODE_SIGN_ENTITLEMENTS = ZapIPTV/ZapIPTV.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = ZapIPTV/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.zapiptv.app;
+				PRODUCT_NAME = ZapIPTV;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		97BD18013C9DFAC24CADB2FF /* Build configuration list for PBXNativeTarget "ZapIPTV" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4706E31DD2E5E38D46278ACA /* Debug */,
+				B0B7E351BC330FF76776E4CC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		FCCE0F5D868C29DC46A81868 /* Build configuration list for PBXProject "ZapIPTV" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5CE878F4930F39D2C64A0271 /* Debug */,
+				964009336F78168FDE3691F5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 07B1BB09CFB43C25F14CF500 /* Project object */;
+}
