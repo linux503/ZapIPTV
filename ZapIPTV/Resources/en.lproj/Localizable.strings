@@ -105,6 +105,13 @@
 "sports.brand.latin" = "Latin America";
 "sports.brand.asia" = "Asia / Local";
 "sports.brand.misc" = "More";
+"sports.league.premier" = "Premier League";
+"sports.league.laliga" = "La Liga";
+"sports.league.bundesliga" = "Bundesliga";
+"sports.league.seriea" = "Serie A";
+"sports.league.ligue1" = "Ligue 1";
+"sports.league.ucl" = "Champions League";
+"sports.league.other" = "More Football";
 
 "movies.title" = "Movies";
 "movies.count" = "%d titles available";

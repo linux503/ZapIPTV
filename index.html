@@ -10,7 +10,10 @@
     <meta property="og:description" content="直播、體育、影視與春晚，三端同一套亞洲目錄。" />
     <meta property="og:url" content="https://linux503.github.io/ZapIPTV/" />
     <link rel="icon" href="./website/app-icon.png" />
-    <link rel="stylesheet" href="./website/styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./website/styles.css?v=27" />
   </head>
   <body>
     <svg width="0" height="0" style="position:absolute">
@@ -122,13 +125,17 @@
     <main id="top">
       <section class="hero">
         <div class="hero-copy">
-          <p class="live-pill"><i></i><span data-i18n="eyebrow">亞洲直播進行中</span></p>
+          <div class="signal-badge" role="status">
+            <span class="signal-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+            <span class="signal-label" data-i18n="eyebrow">開機即播 · 亞洲頻道齊全</span>
+            <span class="signal-pulse" aria-hidden="true"></span>
+          </div>
           <h1><em data-i18n="h1">亞洲影視與直播應用</em></h1>
           <p class="lead" data-i18n="lead">預設中國大陸，還有港澳台、日韓、東南亞，以及獨立體育頻道。央視同名線路自動合併，播不了會切備用線路。</p>
           <div class="hero-stats">
             <div class="stat"><b>3</b><span data-i18n="stat.platforms">平台可下載</span></div>
             <div class="stat"><b>15+</b><span data-i18n="stat.regions">亞洲分區</span></div>
-            <div class="stat"><b>2.0.7</b><span data-i18n="stat.version">正式版</span></div>
+            <div class="stat"><b>2.0.8</b><span data-i18n="stat.version">正式版</span></div>
           </div>
           <div class="hero-cta">
             <a class="btn solid" href="#apps">
@@ -173,57 +180,119 @@
 
       <section id="apps" class="apps reveal">
         <div class="sec-head">
-          <p class="kicker" data-i18n="apps.kicker">一台裝置一個安裝包</p>
+          <p class="kicker" data-i18n="apps.kicker">三端同步 · 即下即看</p>
           <h2 data-i18n="apps.title">選系統下載</h2>
-          <p data-i18n="apps.hint">macOS、Windows、Android 三端現已可下載。Mac 版同時支援 Apple Silicon 與 Intel。</p>
+          <p data-i18n="apps.hint">macOS、Windows、Android 正式版齊開。同一套亞洲目錄，裝完就能看直播、體育與影視。</p>
         </div>
+
+        <div class="apps-highlights" aria-label="download highlights">
+          <div class="ah-item" style="--d:0">
+            <b data-i18n="apps.hl1.t">Universal</b>
+            <span data-i18n="apps.hl1.d">Mac 雙架構一包搞定</span>
+          </div>
+          <div class="ah-item" style="--d:1">
+            <b data-i18n="apps.hl2.t">便攜 EXE</b>
+            <span data-i18n="apps.hl2.d">Windows 免安裝雙擊即用</span>
+          </div>
+          <div class="ah-item" style="--d:2">
+            <b data-i18n="apps.hl3.t">APK</b>
+            <span data-i18n="apps.hl3.d">手機與電視盒子都能裝</span>
+          </div>
+          <div class="ah-item" style="--d:3">
+            <b data-i18n="apps.hl4.t">v2.0.8</b>
+            <span data-i18n="apps.hl4.d">更快啟動 · 五大聯賽足球</span>
+          </div>
+        </div>
+
         <div class="os-grid">
-          <article class="os is-ready">
+          <article class="os is-ready" style="--accent:#a3a3a3;--d:0">
+            <div class="os-glow" aria-hidden="true"></div>
             <div class="os-icon" aria-hidden="true"><svg><use href="#icon-apple"></use></svg></div>
             <div class="os-top">
               <span class="os-name">macOS</span>
               <span class="tag on" data-i18n="tag.ready">可下載</span>
             </div>
-            <p data-i18n="mac.desc">Universal DMG，Apple Silicon 與 Intel。拖進「應用程式」即可。</p>
+            <p data-i18n="mac.desc">Universal DMG，Apple Silicon 與 Intel。拖進「應用程式」即可開播。</p>
+            <div class="os-chips">
+              <span>macOS 14+</span>
+              <span data-i18n="mac.size">約 4 MB</span>
+              <span>Universal</span>
+            </div>
             <ul>
-              <li>macOS 14+</li>
-              <li data-i18n="mac.size">約 4 MB</li>
-              <li>v2.0.7</li>
+              <li data-i18n="mac.f1">側欄直播 · 獨立體育分區</li>
+              <li data-i18n="mac.f2">同名央視線路自動合併</li>
+              <li>v2.0.8</li>
             </ul>
-            <a class="btn solid wide" href="https://github.com/linux503/ZapIPTV/releases/download/v2.0.7/ZapIPTV-2.0.7-universal-installer.dmg" data-i18n="mac.btn">下載 .dmg</a>
+            <a class="btn solid wide" href="https://github.com/linux503/ZapIPTV/releases/download/v2.0.8/ZapIPTV-2.0.8-universal-installer.dmg" data-i18n="mac.btn">下載 .dmg</a>
             <p class="fine" data-i18n="mac.gate">若提示未驗證：系統設定 → 隱私與安全性 → 仍要打開。</p>
           </article>
-          <article class="os is-ready">
+          <article class="os is-ready" style="--accent:#38bdf8;--d:1">
+            <div class="os-glow" aria-hidden="true"></div>
             <div class="os-icon" aria-hidden="true"><svg><use href="#icon-windows"></use></svg></div>
             <div class="os-top">
               <span class="os-name">Windows</span>
               <span class="tag on" data-i18n="tag.ready">可下載</span>
             </div>
             <p data-i18n="win.desc">Windows 10 / 11 桌面版，視窗內播放，目錄與 Mac 同一套。</p>
+            <div class="os-chips">
+              <span>Win 10 / 11</span>
+              <span data-i18n="win.play">內嵌播放器</span>
+              <span data-i18n="win.chip">便攜版</span>
+            </div>
             <ul>
-              <li>Windows 10 / 11</li>
-              <li data-i18n="win.play">內嵌播放器</li>
-              <li>v2.0.7</li>
+              <li data-i18n="win.f1">免安裝 · 雙擊直接看</li>
+              <li data-i18n="win.f2">亞洲目錄與 Mac 同步</li>
+              <li>v2.0.8</li>
             </ul>
-            <a class="btn solid wide" href="https://github.com/linux503/ZapIPTV/releases/download/v2.0.7/ZapIPTV-2.0.7-win-x64.exe" data-i18n="win.btn">下載 .exe</a>
+            <a class="btn solid wide" href="https://github.com/linux503/ZapIPTV/releases/download/v2.0.8/ZapIPTV-2.0.8-win-x64.exe" data-i18n="win.btn">下載 .exe</a>
             <p class="fine" data-i18n="win.note">免安裝便攜版，雙擊即可用。</p>
           </article>
-          <article class="os is-ready">
+          <article class="os is-ready" style="--accent:#3ee08a;--d:2">
+            <div class="os-glow" aria-hidden="true"></div>
             <div class="os-icon" aria-hidden="true"><svg><use href="#icon-android"></use></svg></div>
             <div class="os-top">
               <span class="os-name">Android</span>
               <span class="tag on" data-i18n="tag.ready">可下載</span>
             </div>
             <p data-i18n="and.desc">手機和電視盒子都能裝。直播、體育、華語影視與春晚一手齊全。</p>
+            <div class="os-chips">
+              <span>Android 8+</span>
+              <span>APK</span>
+              <span data-i18n="and.chip">手機 / 盒子</span>
+            </div>
             <ul>
-              <li>Android 8+</li>
-              <li>APK</li>
-              <li>v2.0.7</li>
+              <li data-i18n="and.f1">豎屏手機與橫屏電視適配</li>
+              <li data-i18n="and.f2">直播 · 體育 · 影視一站收齊</li>
+              <li>v2.0.8</li>
             </ul>
-            <a class="btn solid wide" href="https://github.com/linux503/ZapIPTV/releases/download/v2.0.7/ZapIPTV-2.0.7-android.apk" data-i18n="and.btn">下載 APK</a>
+            <a class="btn solid wide" href="https://github.com/linux503/ZapIPTV/releases/download/v2.0.8/ZapIPTV-2.0.8-android.apk" data-i18n="and.btn">下載 APK</a>
             <p class="fine" data-i18n="and.note">需允許安裝未知來源。</p>
           </article>
         </div>
+
+        <ol class="apps-steps">
+          <li>
+            <span class="step-n">01</span>
+            <div>
+              <strong data-i18n="apps.s1.t">選系統下載</strong>
+              <p data-i18n="apps.s1.d">按你的裝置挑 macOS / Windows / Android 安裝包。</p>
+            </div>
+          </li>
+          <li>
+            <span class="step-n">02</span>
+            <div>
+              <strong data-i18n="apps.s2.t">安裝並打開</strong>
+              <p data-i18n="apps.s2.d">Mac 拖進應用程式；Windows 雙擊；Android 允許未知來源後安裝。</p>
+            </div>
+          </li>
+          <li>
+            <span class="step-n">03</span>
+            <div>
+              <strong data-i18n="apps.s3.t">點頻道開播</strong>
+              <p data-i18n="apps.s3.d">預設中國大陸，體育獨立分區；播不了會自動換備用線路。</p>
+            </div>
+          </li>
+        </ol>
       </section>
 
       <section id="why" class="why reveal">
@@ -306,23 +375,35 @@
       const copy = {
         hans: {
           "nav.apps": "下载", "nav.why": "产品", "nav.faq": "说明",
-          eyebrow: "亚洲直播进行中",
+          eyebrow: "开机即播 · 亚洲频道齐全",
           h1: "亚洲影视与直播应用",
           lead: "默认中国大陆，还有港澳台、日韩、东南亚，以及独立体育频道。央视同名线路自动合并，播不了会切备用线路。",
           "cta.download": "选择下载", "cta.choose": "macOS / Windows / Android",
           "chip.cn": "中国大陆", "chip.sport": "体育", "chip.gala": "春晚", "chip.tw": "台湾", "chip.hk": "香港",
           "chip.jp": "日本", "chip.kr": "韩国", "chip.sea": "东南亚",
           "stat.platforms": "平台可下载", "stat.regions": "亚洲分区", "stat.version": "正式版",
-          "apps.kicker": "一台设备一个安装包",
+          "apps.kicker": "三端同步 · 即下即看",
           "apps.title": "选系统下载",
-          "apps.hint": "macOS、Windows、Android 三端现已可下载。Mac 版同时支持 Apple Silicon 与 Intel。",
+          "apps.hint": "macOS、Windows、Android 正式版齐开。同一套亚洲目录，装完就能看直播、体育与影视。",
+          "apps.hl1.t": "Universal", "apps.hl1.d": "Mac 双架构一包搞定",
+          "apps.hl2.t": "便携 EXE", "apps.hl2.d": "Windows 免安装双击即用",
+          "apps.hl3.t": "APK", "apps.hl3.d": "手机与电视盒子都能装",
+          "apps.hl4.t": "v2.0.8", "apps.hl4.d": "更快启动 · 五大联赛足球",
+          "apps.s1.t": "选系统下载", "apps.s1.d": "按你的设备挑 macOS / Windows / Android 安装包。",
+          "apps.s2.t": "安装并打开", "apps.s2.d": "Mac 拖进应用程序；Windows 双击；Android 允许未知来源后安装。",
+          "apps.s3.t": "点频道开播", "apps.s3.d": "默认中国大陆，体育独立分区；播不了会自动换备用线路。",
           "tag.ready": "可下载",
-          "mac.desc": "Universal DMG，Apple Silicon 与 Intel。拖进「应用程序」即可。",
+          "mac.desc": "Universal DMG，Apple Silicon 与 Intel。拖进「应用程序」即可开播。",
           "mac.size": "约 4 MB", "mac.btn": "下载 .dmg",
+          "mac.f1": "侧栏直播 · 独立体育分区", "mac.f2": "同名央视线路自动合并",
           "mac.gate": "若提示未验证：系统设置 → 隐私与安全性 → 仍要打开。",
           "win.desc": "Windows 10 / 11 桌面版，窗口内播放，目录与 Mac 同一套。",
-          "win.play": "内嵌播放器", "win.btn": "下载 .exe", "win.note": "免安装便携版，双击即可用。",
+          "win.play": "内嵌播放器", "win.chip": "便携版",
+          "win.f1": "免安装 · 双击直接看", "win.f2": "亚洲目录与 Mac 同步",
+          "win.btn": "下载 .exe", "win.note": "免安装便携版，双击即可用。",
           "and.desc": "手机和电视盒子都能装。直播、体育、华语影视与春晚一手齐全。",
+          "and.chip": "手机 / 盒子",
+          "and.f1": "竖屏手机与横屏电视适配", "and.f2": "直播 · 体育 · 影视一站收齐",
           "and.btn": "下载 APK", "and.note": "需允许安装未知来源。",
           "why.kicker": "三个系统",
           "why.title": "同一套亚洲目录",
@@ -350,23 +431,35 @@
         },
         hant: {
           "nav.apps": "下載", "nav.why": "產品", "nav.faq": "說明",
-          eyebrow: "亞洲直播進行中",
+          eyebrow: "開機即播 · 亞洲頻道齊全",
           h1: "亞洲影視與直播應用",
           lead: "預設中國大陸，還有港澳台、日韓、東南亞，以及獨立體育頻道。央視同名線路自動合併，播不了會切備用線路。",
           "cta.download": "選擇下載", "cta.choose": "macOS / Windows / Android",
           "chip.cn": "中國大陸", "chip.sport": "體育", "chip.gala": "春晚", "chip.tw": "台灣", "chip.hk": "香港",
           "chip.jp": "日本", "chip.kr": "韓國", "chip.sea": "東南亞",
           "stat.platforms": "平台可下載", "stat.regions": "亞洲分區", "stat.version": "正式版",
-          "apps.kicker": "一台裝置一個安裝包",
+          "apps.kicker": "三端同步 · 即下即看",
           "apps.title": "選系統下載",
-          "apps.hint": "macOS、Windows、Android 三端現已可下載。Mac 版同時支援 Apple Silicon 與 Intel。",
+          "apps.hint": "macOS、Windows、Android 正式版齊開。同一套亞洲目錄，裝完就能看直播、體育與影視。",
+          "apps.hl1.t": "Universal", "apps.hl1.d": "Mac 雙架構一包搞定",
+          "apps.hl2.t": "便攜 EXE", "apps.hl2.d": "Windows 免安裝雙擊即用",
+          "apps.hl3.t": "APK", "apps.hl3.d": "手機與電視盒子都能裝",
+          "apps.hl4.t": "v2.0.8", "apps.hl4.d": "更快啟動 · 五大聯賽足球",
+          "apps.s1.t": "選系統下載", "apps.s1.d": "按你的裝置挑 macOS / Windows / Android 安裝包。",
+          "apps.s2.t": "安裝並打開", "apps.s2.d": "Mac 拖進應用程式；Windows 雙擊；Android 允許未知來源後安裝。",
+          "apps.s3.t": "點頻道開播", "apps.s3.d": "預設中國大陸，體育獨立分區；播不了會自動換備用線路。",
           "tag.ready": "可下載",
-          "mac.desc": "Universal DMG，Apple Silicon 與 Intel。拖進「應用程式」即可。",
+          "mac.desc": "Universal DMG，Apple Silicon 與 Intel。拖進「應用程式」即可開播。",
           "mac.size": "約 4 MB", "mac.btn": "下載 .dmg",
+          "mac.f1": "側欄直播 · 獨立體育分區", "mac.f2": "同名央視線路自動合併",
           "mac.gate": "若提示未驗證：系統設定 → 隱私與安全性 → 仍要打開。",
           "win.desc": "Windows 10 / 11 桌面版，視窗內播放，目錄與 Mac 同一套。",
-          "win.play": "內嵌播放器", "win.btn": "下載 .exe", "win.note": "免安裝便攜版，雙擊即可用。",
+          "win.play": "內嵌播放器", "win.chip": "便攜版",
+          "win.f1": "免安裝 · 雙擊直接看", "win.f2": "亞洲目錄與 Mac 同步",
+          "win.btn": "下載 .exe", "win.note": "免安裝便攜版，雙擊即可用。",
           "and.desc": "手機和電視盒子都能裝。直播、體育、華語影視與春晚一手齊全。",
+          "and.chip": "手機 / 盒子",
+          "and.f1": "豎屏手機與橫屏電視適配", "and.f2": "直播 · 體育 · 影視一站收齊",
           "and.btn": "下載 APK", "and.note": "需允許安裝未知來源。",
           "why.kicker": "三個系統",
           "why.title": "同一套亞洲目錄",
@@ -394,23 +487,35 @@
         },
         en: {
           "nav.apps": "Download", "nav.why": "Product", "nav.faq": "Help",
-          eyebrow: "Asian live TV, ready now",
+          eyebrow: "Press play · Asia, covered",
           h1: "Asian TV & streaming app",
           lead: "Mainland China first, plus Hong Kong, Taiwan, Japan, Korea, Southeast Asia, and a dedicated Sports section. Same-name CCTV feeds merge into one channel with auto failover.",
           "cta.download": "Choose download", "cta.choose": "macOS / Windows / Android",
           "chip.cn": "Mainland China", "chip.sport": "Sports", "chip.gala": "Spring Festival Gala", "chip.tw": "Taiwan", "chip.hk": "Hong Kong",
           "chip.jp": "Japan", "chip.kr": "Korea", "chip.sea": "Southeast Asia",
           "stat.platforms": "platforms", "stat.regions": "Asian regions", "stat.version": "stable",
-          "apps.kicker": "One installer per device",
+          "apps.kicker": "Three platforms · watch now",
           "apps.title": "Pick your system",
-          "apps.hint": "macOS, Windows, and Android builds are available. The Mac build supports Apple Silicon and Intel.",
+          "apps.hint": "Stable builds for macOS, Windows, and Android. Same Asian catalog — live TV, sports, and cinema right after install.",
+          "apps.hl1.t": "Universal", "apps.hl1.d": "One Mac build for both chips",
+          "apps.hl2.t": "Portable EXE", "apps.hl2.d": "Windows — no installer needed",
+          "apps.hl3.t": "APK", "apps.hl3.d": "Phones and TV boxes welcome",
+          "apps.hl4.t": "v2.0.8", "apps.hl4.d": "Faster launch · Big Five football",
+          "apps.s1.t": "Download your build", "apps.s1.d": "Grab the macOS, Windows, or Android package for your device.",
+          "apps.s2.t": "Install & launch", "apps.s2.d": "Drag into Applications on Mac, double-click on Windows, or allow unknown sources on Android.",
+          "apps.s3.t": "Tap a channel", "apps.s3.d": "Mainland China by default, dedicated Sports — auto-switches if a line fails.",
           "tag.ready": "Ready",
-          "mac.desc": "Universal DMG for Apple Silicon and Intel. Drag into Applications.",
+          "mac.desc": "Universal DMG for Apple Silicon and Intel. Drag into Applications and press play.",
           "mac.size": "About 4 MB", "mac.btn": "Download .dmg",
+          "mac.f1": "Live sidebar · dedicated Sports", "mac.f2": "Matching CCTV lines merge automatically",
           "mac.gate": "If macOS blocks it: System Settings → Privacy & Security → Open Anyway.",
           "win.desc": "Windows 10 / 11 desktop app with in-window playback and the same catalog as Mac.",
-          "win.play": "Built-in player", "win.btn": "Download .exe", "win.note": "Portable build — double-click to run.",
+          "win.play": "Built-in player", "win.chip": "Portable",
+          "win.f1": "No install · double-click to watch", "win.f2": "Same Asian catalog as Mac",
+          "win.btn": "Download .exe", "win.note": "Portable build — double-click to run.",
           "and.desc": "Works on phones and TV boxes. Live TV, Sports, Chinese cinema, and Spring Festival Gala included.",
+          "and.chip": "Phone / TV box",
+          "and.f1": "Portrait phones & landscape TVs", "and.f2": "Live · Sports · Cinema in one app",
           "and.btn": "Download APK", "and.note": "Allow installs from unknown sources.",
           "why.kicker": "Three platforms",
           "why.title": "One Asian catalog",

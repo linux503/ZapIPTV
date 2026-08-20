@@ -1,11 +1,27 @@
 import SwiftUI
 import SwiftData
+import AppKit
 
 @main
 struct ZapIPTVApp: App {
     @StateObject private var sourceManager = SourceManager()
     @StateObject private var playerEngine  = PlayerEngine()
     @StateObject private var playbackRouter = PlaybackRouter()
+
+    init() {
+        // Xcode Debug + /Applications 同 bundle id 会各起一份；保留刚启动的这一份
+        Self.keepOnlyLatestInstance()
+    }
+
+    /// Quit older copies without blocking launch (no sleep on main thread).
+    private static func keepOnlyLatestInstance() {
+        guard let id = Bundle.main.bundleIdentifier else { return }
+        let mine = NSRunningApplication.current
+        for app in NSRunningApplication.runningApplications(withBundleIdentifier: id)
+            where app != mine {
+            _ = app.terminate()
+        }
+    }
 
     // SwiftData container — recreate on schema errors (dev builds)
     let container: ModelContainer = {
@@ -74,15 +90,15 @@ struct AppRoot: View {
         .background(WindowFSConfigurator(scheme: theme.theme.scheme))
         .onAppear {
             guard !ready else { return }
-            // Setup DB context + seed sources, then immediately show UI
-            // Sources load concurrently in background after UI is visible
+            // Instant UI: DB setup + local sports seeds, then load network in background
+            sourceManager.setupContext(context: modelContext)
+            sourceManager.bootstrapInstantChannels()
+            ready = true
             Task { @MainActor in
-                sourceManager.setupContext(context: modelContext)
                 await sourceManager.ensureAsianCatalog()
-                withAnimation(.easeInOut(duration: 0.4)) { ready = true }
-                Task { await sourceManager.refreshAll() }
-                Task { await updater.check(silent: true) }
+                await sourceManager.refreshAll()
             }
+            Task { await updater.check(silent: true) }
         }
     }
 }

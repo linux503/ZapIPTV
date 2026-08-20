@@ -17,8 +17,15 @@ enum SportsPlaylist {
         ("sky sport basket", 112), ("basket", 90), ("篮球", 95), ("cba", 92),
         ("nfl", 88), ("mlb", 82), ("nhl", 82),
         ("ufc", 90), ("formula 1", 92), ("formula", 88), ("f1", 88), ("motogp", 85),
-        ("olympic", 80), ("premier league", 78), ("premier", 70),
-        ("laliga", 70), ("bundesliga", 68), ("serie a", 68), ("champions", 68),
+        ("olympic", 80),
+        ("英超", 100), ("premier league", 98), ("sky sports main", 96), ("sky sports premier", 96),
+        ("sky sports football", 94), ("premier sports", 92), ("premier", 70),
+        ("西甲", 100), ("laliga", 95), ("la liga", 95), ("movistar liga", 93), ("movistar deportes", 90),
+        ("德甲", 100), ("bundesliga", 95), ("sportdigital", 90), ("sky sport top", 88),
+        ("意甲", 100), ("serie a", 95), ("sportitalia", 90), ("rai sport", 85), ("calcio", 82),
+        ("法甲", 100), ("ligue 1", 95), ("rmc sport", 92), ("canal+ sport", 90),
+        ("欧冠", 98), ("champions", 92), ("liga de campeones", 92),
+        ("风云足球", 88), ("goltv", 80), ("golazo", 78), ("digi sport", 75), ("arena sport", 72),
         ("golf channel", 75), ("tennis channel", 75),
         ("football", 40), ("soccer", 40), ("basketball", 95),
         ("sport", 20), ("体育", 25),
@@ -44,11 +51,56 @@ enum SportsPlaylist {
         ("DAZN 5", "http://znty.dyndns.org:5010/hls/eleven5.m3u8"),
     ]
 
+    /// Big Five / European football seeds (public mirrors; merged as backups when names match).
+    private static let footballSeeds: [(name: String, url: String)] = [
+        // 英超 / UK
+        ("英超 · Sky Sports Main Event", "https://7nyaler.streamhostingcdn.top/stream/19/index.m3u8"),
+        ("英超 · Sky Sports News", "https://7nyaler.streamhostingcdn.top/stream/38/index.m3u8"),
+        ("英超 · Premier Sports 1", "https://7nyaler.streamhostingcdn.top/stream/47/index.m3u8"),
+        ("英超 · Premier Sports 2", "https://7nyaler.streamhostingcdn.top/stream/5/index.m3u8"),
+        // 西甲 / 欧冠 (Movistar)
+        ("西甲 · Movistar Deportes", "https://7nyaler.streamhostingcdn.top/stream/18/index.m3u8"),
+        ("欧冠 · Movistar Liga de Campeones", "https://7nyaler.streamhostingcdn.top/stream/36/index.m3u8"),
+        ("西甲 · GolTV", "http://177.234.249.178:8888/GOLTV/index.m3u8"),
+        // 德甲
+        ("德甲 · Sky Sport Top Event", "https://7nyaler.streamhostingcdn.top/stream/6/index.m3u8"),
+        ("德甲 · Sportdigital Fussball", "https://7nyaler.streamhostingcdn.top/stream/15/index.m3u8"),
+        ("德甲 · Sky Sport Austria 1", "https://7nyaler.streamhostingcdn.top/stream/31/index.m3u8"),
+        // 意甲
+        ("意甲 · Sportitalia", "https://edge-001.streamup.eu/sportitalia/sihd_abr/playlist.m3u8"),
+        ("意甲 · Rai Sport", "https://7nyaler.streamhostingcdn.top/stream/2/index.m3u8"),
+        // 法甲
+        ("法甲 · RMC Sport 1", "https://7nyaler.streamhostingcdn.top/stream/59/index.m3u8"),
+        // 综合足球 / 多联赛
+        ("足球 · CCTV风云足球", "http://38.75.136.137:98/gslb/dsdqpub/fyzq.m3u8?auth=testpub"),
+        ("足球 · Digi Sport 1", "https://7nyaler.streamhostingcdn.top/stream/79/index.m3u8"),
+        ("足球 · Arena Sport Premium 1", "https://7nyaler.streamhostingcdn.top/stream/33/index.m3u8"),
+        ("足球 · Arena Sport Premium 2", "https://7nyaler.streamhostingcdn.top/stream/48/index.m3u8"),
+        ("足球 · Arena Sport 4", "https://7nyaler.streamhostingcdn.top/stream/67/index.m3u8"),
+        ("足球 · Golazo Network", "https://jmp2.uk/plu-63a0e33a45264d000850ed7e.m3u8"),
+        ("足球 · TV2 Sport", "https://7nyaler.streamhostingcdn.top/stream/57/index.m3u8"),
+        ("足球 · beIN SPORTS XTRA", "https://bein-xtra-bein.amagi.tv/playlist.m3u8"),
+    ]
+
     static func curatedBasketballChannels() -> [Channel] {
         basketballSeeds.enumerated().compactMap { idx, item in
             guard let url = URL(string: item.url) else { return nil }
             return Channel(
                 id: "seed-bb-\(idx)-\(item.name)",
+                name: item.name,
+                url: url,
+                logoURL: nil,
+                group: "⚽ 体育",
+                epgId: nil
+            )
+        }
+    }
+
+    static func curatedFootballChannels() -> [Channel] {
+        footballSeeds.enumerated().compactMap { idx, item in
+            guard let url = URL(string: item.url) else { return nil }
+            return Channel(
+                id: "seed-fb-\(idx)-\(item.name)",
                 name: item.name,
                 url: url,
                 logoURL: nil,
@@ -105,7 +157,7 @@ enum SportsPlaylist {
     }
 
     static func curate(_ channels: [Channel]) -> [Channel] {
-        let combined = channels + curatedBasketballChannels()
+        let combined = channels + curatedBasketballChannels() + curatedFootballChannels()
         let filtered = combined.filter { keep($0.name) && ChannelQuality.isCandidate($0) }
         let cleaned = filtered.map { ch -> Channel in
             var copy = ch
@@ -130,11 +182,16 @@ enum SportsPlaylist {
         return s.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    /// Stable display order: category → brand family → score → name.
+    /// Stable display order: category → league/brand → score → name.
     static func channelLessThan(_ a: Channel, _ b: Channel) -> Bool {
         let ca = SportCategory.classify(a.name)
         let cb = SportCategory.classify(b.name)
         if ca.sortIndex != cb.sortIndex { return ca.sortIndex < cb.sortIndex }
+        if ca == .football {
+            let la = FootballLeague.classify(a.name)
+            let lb = FootballLeague.classify(b.name)
+            if la.sortIndex != lb.sortIndex { return la.sortIndex < lb.sortIndex }
+        }
         if ca == .network || ca == .other || ca == .american {
             let fa = SportBrandFamily.classify(a.name)
             let fb = SportBrandFamily.classify(b.name)
@@ -236,6 +293,14 @@ enum SportCategory: String, CaseIterable, Identifiable {
     static func classify(_ name: String) -> SportCategory {
         let n = name.lowercased()
 
+        // Explicit football / Big Five labels beat basketball heuristics (e.g. beIN XTRA seeds)
+        if matches(n, [
+            "英超", "西甲", "德甲", "意甲", "法甲", "欧冠", "风云足球",
+            "足球 ·", "足球·", "football ·",
+        ]) {
+            return .football
+        }
+
         // Basketball first so NBA / 篮球 / ESPN nets are not swallowed by「国内体育」
         if matches(n, [
             "basketball", "nba", "wnba", "ncaa basket", "ncaa basketball",
@@ -258,6 +323,13 @@ enum SportCategory: String, CaseIterable, Identifiable {
             "football", "soccer", "premier", "laliga", "la liga", "bundesliga",
             "serie a", "ligue 1", "champions league", "europa league",
             "world cup", "fifa", "mls", "eredi", "primeira",
+            "sky sports main", "sky sports premier", "sky sports football", "sky sports news",
+            "sky sport top", "sky sport austria", "premier sports",
+            "movistar liga", "movistar deportes", "liga de campeones",
+            "sportdigital", "fussball", "fußball", "sportitalia", "rai sport",
+            "rmc sport", "canal+ sport", "canal plus sport",
+            "goltv", "golazo", "digi sport", "arena sport", "tv2 sport", "tv2sport",
+            "风云足球", "solocalcio", "calcio",
             "足球", "英超", "西甲", "德甲", "意甲", "法甲", "中超", "欧冠", "世界杯",
         ]) {
             return .football
@@ -378,5 +450,82 @@ enum SportBrandFamily: String, CaseIterable {
             return .asia
         }
         return .misc
+    }
+}
+
+/// Big Five + UCL buckets inside「足球」so the list reads like a league guide.
+enum FootballLeague: String, CaseIterable {
+    case premier   // 英超
+    case laliga    // 西甲
+    case bundesliga
+    case serieA
+    case ligue1
+    case ucl       // 欧冠 / UEFA
+    case other
+
+    var sortIndex: Int {
+        switch self {
+        case .premier: return 0
+        case .laliga: return 1
+        case .bundesliga: return 2
+        case .serieA: return 3
+        case .ligue1: return 4
+        case .ucl: return 5
+        case .other: return 6
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .premier: return "crown.fill"
+        case .laliga: return "sun.max.fill"
+        case .bundesliga: return "shield.fill"
+        case .serieA: return "flag.fill"
+        case .ligue1: return "flame.fill"
+        case .ucl: return "trophy.fill"
+        case .other: return "soccerball"
+        }
+    }
+
+    @MainActor
+    func title(_ loc: LanguageManager) -> String {
+        switch self {
+        case .premier: return loc.t("sports.league.premier")
+        case .laliga: return loc.t("sports.league.laliga")
+        case .bundesliga: return loc.t("sports.league.bundesliga")
+        case .serieA: return loc.t("sports.league.seriea")
+        case .ligue1: return loc.t("sports.league.ligue1")
+        case .ucl: return loc.t("sports.league.ucl")
+        case .other: return loc.t("sports.league.other")
+        }
+    }
+
+    static func classify(_ name: String) -> FootballLeague {
+        let n = name.lowercased()
+        if matches(n, ["英超", "premier league", "sky sports main", "sky sports premier",
+                        "sky sports football", "sky sports news", "premier sports"]) {
+            return .premier
+        }
+        if matches(n, ["欧冠", "champions league", "liga de campeones", "uefa champions"]) {
+            return .ucl
+        }
+        if matches(n, ["西甲", "laliga", "la liga", "movistar deportes", "goltv", "gol tv"]) {
+            return .laliga
+        }
+        if matches(n, ["德甲", "bundesliga", "sportdigital", "fussball", "fußball",
+                        "sky sport top", "sky sport austria"]) {
+            return .bundesliga
+        }
+        if matches(n, ["意甲", "serie a", "sportitalia", "rai sport", "calcio", "solocalcio"]) {
+            return .serieA
+        }
+        if matches(n, ["法甲", "ligue 1", "rmc sport", "canal+ sport", "canal plus sport"]) {
+            return .ligue1
+        }
+        return .other
+    }
+
+    private static func matches(_ name: String, _ keys: [String]) -> Bool {
+        keys.contains { name.contains($0) }
     }
 }

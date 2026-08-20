@@ -94,7 +94,10 @@ struct SportsView: View {
             return list.isEmpty ? [] : [(loc.t("sports.search"), "magnifyingglass", list)]
         }
         if case .category(let cat) = selectedFilter {
-            // 综合 / 其他：再按品牌分段，列表更整齐
+            // 足球：按五大联赛分段；综合 / 其他：再按品牌分段
+            if cat == .football {
+                return footballLeagueSections(from: list)
+            }
             if cat == .network || cat == .other {
                 return brandSections(from: list)
             }
@@ -120,6 +123,18 @@ struct SportsView: View {
             guard var rows = bags[family], !rows.isEmpty else { return nil }
             rows.sort(by: SportsPlaylist.channelLessThan)
             return (family.title(loc), family.systemImage, rows)
+        }
+    }
+
+    private func footballLeagueSections(from list: [Channel]) -> [(title: String, icon: String, channels: [Channel])] {
+        var bags: [FootballLeague: [Channel]] = [:]
+        for ch in list {
+            bags[FootballLeague.classify(ch.name), default: []].append(ch)
+        }
+        return FootballLeague.allCases.compactMap { league in
+            guard var rows = bags[league], !rows.isEmpty else { return nil }
+            rows.sort(by: SportsPlaylist.channelLessThan)
+            return (league.title(loc), league.systemImage, rows)
         }
     }
 

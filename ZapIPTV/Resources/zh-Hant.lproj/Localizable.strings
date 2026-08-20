@@ -105,6 +105,13 @@
 "sports.brand.latin" = "拉美台";
 "sports.brand.asia" = "亞洲/本地";
 "sports.brand.misc" = "更多";
+"sports.league.premier" = "英超";
+"sports.league.laliga" = "西甲";
+"sports.league.bundesliga" = "德甲";
+"sports.league.seriea" = "意甲";
+"sports.league.ligue1" = "法甲";
+"sports.league.ucl" = "歐冠";
+"sports.league.other" = "更多足球";
 
 "movies.title" = "電影";
 "movies.count" = "共 %d 部可播放";

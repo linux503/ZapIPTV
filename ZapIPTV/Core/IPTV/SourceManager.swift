@@ -32,9 +32,8 @@ private let defaultSources: [(name: String, url: String, type: PlaylistSource.So
         ("📺 亚洲剧集",  "\(cdn)/categories/series.m3u", .m3u, nil),
         ("🎮 亚洲娱乐",  "\(cdn)/categories/entertainment.m3u", .m3u, nil),
 
-        // ── 全球体育赛事 / 体育频道 ────────────────────────────
+        // ── 全球体育赛事 / 体育频道（只保留一份 jsDelivr，避免同列表加载两次）──
         ("⚽ 全球体育",  "\(cdn)/categories/sports.m3u", .m3u, "⚽ 体育"),
-        ("⚽ 体育备用",  "https://iptv-org.github.io/iptv/categories/sports.m3u", .m3u, "⚽ 体育"),
         // 篮球补充（Gather 里筛 NBA / 睛彩篮球 等）
         ("🏀 篮球补充",  "https://raw.githubusercontent.com/YanG-1989/m3u/main/Gather.m3u", .m3u, nil),
 
@@ -107,7 +106,24 @@ class SourceManager: ObservableObject {
     }
 
     // Bump when default catalog changes — triggers one-time channel reload
-    private static let catalogVersion = 16
+    private static let catalogVersion = 18
+
+    /// Shared session: disk cache for playlists + shorter timeouts = faster relaunch.
+    private static let playlistSession: URLSession = {
+        let cache = URLCache(
+            memoryCapacity: 48 * 1024 * 1024,
+            diskCapacity: 256 * 1024 * 1024,
+            diskPath: "zapiptv-playlist-cache"
+        )
+        let cfg = URLSessionConfiguration.default
+        cfg.urlCache = cache
+        cfg.requestCachePolicy = .returnCacheDataElseLoad
+        cfg.timeoutIntervalForRequest = 12
+        cfg.timeoutIntervalForResource = 22
+        cfg.httpMaximumConnectionsPerHost = 8
+        cfg.waitsForConnectivity = false
+        return URLSession(configuration: cfg)
+    }()
 
     private static let legacySourceNames: Set<String> = [
         "News (Global)", "Sports (Global)", "Movies & Films", "Kids & Family",
@@ -130,6 +146,23 @@ class SourceManager: ObservableObject {
 
         let storedVersion = UserDefaults.standard.integer(forKey: "catalogVersion")
         let needsFullReload = storedVersion < Self.catalogVersion
+
+        // Fast path: catalog current — only fill missing URLs, never wipe channels
+        if !needsFullReload {
+            let existingURLs = Set(sources.map(\.url))
+            var added = false
+            for s in defaultSources where !existingURLs.contains(s.url) {
+                context.insert(PlaylistSource(
+                    name: s.name, type: s.type, url: s.url, overrideGroup: s.overrideGroup
+                ))
+                added = true
+            }
+            if added {
+                try? context.save()
+                loadSources()
+            }
+            return
+        }
 
         await syncOverrideGroupsForKnownSources()
 
@@ -173,6 +206,11 @@ class SourceManager: ObservableObject {
             changed = true
         }
 
+        // Collapse duplicate URLs (e.g. 体育备用 github.io → jsDelivr after migrate)
+        if dedupeSourcesByNormalizedURL(in: context) {
+            changed = true
+        }
+
         if changed || needsFullReload {
             channels = []
             movies = []
@@ -184,14 +222,36 @@ class SourceManager: ObservableObject {
             }
             try? context.save()
             loadSources()
+            // Re-inject local seeds after catalog wipe so Sports isn't empty
+            bootstrapInstantChannels()
         }
 
         UserDefaults.standard.set(Self.catalogVersion, forKey: "catalogVersion")
     }
 
+    /// Show sports seeds immediately so UI isn't empty while playlists download.
+    func bootstrapInstantChannels() {
+        guard channels.isEmpty || channels(inGroup: "⚽ 体育").isEmpty else { return }
+        let seeds = SportsPlaylist.curatedFootballChannels() + SportsPlaylist.curatedBasketballChannels()
+        guard !seeds.isEmpty else { return }
+        suppressChannelPublish = true
+        if channels.isEmpty {
+            channels = seeds
+        } else {
+            let existing = Set(channels.map { $0.url.absoluteString })
+            channels.append(contentsOf: seeds.filter { !existing.contains($0.url.absoluteString) })
+        }
+        suppressChannelPublish = false
+        rebuildGroupIndex()
+        updateGroups()
+        objectWillChange.send()
+    }
+
     private func shouldDropBuiltInSource(_ src: PlaylistSource) -> Bool {
         if Self.legacySourceNames.contains(src.name) { return true }
         if src.name.contains("(Global)") { return true }
+        // Drop retired mirror of the same iptv-org sports list
+        if src.name == "⚽ 体育备用" { return true }
         if src.url.contains("/categories/") { return true }
         let western = ["/countries/us.m3u", "/countries/gb.m3u", "/countries/ru.m3u",
                        "/countries/de.m3u", "/countries/fr.m3u", "/countries/sa.m3u",
@@ -199,6 +259,44 @@ class SourceManager: ObservableObject {
                        "/countries/ca.m3u", "/countries/br.m3u", "/countries/mx.m3u"]
         if western.contains(where: { src.url.contains($0) }) { return true }
         return isBuiltInIPTVOrg(src)
+    }
+
+    /// Keep one row per playlist URL (normalize github.io ↔ jsDelivr mirrors).
+    @discardableResult
+    private func dedupeSourcesByNormalizedURL(in context: ModelContext) -> Bool {
+        let descriptor = FetchDescriptor<PlaylistSource>(sortBy: [SortDescriptor(\.createdAt)])
+        let all = (try? context.fetch(descriptor)) ?? []
+        var seen = Set<String>()
+        var changed = false
+        for src in all {
+            let key = Self.normalizePlaylistURL(src.url)
+            if seen.contains(key) {
+                channels.removeAll { $0.id.hasPrefix(src.id) }
+                movies.removeAll { $0.sourceId == src.id }
+                context.delete(src)
+                changed = true
+            } else {
+                seen.insert(key)
+            }
+        }
+        if changed { try? context.save() }
+        return changed
+    }
+
+    private static func normalizePlaylistURL(_ url: String) -> String {
+        var u = url
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+        u = u.replacingOccurrences(
+            of: "https://iptv-org.github.io/iptv",
+            with: "https://cdn.jsdelivr.net/gh/iptv-org/iptv@gh-pages"
+        )
+        u = u.replacingOccurrences(
+            of: "https://raw.githubusercontent.com/iptv-org/iptv/master",
+            with: "https://cdn.jsdelivr.net/gh/iptv-org/iptv@gh-pages"
+        )
+        if u.hasSuffix("/") { u.removeLast() }
+        return u
     }
 
     private func isBuiltInIPTVOrg(_ src: PlaylistSource) -> Bool {
@@ -352,9 +450,41 @@ class SourceManager: ObservableObject {
         suppressGroupUpdate = true
         suppressChannelPublish = true
 
-        let snapshot = sources
-        let semaphore = AsyncSemaphore(3) // fewer parallel merges = smoother UI
+        // Priority wave first (mainland / sports / Greater China), then the rest
+        let ordered = sources.sorted { sourceLoadPriority($0) < sourceLoadPriority($1) }
+        let primary = ordered.filter { sourceLoadPriority($0) <= 3 }
+        let secondary = ordered.filter { sourceLoadPriority($0) > 3 }
 
+        await refreshSources(primary, parallelism: 6)
+        // Let UI paint primary content before SEA / movies lists
+        suppressChannelPublish = false
+        suppressGroupUpdate = false
+        objectWillChange.send()
+        updateGroups()
+        rebuildGroupIndex()
+        syncLiveMovieCatalog()
+        syncLiveSeriesCatalog()
+
+        if !secondary.isEmpty {
+            suppressGroupUpdate = true
+            suppressChannelPublish = true
+            await refreshSources(secondary, parallelism: 4)
+            suppressChannelPublish = false
+            suppressGroupUpdate = false
+            objectWillChange.send()
+            updateGroups()
+            rebuildGroupIndex()
+            syncLiveMovieCatalog()
+            syncLiveSeriesCatalog()
+        }
+
+        isLoading = false
+        loadingMessage = ""
+    }
+
+    private func refreshSources(_ snapshot: [PlaylistSource], parallelism: Int) async {
+        guard !snapshot.isEmpty else { return }
+        let semaphore = AsyncSemaphore(parallelism)
         await withTaskGroup(of: Void.self) { group in
             for source in snapshot {
                 group.addTask {
@@ -364,17 +494,26 @@ class SourceManager: ObservableObject {
                 }
             }
         }
+    }
 
-        suppressChannelPublish = false
-        suppressGroupUpdate = false
-        objectWillChange.send()
-        updateGroups()
-        rebuildGroupIndex()
-        syncLiveMovieCatalog()
-        syncLiveSeriesCatalog()
-
-        isLoading = false
-        loadingMessage = ""
+    /// Lower = load sooner. Mainland + sports unlock the home/live/sports tabs first.
+    private func sourceLoadPriority(_ source: PlaylistSource) -> Int {
+        let n = source.name
+        let u = source.url.lowercased()
+        if n.contains("国内") || n.contains("央视") || u.contains("vbskycn") || u.contains("fanmingming") {
+            return 0
+        }
+        if n.contains("体育") || n.contains("篮球") || u.contains("/categories/sports") || u.contains("gather.m3u") {
+            return 1
+        }
+        if n.contains("香港") || n.contains("台湾") || n.contains("港澳") || n.contains("粤语")
+            || u.contains("/countries/hk") || u.contains("/countries/tw") || u.contains("/languages/yue") {
+            return 2
+        }
+        if n.contains("中国") || u.contains("/countries/cn") || u.contains("yuechan") {
+            return 3
+        }
+        return 10
     }
 
     func refreshSource(_ source: PlaylistSource) async {
@@ -414,10 +553,11 @@ class SourceManager: ObservableObject {
         guard let url = URL(string: source.url) else { throw URLError(.badURL) }
         let sourceId = source.id
 
-        var request = URLRequest(url: url, timeoutInterval: 30)
+        var request = URLRequest(url: url, timeoutInterval: 12)
         request.setValue("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) ZapIPTV/2.0", forHTTPHeaderField: "User-Agent")
+        request.cachePolicy = .returnCacheDataElseLoad
 
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await Self.playlistSession.data(for: request)
         guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
             throw URLError(.badServerResponse)
         }
@@ -432,9 +572,10 @@ class SourceManager: ObservableObject {
                 for liveSource in feeds {
                     guard let liveURL = URL(string: liveSource.m3uURL) else { continue }
                     if Self.isWesternIPTVOrgURL(liveSource.m3uURL) { continue }
-                    var liveRequest = URLRequest(url: liveURL, timeoutInterval: 20)
+                    var liveRequest = URLRequest(url: liveURL, timeoutInterval: 10)
                     liveRequest.setValue("ZapIPTV/2.0", forHTTPHeaderField: "User-Agent")
-                    if let (liveData, liveResp) = try? await URLSession.shared.data(for: liveRequest),
+                    liveRequest.cachePolicy = .returnCacheDataElseLoad
+                    if let (liveData, liveResp) = try? await Self.playlistSession.data(for: liveRequest),
                        let liveHTTP = liveResp as? HTTPURLResponse, liveHTTP.statusCode == 200 {
                         let content = String(data: liveData, encoding: .utf8) ?? ""
                         if content.contains("#EXTM3U") || content.contains("#EXTINF") {
