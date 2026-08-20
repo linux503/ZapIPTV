@@ -3,246 +3,226 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ZapIPTV — Your Asian Entertainment Hub</title>
-    <meta name="description" content="ZapIPTV helps you discover Asian movies, TV dramas, anime, and watch Live TV anywhere." />
+    <title>ZapIPTV 1.1.6 — 亚洲娱乐中心</title>
+    <meta name="description" content="ZapIPTV 1.1.6：macOS 上的亚洲影视与直播中心。打开即看中国大陆、台湾、香港、日本、韩国与东南亚频道。Universal DMG，支持 Apple Silicon 与 Intel。" />
+    <link rel="canonical" href="https://linux503.github.io/ZapIPTV/" />
+    <meta property="og:title" content="ZapIPTV 1.1.6 — 亚洲娱乐中心" />
+    <meta property="og:description" content="打开即看亚洲直播。macOS Universal DMG。" />
+    <meta property="og:url" content="https://linux503.github.io/ZapIPTV/" />
+    <meta property="og:type" content="website" />
     <link rel="stylesheet" href="./website/styles.css" />
   </head>
   <body>
     <header class="topbar">
       <div class="wrap topbar__inner">
-        <a class="brand" href="#top" aria-label="ZapIPTV Home">
-          <span class="brand__mark" aria-hidden="true">
-            <!-- Inline SVG icon (Z + bolt) to avoid asset pipeline -->
-            <svg viewBox="0 0 100 100" width="28" height="28" role="img" aria-label="ZapIPTV icon">
-              <defs>
-                <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stop-color="#E8192C" />
-                  <stop offset="1" stop-color="#FF6B35" />
-                </linearGradient>
-              </defs>
-              <rect x="0" y="0" width="100" height="100" rx="26" fill="#0A0A0A" />
-              <path d="M24 26H62C74 26 82 34 82 46V49C82 57 78 63 70 65L82 79H58L46 65H24V26Z" fill="url(#g1)" opacity="0.9"/>
-              <path d="M26 74H56V68H42L60 54H46L56 40H41L26 54V74Z" fill="url(#g1)"/>
-              <path d="M53 50L47 65L58 58L54 72L66 53L56 58L60 45L53 50Z" fill="#0A0A0A" opacity="0.15"/>
-            </svg>
-          </span>
+        <a class="brand" href="#top">
+          <span class="logo" aria-hidden="true">Z</span>
           <span class="brand__text">
             <span class="brand__name">ZapIPTV</span>
-            <span class="brand__tag">Your Asian Entertainment Hub</span>
+            <span class="brand__tag">亚洲娱乐中心</span>
           </span>
         </a>
-
-        <nav class="nav" aria-label="Primary">
-          <a href="#features">Features</a>
-          <a href="#markets">Markets</a>
-          <a href="#download">Download</a>
-          <a href="#faq">FAQ</a>
+        <nav class="nav">
+          <a href="#whats-new">新版</a>
+          <a href="#features">功能</a>
+          <a href="#regions">地区</a>
+          <a href="#download">下载</a>
+          <a href="#install">安装</a>
         </nav>
+        <a class="btn btn--sm" href="#download">下载 1.1.6</a>
       </div>
     </header>
 
     <main id="top">
       <section class="hero">
         <div class="wrap hero__grid">
-          <div class="hero__left">
-            <p class="pill">Movies · Asian Dramas · Anime · Live TV</p>
+          <div>
+            <p class="chip">macOS · v1.1.6 · Universal</p>
             <h1>
-              ZapIPTV
-              <span class="grad">Your Asian Entertainment Hub</span>
+              打开就是亚洲频道<br />
+              <span class="grad">不是一堆英文源</span>
             </h1>
             <p class="lead">
-              Discover curated Asian content and watch live channels smoothly on macOS.
-              IPTV/M3U import is included, while sources are filtered to keep the experience fast and region-first.
+              ZapIPTV 是给 macOS 用的亚洲影视与直播应用。默认加载中国大陆、台湾、香港、日本、韩国和东南亚源，Live TV 一进就是 🇨🇳 中国大陆。
             </p>
-
             <div class="hero__cta">
-              <a class="btn btn--primary" href="#download">Get macOS DMG</a>
-              <a class="btn btn--ghost" href="#features">See what you can do</a>
+              <a class="btn btn--primary" href="https://github.com/linux503/ZapIPTV/releases/download/v1.1.6/ZapIPTV-1.1.6-universal-installer.dmg">
+                下载 macOS 安装包
+              </a>
+              <a class="btn btn--ghost" href="https://github.com/linux503/ZapIPTV/releases/tag/v1.1.6">GitHub Release</a>
             </div>
-
-            <div class="hero__meta">
-              <div class="meta">
-                <div class="meta__k">macOS</div>
-                <div class="meta__v">Universal (Apple Silicon + Intel)</div>
-              </div>
-              <div class="meta">
-                <div class="meta__k">Windows</div>
-                <div class="meta__v">.NET/MAUI + VLC (coming soon)</div>
-              </div>
-            </div>
+            <ul class="facts">
+              <li>Apple Silicon + Intel</li>
+              <li>拖进应用程序即可</li>
+              <li>约 3 MB</li>
+            </ul>
           </div>
 
-          <div class="hero__right">
-            <div class="phone">
-              <div class="phone__frame" aria-hidden="true">
-                <div class="screen">
-                  <div class="screen__header">
-                    <span class="dot dot--red"></span>
-                    <span class="dot dot--yellow"></span>
-                    <span class="dot dot--green"></span>
-                  </div>
-                  <div class="screen__body">
-                    <div class="skeleton skeleton--banner"></div>
-                    <div class="skeletonRow">
-                      <div class="skeleton skeleton--card"></div>
-                      <div class="skeleton skeleton--card"></div>
-                      <div class="skeleton skeleton--card"></div>
+          <aside class="mock" aria-hidden="true">
+            <div class="mock__window">
+              <div class="mock__title">
+                <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+                <span class="mock__name">ZapIPTV</span>
+              </div>
+              <div class="mock__body">
+                <div class="mock__side">
+                  <div class="mock__brand"><span class="logo logo--sm">Z</span> ZapIPTV</div>
+                  <div class="navitem on">Home</div>
+                  <div class="navitem">Live TV</div>
+                  <div class="navitem">Movies</div>
+                  <div class="src">🇨🇳 中国大陆</div>
+                  <div class="src">🇹🇼 台湾</div>
+                  <div class="src">🇭🇰 香港</div>
+                  <div class="src">🇯🇵 日本</div>
+                  <div class="src">🇰🇷 韩国</div>
+                </div>
+                <div class="mock__main">
+                  <div class="mock__hero">
+                    <div class="logo">Z</div>
+                    <div>
+                      <strong>ZapIPTV 1.1.6</strong>
+                      <div class="dim">Your Asian Entertainment Hub</div>
                     </div>
-                    <div class="skeleton skeleton--list"></div>
+                  </div>
+                  <div class="row-title">🇨🇳 中国大陆</div>
+                  <div class="cards-row">
+                    <div class="tile">CCTV</div>
+                    <div class="tile">卫视</div>
+                    <div class="tile">新闻</div>
+                    <div class="tile">综艺</div>
+                  </div>
+                  <div class="row-title">🇹🇼 台湾 · 🇭🇰 香港</div>
+                  <div class="cards-row">
+                    <div class="tile">TVBS</div>
+                    <div class="tile">TVB</div>
+                    <div class="tile">翡翠</div>
                   </div>
                 </div>
               </div>
-              <p class="phone__caption">Clean UI · Fast browsing · Smooth playback</p>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="whats-new" class="section">
+        <div class="wrap">
+          <h2>1.1.6 更新了什么</h2>
+          <p class="sub">这一版把「打开还是英文频道」和「点播放闪退」一起修掉了。</p>
+          <div class="news">
+            <article>
+              <h3>启动就是亚洲源</h3>
+              <p>自动清掉旧版残留的 News / Sports / USA / UK 等全球源，补齐 12 个亚洲默认源。不用再去设置里 Reset。</p>
+            </article>
+            <article>
+              <h3>Live TV 默认中国大陆</h3>
+              <p>侧边栏按 🇨🇳🇹🇼🇭🇰🇯🇵🇰🇷 排序，默认选中中国大陆，不再先看到一堆英文分类。</p>
+            </article>
+            <article>
+              <h3>修复播放闪退</h3>
+              <p>适配 macOS 26/27：播放器改为 AVPlayerLayer，避免 AVPlayerView 内置控件导致的闪退。</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" class="section alt">
+        <div class="wrap">
+          <h2>核心功能</h2>
+          <div class="grid3">
+            <article class="card">
+              <h3>亚洲直播</h3>
+              <p>按地区整理频道，点击即播。目录控制在亚洲范围，界面不会被全球源拖慢。</p>
+            </article>
+            <article class="card">
+              <h3>影视发现</h3>
+              <p>海报墙浏览电影与剧集，支持从播放列表导入 M3U / Xtream。</p>
+            </article>
+            <article class="card">
+              <h3>自加源</h3>
+              <p>可以自己加播放列表。内置的 iptv-org 全球源会被过滤，自定义中文源会保留。</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="regions" class="section">
+        <div class="wrap">
+          <h2>覆盖地区</h2>
+          <p class="sub">第一期只做高信号的亚洲市场。</p>
+          <div class="pills">
+            <span>🇨🇳 中国大陆</span>
+            <span>🇹🇼 台湾</span>
+            <span>🇭🇰 香港</span>
+            <span>🇯🇵 日本</span>
+            <span>🇰🇷 韩国</span>
+            <span>🇹🇭 泰国</span>
+            <span>🇻🇳 越南</span>
+            <span>🇮🇩 印尼</span>
+            <span>🇲🇾 马来西亚</span>
+            <span>🇸🇬 新加坡</span>
+            <span>🇵🇭 菲律宾</span>
+            <span>🇮🇳 印度</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="download" class="section alt">
+        <div class="wrap">
+          <h2>下载</h2>
+          <div class="dl">
+            <div class="dl__card featured">
+              <div class="dl__os">macOS</div>
+              <h3>ZapIPTV 1.1.6</h3>
+              <p>Universal DMG · Apple Silicon 与 Intel · 拖到应用程序</p>
+              <a class="btn btn--primary btn--wide" href="https://github.com/linux503/ZapIPTV/releases/download/v1.1.6/ZapIPTV-1.1.6-universal-installer.dmg">
+                下载 ZapIPTV-1.1.6.dmg
+              </a>
+              <div class="badges">
+                <span>约 3 MB</span>
+                <span>macOS 14+</span>
+                <span>开发者签名（ad-hoc）</span>
+              </div>
+            </div>
+            <div class="dl__card">
+              <div class="dl__os">Windows</div>
+              <h3>即将推出</h3>
+              <p>计划用同一套亚洲目录，播放走 VLC。现在请先用 macOS 版。</p>
+              <a class="btn btn--ghost btn--wide is-disabled" href="#" aria-disabled="true">Coming soon</a>
+              <div class="badges">
+                <span>地区优先</span>
+                <span>M3U 导入</span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="features" class="section">
+      <section id="install" class="section">
         <div class="wrap">
-          <h2 class="h2">Core experience</h2>
-          <p class="sub">Built for a premium, “curation-first” entertainment hub.</p>
-
-          <div class="cards">
-            <article class="card">
-              <h3>Movie discovery</h3>
-              <p>Browse trending and search-friendly movie collections with posters and details.</p>
-            </article>
-            <article class="card">
-              <h3>Asian TV & dramas</h3>
-              <p>Organize channels by region (CN/TW/HK/JP/KR/SEA) and watch instantly.</p>
-            </article>
-            <article class="card">
-              <h3>Anime & kids-friendly</h3>
-              <p>Highlight family viewing categories and recommended picks.</p>
-            </article>
-            <article class="card">
-              <h3>Live TV</h3>
-              <p>Stable playback for live channels. We keep the catalog Asia-focused to avoid heavy/global noise.</p>
-            </article>
-            <article class="card">
-              <h3>Watch anywhere</h3>
-              <p>Responsive layout and full-screen controls for a comfortable desktop viewing experience.</p>
-            </article>
-            <article class="card">
-              <h3>Premium UI theme</h3>
-              <p>Consistent red-orange accent and modern dark surfaces across the app.</p>
-            </article>
-          </div>
+          <h2>安装步骤</h2>
+          <ol class="steps">
+            <li>下载 DMG，双击打开。</li>
+            <li>把 <strong>ZapIPTV.app</strong> 拖进 <strong>应用程序</strong>。</li>
+            <li>第一次打开：若提示无法验证开发者，到「系统设置 → 隐私与安全性」点仍要打开，或右键 App 选打开。</li>
+            <li>等几秒加载源。Live TV 应出现 🇨🇳 中国大陆。</li>
+          </ol>
+          <p class="note">覆盖安装即可。1.1.6 会自动清理旧英文源，不用手动 Reset。</p>
         </div>
       </section>
-
-      <section id="markets" class="section section--alt">
-        <div class="wrap">
-          <h2 class="h2">First phase markets</h2>
-          <p class="sub">
-            We focus on high-signal Asian regions first to deliver a polished “hub” experience.
-          </p>
-
-          <div class="pillGrid" aria-label="Markets">
-            <span class="pill2">🇨🇳 中国大陆</span>
-            <span class="pill2">🇹🇼 台湾</span>
-            <span class="pill2">🇭🇰 香港</span>
-            <span class="pill2">🇯🇵 日本</span>
-            <span class="pill2">🇰🇷 韩国</span>
-            <span class="pill2">🌏 东南亚</span>
-            <span class="pill2">📺 新闻</span>
-            <span class="pill2">⚽ 体育</span>
-            <span class="pill2">🎬 电影</span>
-            <span class="pill2">🎮 娱乐</span>
-          </div>
-        </div>
-      </section>
-
-      <section id="download" class="section">
-        <div class="wrap">
-          <h2 class="h2">Download</h2>
-          <p class="sub">Pick your platform. macOS supports universal binaries.</p>
-
-          <div class="downloadGrid">
-            <div class="downloadCard">
-              <h3>macOS</h3>
-              <p class="muted">Universal DMG installer · Apple Silicon + Intel</p>
-              <div class="downloadActions">
-                <a class="btn btn--primary btn--wide" href="https://github.com/linux503/ZapIPTV/releases/download/v1.1.6/ZapIPTV-1.1.6-universal-installer.dmg">
-                  Download DMG
-                </a>
-                <a class="btn btn--ghost btn--wide" href="#faq">Install steps</a>
-              </div>
-              <div class="badgeRow">
-                <span class="badge">Signed via ad-hoc for dev</span>
-                <span class="badge">Drag-to-install</span>
-              </div>
-            </div>
-
-            <div class="downloadCard">
-              <h3>Windows</h3>
-              <p class="muted">.NET/MAUI + VLC playback (early access)</p>
-              <div class="downloadActions">
-                <a class="btn btn--primary btn--wide is-disabled" aria-disabled="true" href="#">
-                  Coming soon
-                </a>
-                <a class="btn btn--ghost btn--wide" href="#faq">Roadmap</a>
-              </div>
-              <div class="badgeRow">
-                <span class="badge">Region-first catalog</span>
-                <span class="badge">M3U import supported</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="faq" class="section section--alt">
-        <div class="wrap">
-          <h2 class="h2">FAQ</h2>
-          <div class="faq">
-            <details class="faqItem" open>
-              <summary>How to install on macOS?</summary>
-              <p>
-                Open the DMG, then drag <strong>ZapIPTV.app</strong> into the <strong>Applications</strong> folder.
-                After that, launch it from Launchpad or Finder.
-              </p>
-            </details>
-            <details class="faqItem">
-              <summary>Is IPTV/M3U the main focus?</summary>
-              <p>
-                No. IPTV/M3U import is an integrated capability. ZapIPTV’s core value is a curated, region-first experience
-                for movies, Asian dramas, anime, and live channels.
-              </p>
-            </details>
-            <details class="faqItem">
-              <summary>Why does the first run take time?</summary>
-              <p>
-                On first launch, sources are seeded and channels are loaded in the background. You can keep exploring while
-                loading completes.
-              </p>
-            </details>
-            <details class="faqItem">
-              <summary>Windows roadmap?</summary>
-              <p>
-                Windows client will reuse the same catalog concepts first (CN/TW/HK/JP/KR/SEA),
-                then connect playback through VLC for IPTV streams.
-              </p>
-            </details>
-          </div>
-        </div>
-      </section>
-
-      <footer class="footer">
-        <div class="wrap footer__inner">
-          <div>
-            <div class="footer__brand">ZapIPTV</div>
-            <div class="footer__muted">Your Asian Entertainment Hub</div>
-          </div>
-          <div class="footer__right">
-            <a class="footer__link" href="#top">Back to top</a>
-            <span class="footer__dot">·</span>
-            <span class="footer__muted">© 2026 ZapIPTV</span>
-          </div>
-        </div>
-      </footer>
     </main>
+
+    <footer class="footer">
+      <div class="wrap footer__inner">
+        <div>
+          <div class="footer__brand">ZapIPTV</div>
+          <div class="dim">v1.1.6 · 亚洲娱乐中心</div>
+        </div>
+        <div class="footer__links">
+          <a href="https://github.com/linux503/ZapIPTV">GitHub</a>
+          <a href="https://github.com/linux503/ZapIPTV/releases/tag/v1.1.6">Release</a>
+          <a href="#top">回到顶部</a>
+        </div>
+      </div>
+    </footer>
   </body>
 </html>
-

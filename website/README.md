@@ -1,16 +1,11 @@
-# ZapIPTV 官网（静态页）
+# ZapIPTV 官网
 
-这是一个纯静态官网（单页响应式），适合直接部署到：
-- GitHub Pages
-- Vercel
-- Netlify
+GitHub Pages 根目录是仓库根目录的 `index.html`。
 
-## 部署方式
-把整个 `website/` 目录作为站点根目录上传即可。
+正式地址：https://linux503.github.io/ZapIPTV/
 
-## 下载链接
-`index.html` 里 macOS DMG 链接默认指向：
-`./downloads/ZapIPTV-1.1.1-universal-installer.dmg`
+macOS 下载指向 GitHub Release：
 
-你把 DMG 放到 `website/downloads/` 后，链接就会自动生效。
+`https://github.com/linux503/ZapIPTV/releases/download/v1.1.6/ZapIPTV-1.1.6-universal-installer.dmg`
 
+`website/index.html` 只做跳转到站点根路径。
