@@ -1,4 +1,4 @@
-import { DEFAULT_SOURCES, GROUP_ORDER, normaliseGroup } from './catalog.js';
+import { DEFAULT_SOURCES, GROUP_ORDER, normaliseGroup, refineRegionalExtra, curateRegionalChannels } from './catalog.js';
 import { parseM3U } from './m3u.js';
 import { refineChinese } from './chinese.js';
 import { t } from './i18n.js';
@@ -65,10 +65,20 @@ async function loadCatalog() {
       const text = await res.text();
       let list = parseM3U(text, src.url);
       list = refineChinese(list, src.url);
+      list = refineRegionalExtra(list, src.url);
       list = list.map((ch) => ({
         ...ch,
         group: src.overrideGroup || ch.group,
       }));
+      if (src.overrideGroup) {
+        list = curateRegionalChannels(list, src.overrideGroup);
+      } else {
+        const byGroup = {};
+        for (const ch of list) {
+          (byGroup[ch.group] ||= []).push(ch);
+        }
+        list = Object.entries(byGroup).flatMap(([g, arr]) => curateRegionalChannels(arr, g));
+      }
       all.push(...list);
     } catch { /* skip failed source */ }
   }
