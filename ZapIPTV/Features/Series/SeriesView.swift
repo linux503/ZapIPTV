@@ -43,16 +43,10 @@ struct SeriesView: View {
     @State private var selectedFilter: SeriesFilter = .all
     @State private var expandedSection: String?
     @State private var selectedSeries: SeriesCatalogItem?
-    @State private var tmdbTrendingTV: [TMDBTVShow] = []
-    @State private var tvmazeBrowse: [TVmazeService.TVmazeShow] = []
-    @State private var tvmazeResults: [TVmazeService.TVmazeShow] = []
-    @State private var selectedTVShow: TVmazeService.TVmazeShow?
-    @State private var selectedTMDBTV: TMDBTVShow?
-    @State private var isSearching = false
     @State private var searchTask: Task<Void, Never>?
 
     private var localFiltered: [SeriesCatalogItem] {
-        var list = sourceManager.seriesList
+        var list = playableSeries
         if selectedFilter != .all { list = list.filter { selectedFilter.matches($0) } }
         if !searchText.isEmpty {
             list = list.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
@@ -60,12 +54,17 @@ struct SeriesView: View {
         return list
     }
 
+    /// Only entries with a real stream — Series tab is a player, not a poster browser.
+    private var playableSeries: [SeriesCatalogItem] {
+        sourceManager.seriesList.filter { $0.playURL != nil }
+    }
+
     private var liveCount: Int {
-        sourceManager.seriesList.filter { $0.sourceId.hasPrefix("live-") }.count
+        playableSeries.filter { $0.sourceId.hasPrefix("live-") }.count
     }
 
     private var vodCount: Int {
-        sourceManager.seriesList.count - liveCount
+        playableSeries.count - liveCount
     }
 
     private var showSectionedLayout: Bool {
@@ -73,7 +72,7 @@ struct SeriesView: View {
     }
 
     private func items(for key: String) -> [SeriesCatalogItem] {
-        let list = sourceManager.seriesList
+        let list = playableSeries
         switch key {
         case "zh":     return list.filter { SeriesFilter.zh.matches($0) }
         case "twHK":   return list.filter { SeriesFilter.twHK.matches($0) }
@@ -123,9 +122,6 @@ struct SeriesView: View {
         }
         .background(ZapBackdrop())
         .sheet(item: $selectedSeries) { SeriesCatalogDetailView(item: $0) }
-        .sheet(item: $selectedTVShow) { TVShowDetailView(show: $0) }
-        .sheet(item: $selectedTMDBTV) { TMDBTVDetailView(show: $0) }
-        .task { await loadBrowse() }
         .onChange(of: selectedFilter) { _, _ in expandedSection = nil }
         .onChange(of: searchText) { _, _ in expandedSection = nil }
     }
@@ -138,9 +134,9 @@ struct SeriesView: View {
                 Text(loc.t("series.title"))
                     .font(.system(size: 26, weight: .bold))
                     .foregroundColor(ZapColor.textPrimary)
-                if !sourceManager.seriesList.isEmpty {
+                if !playableSeries.isEmpty {
                     Text(String(format: loc.t("series.count_split"),
-                                 sourceManager.seriesList.count, liveCount, vodCount))
+                                 playableSeries.count, liveCount, vodCount))
                         .font(.system(size: 12))
                         .foregroundColor(ZapColor.textTertiary)
                 }
@@ -152,18 +148,19 @@ struct SeriesView: View {
                     .textFieldStyle(.plain)
                     .foregroundColor(ZapColor.textPrimary)
                     .frame(width: 200)
-                    .onChange(of: searchText) { _, q in searchSeries(q) }
-                if !searchText.isEmpty {
-                    Button {
-                        searchText = ""
-                        tvmazeResults = []
-                        isSearching = false
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(ZapColor.textTertiary)
+                    .onChange(of: searchText) { _, q in
+                        searchTask?.cancel()
+                        _ = q
                     }
-                    .buttonStyle(.plain)
-                }
+                    if !searchText.isEmpty {
+                        Button {
+                            searchText = ""
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(ZapColor.textTertiary)
+                        }
+                        .buttonStyle(.plain)
+                    }
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
@@ -192,33 +189,16 @@ struct SeriesView: View {
 
     @ViewBuilder
     private var browseContent: some View {
-        if let hero = tmdbTrendingTV.first {
-            SeriesTMDBFeaturedHero(show: hero) { selectedTMDBTV = $0 }
-                .padding(.horizontal, 24)
-        } else if let hero = tvmazeBrowse.first {
-            SeriesTVmazeFeaturedHero(show: hero) { selectedTVShow = $0 }
-                .padding(.horizontal, 24)
-        } else if let local = sourceManager.seriesList.first {
+        // Library-first: every card here has a playable stream.
+        if let local = playableSeries.first {
             LocalSeriesFeaturedHero(item: local) {
-                if let url = local.playURL {
-                    playback.playInline(url: url, title: local.name)
-                }
+                let urls = sourceManager.streamURLs(forSeries: local)
+                guard let first = urls.first else { return }
+                playback.playInline(url: first, title: local.name, backups: Array(urls.dropFirst()))
             } onSelect: {
                 selectedSeries = local
             }
             .padding(.horizontal, 24)
-        }
-
-        if !tmdbTrendingTV.isEmpty {
-            HomeSection(title: loc.t("home.trending_tv"), icon: "flame.fill") {
-                TMDBTVPosterRow(shows: tmdbTrendingTV, onSelect: { selectedTMDBTV = $0 }, large: true)
-            }
-        }
-
-        if !tvmazeBrowse.isEmpty {
-            HomeSection(title: loc.t("series.popular"), icon: "star.fill") {
-                TVmazePosterRow(shows: tvmazeBrowse, onSelect: { selectedTVShow = $0 }, large: true)
-            }
         }
 
         catalogSection(title: "🇨🇳 华语剧场", icon: "film.fill", key: "zh", items: items(for: "zh"))
@@ -231,7 +211,7 @@ struct SeriesView: View {
         catalogSection(title: loc.t("series.filter.vod"), icon: "folder.fill", key: "vod",
                        items: items(for: "vod"))
 
-        if sourceManager.seriesList.isEmpty && tmdbTrendingTV.isEmpty && tvmazeBrowse.isEmpty {
+        if playableSeries.isEmpty {
             EmptySeriesView(hasSource: !sourceManager.sources.isEmpty)
                 .padding(.top, 48)
         }
@@ -287,13 +267,6 @@ struct SeriesView: View {
 
     @ViewBuilder
     private var searchContent: some View {
-        if isSearching {
-            HStack { Spacer(); ProgressView().tint(ZapColor.accentEnd); Spacer() }
-                .padding(.top, 40)
-        } else if !tvmazeResults.isEmpty {
-            MoviesSectionHeader(title: "TVmaze", subtitle: "\(tvmazeResults.count)", icon: "magnifyingglass")
-            TVShowGrid(shows: tvmazeResults, onSelect: { selectedTVShow = $0 })
-        }
         if !localFiltered.isEmpty {
             MoviesSectionHeader(
                 title: loc.t("home.library"),
@@ -301,35 +274,9 @@ struct SeriesView: View {
                 icon: "folder.fill"
             )
             SeriesCatalogGrid(items: localFiltered, onSelect: { selectedSeries = $0 })
-        } else if !isSearching && tvmazeResults.isEmpty {
+        } else {
             EmptySeriesView(hasSource: !sourceManager.sources.isEmpty)
                 .padding(.top, 48)
-        }
-    }
-
-    private func loadBrowse() async {
-        if TMDBService.shared.isConfigured,
-           let shows = try? await TMDBService.shared.trendingTV() {
-            await MainActor.run { tmdbTrendingTV = shows }
-        }
-        async let page0 = TVmazeService.shared.browseShows(page: 0)
-        async let page1 = TVmazeService.shared.browseShows(page: 1)
-        let p0 = (try? await page0) ?? []
-        let p1 = (try? await page1) ?? []
-        let merged = Array((p0 + p1).prefix(48))
-        await MainActor.run { tvmazeBrowse = merged }
-    }
-
-    private func searchSeries(_ query: String) {
-        searchTask?.cancel()
-        guard !query.isEmpty else { tvmazeResults = []; isSearching = false; return }
-        isSearching = true
-        searchTask = Task {
-            try? await Task.sleep(nanoseconds: 300_000_000)
-            guard !Task.isCancelled else { return }
-            let results = (try? await TVmazeService.shared.search(query: query)) ?? []
-            guard !Task.isCancelled else { return }
-            await MainActor.run { tvmazeResults = results; isSearching = false }
         }
     }
 }
@@ -471,64 +418,67 @@ struct LocalSeriesFeaturedHero: View {
     var onSelect: (() -> Void)? = nil
 
     var body: some View {
-        Button { onSelect?() } label: {
-            ZStack(alignment: .bottomLeading) {
-                Group {
-                    if let poster = item.posterURL {
-                        AsyncImage(url: poster) { img in
-                            img.resizable().scaledToFill()
-                        } placeholder: { ZapColor.surface2 }
-                    } else {
-                        ZapColor.surface2
-                    }
+        ZStack(alignment: .bottomLeading) {
+            Group {
+                if let poster = item.posterURL {
+                    AsyncImage(url: poster) { img in
+                        img.resizable().scaledToFill()
+                    } placeholder: { ZapColor.surface2 }
+                } else {
+                    ZapColor.surface2
                 }
-                .frame(height: 200)
-                .clipped()
-
-                LinearGradient(
-                    colors: [.clear, .black.opacity(0.75), .black.opacity(0.92)],
-                    startPoint: .top, endPoint: .bottom
-                )
-
-                HStack(alignment: .bottom, spacing: 16) {
-                    if let poster = item.posterURL {
-                        AsyncImage(url: poster) { img in
-                            img.resizable().scaledToFill()
-                        } placeholder: { ZapColor.surface2 }
-                        .frame(width: 72, height: 108)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                        .shadow(radius: 12)
-                    }
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(item.name)
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.white)
-                            .lineLimit(2)
-                        if let g = item.genres.first {
-                            Text(g).font(.system(size: 11))
-                                .foregroundColor(.white.opacity(0.55))
-                        }
-                        if item.playURL != nil {
-                            Button(action: onPlay) {
-                                Label("Play", systemImage: "play.fill")
-                                    .font(.system(size: 12, weight: .semibold))
-                                    .padding(.horizontal, 14)
-                                    .padding(.vertical, 6)
-                                    .background(ZapColor.accentEnd, in: Capsule())
-                                    .foregroundColor(.white)
-                            }
-                            .buttonStyle(.plain)
-                            .padding(.top, 4)
-                        }
-                    }
-                    Spacer(minLength: 0)
-                }
-                .padding(16)
             }
-            .clipShape(RoundedRectangle(cornerRadius: 14))
-            .overlay(RoundedRectangle(cornerRadius: 14).stroke(ZapColor.border))
+            .frame(maxWidth: .infinity)
+            .frame(height: 200)
+            .clipped()
+            .contentShape(Rectangle())
+            .onTapGesture { onSelect?() }
+
+            LinearGradient(
+                colors: [.clear, .black.opacity(0.75), .black.opacity(0.92)],
+                startPoint: .top, endPoint: .bottom
+            )
+            .allowsHitTesting(false)
+
+            HStack(alignment: .bottom, spacing: 16) {
+                if let poster = item.posterURL {
+                    AsyncImage(url: poster) { img in
+                        img.resizable().scaledToFill()
+                    } placeholder: { ZapColor.surface2 }
+                    .frame(width: 72, height: 108)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .shadow(radius: 12)
+                    .onTapGesture { onSelect?() }
+                }
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(item.name)
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(.white)
+                        .lineLimit(2)
+                        .onTapGesture { onSelect?() }
+                    if let g = item.genres.first {
+                        Text(g).font(.system(size: 11))
+                            .foregroundColor(.white.opacity(0.55))
+                    }
+                    if item.playURL != nil {
+                        Button(action: onPlay) {
+                            Label("Play", systemImage: "play.fill")
+                                .font(.system(size: 12, weight: .semibold))
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 6)
+                                .background(ZapColor.accentEnd, in: Capsule())
+                                .foregroundColor(.white)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.top, 4)
+                    }
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(16)
         }
-        .buttonStyle(.plain)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(ZapColor.border))
     }
 }
 
@@ -661,6 +611,7 @@ struct SeriesCatalogDetailView: View {
     let item: SeriesCatalogItem
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var playback: PlaybackRouter
+    @EnvironmentObject private var sourceManager: SourceManager
     @EnvironmentObject private var loc: LanguageManager
 
     var body: some View {
@@ -686,10 +637,19 @@ struct SeriesCatalogDetailView: View {
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundColor(ZapColor.accentStart)
                     }
-                    if let playURL = item.playURL {
+                    if item.playURL != nil {
                         Button {
-                            playback.playInline(url: playURL, title: item.name)
+                            let urls = sourceManager.streamURLs(forSeries: item)
+                            guard let first = urls.first else { return }
+                            let title = item.name
                             dismiss()
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+                                playback.playInline(
+                                    url: first,
+                                    title: title,
+                                    backups: Array(urls.dropFirst())
+                                )
+                            }
                         } label: {
                             Label(loc.t("play"), systemImage: "play.fill")
                                 .font(.system(size: 15, weight: .semibold))
@@ -819,10 +779,14 @@ struct TMDBTVPosterCard: View {
 struct TVShowDetailView: View {
     let show: TVmazeService.TVmazeShow
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var playback: PlaybackRouter
+    @EnvironmentObject private var sourceManager: SourceManager
+    @EnvironmentObject private var loc: LanguageManager
     @State private var seasons: [TVmazeService.TVmazeSeason] = []
     @State private var episodes: [TVmazeService.TVmazeEpisode] = []
     @State private var selectedSeason: Int = 1
     @State private var isLoading = true
+    @State private var showNeedSource = false
 
     var seasonEpisodes: [TVmazeService.TVmazeEpisode] {
         episodes.filter { $0.season == selectedSeason }
@@ -862,6 +826,23 @@ struct TVShowDetailView: View {
                                 Text(genres.joined(separator: " · "))
                                     .font(.system(size: 12)).foregroundColor(ZapColor.textTertiary)
                             }
+                            Button {
+                                startPlayback(title: show.name)
+                            } label: {
+                                Label(loc.t("play"), systemImage: "play.fill")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .padding(.horizontal, 20).padding(.vertical, 9)
+                                    .background(
+                                        LinearGradient(
+                                            colors: [ZapColor.accentStart, ZapColor.accentEnd],
+                                            startPoint: .leading, endPoint: .trailing
+                                        ),
+                                        in: Capsule()
+                                    )
+                                    .foregroundColor(.white)
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.top, 6)
                         }
                     }
                     .padding(.horizontal, 24).padding(.bottom, 16)
@@ -898,7 +879,9 @@ struct TVShowDetailView: View {
                 ScrollView {
                     LazyVStack(spacing: 8) {
                         ForEach(seasonEpisodes) { ep in
-                            EpisodeRow(episode: ep)
+                            EpisodeRow(episode: ep, playable: true) {
+                                startPlayback(title: "\(show.name) · \(ep.name)")
+                            }
                         }
                     }
                     .padding(.horizontal, 24).padding(.bottom, 24)
@@ -914,7 +897,28 @@ struct TVShowDetailView: View {
             if isLoading { ProgressView().tint(ZapColor.accentEnd).frame(maxWidth: .infinity, maxHeight: .infinity) }
         }
         .frame(minWidth: 680, minHeight: 560)
+        .alert(loc.t("play"), isPresented: $showNeedSource) {
+            Button(loc.t("ok"), role: .cancel) {}
+        } message: {
+            Text(loc.t("series.need_source"))
+        }
         .task { await load() }
+    }
+
+    private func startPlayback(title: String) {
+        let query = show.name
+        if let hit = sourceManager.resolvePlayableStreams(forTitle: query) {
+            dismiss()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+                playback.playInline(
+                    url: hit.urls[0],
+                    title: title,
+                    backups: Array(hit.urls.dropFirst())
+                )
+            }
+        } else {
+            showNeedSource = true
+        }
     }
 
     private func load() async {
@@ -935,46 +939,62 @@ struct TVShowDetailView: View {
 
 struct EpisodeRow: View {
     let episode: TVmazeService.TVmazeEpisode
+    var playable: Bool = false
+    var onPlay: (() -> Void)? = nil
+
     var body: some View {
-        HStack(spacing: 12) {
-            if let still = episode.stillURL {
-                AsyncImage(url: still) { img in img.resizable().scaledToFill() }
-                placeholder: { ZapColor.surface2 }
-                .frame(width: 100, height: 56).clipShape(RoundedRectangle(cornerRadius: 6))
-            } else {
-                RoundedRectangle(cornerRadius: 6).fill(ZapColor.surface2)
-                    .frame(width: 100, height: 56)
-                    .overlay(Image(systemName: "play.rectangle").foregroundColor(ZapColor.textTertiary))
-            }
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 6) {
-                    if let num = episode.number {
-                        Text("E\(num)").font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(ZapColor.accentStart)
+        Button {
+            onPlay?()
+        } label: {
+            HStack(spacing: 12) {
+                if let still = episode.stillURL {
+                    AsyncImage(url: still) { img in img.resizable().scaledToFill() }
+                    placeholder: { ZapColor.surface2 }
+                    .frame(width: 100, height: 56).clipShape(RoundedRectangle(cornerRadius: 6))
+                } else {
+                    RoundedRectangle(cornerRadius: 6).fill(ZapColor.surface2)
+                        .frame(width: 100, height: 56)
+                        .overlay(Image(systemName: "play.rectangle").foregroundColor(ZapColor.textTertiary))
+                }
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 6) {
+                        if let num = episode.number {
+                            Text("E\(num)").font(.system(size: 11, weight: .semibold))
+                                .foregroundColor(ZapColor.accentStart)
+                        }
+                        Text(episode.name).font(.system(size: 13, weight: .medium)).foregroundColor(ZapColor.textPrimary)
+                            .lineLimit(1)
                     }
-                    Text(episode.name).font(.system(size: 13, weight: .medium)).foregroundColor(ZapColor.textPrimary)
-                        .lineLimit(1)
+                    if let summary = episode.summary {
+                        Text(summary.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression))
+                            .font(.system(size: 11)).foregroundColor(ZapColor.textTertiary).lineLimit(2)
+                    }
                 }
-                if let summary = episode.summary {
-                    Text(summary.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression))
-                        .font(.system(size: 11)).foregroundColor(ZapColor.textTertiary).lineLimit(2)
+                Spacer()
+                if playable {
+                    Image(systemName: "play.circle.fill")
+                        .foregroundColor(ZapColor.accentEnd)
+                } else if let dur = episode.durationStr {
+                    Text(dur).font(.system(size: 11)).foregroundColor(ZapColor.textTertiary)
                 }
             }
-            Spacer()
-            if let dur = episode.durationStr {
-                Text(dur).font(.system(size: 11)).foregroundColor(ZapColor.textTertiary)
-            }
+            .padding(10)
+            .background(ZapColor.surface2).cornerRadius(8)
         }
-        .padding(10)
-        .background(ZapColor.surface2).cornerRadius(8)
+        .buttonStyle(.plain)
+        .disabled(!playable)
     }
 }
 
 struct TMDBTVDetailView: View {
     let show: TMDBTVShow
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var playback: PlaybackRouter
+    @EnvironmentObject private var sourceManager: SourceManager
+    @EnvironmentObject private var loc: LanguageManager
     @State private var detail: TMDBTVShow?
     @State private var credits: TMDBCredits?
+    @State private var showNeedSource = false
 
     var display: TMDBTVShow { detail ?? show }
 
@@ -1006,8 +1026,22 @@ struct TMDBTVDetailView: View {
                                 Text("\(s) Seasons").font(.system(size: 12)).foregroundColor(ZapColor.textTertiary)
                             }
                         }
-                        Text("Search TVmaze for episode guide")
-                            .font(.system(size: 12)).foregroundColor(ZapColor.accentStart)
+                        Button {
+                            startPlayback()
+                        } label: {
+                            Label(loc.t("play"), systemImage: "play.fill")
+                                .font(.system(size: 14, weight: .semibold))
+                                .padding(.horizontal, 20).padding(.vertical, 9)
+                                .background(
+                                    LinearGradient(
+                                        colors: [ZapColor.accentStart, ZapColor.accentEnd],
+                                        startPoint: .leading, endPoint: .trailing
+                                    ),
+                                    in: Capsule()
+                                )
+                                .foregroundColor(.white)
+                        }
+                        .buttonStyle(.plain)
                     }
                     .padding(.top, 4)
                 }
@@ -1026,9 +1060,29 @@ struct TMDBTVDetailView: View {
             .buttonStyle(.plain).padding(20)
         }
         .frame(minWidth: 600, minHeight: 440)
+        .alert(loc.t("play"), isPresented: $showNeedSource) {
+            Button(loc.t("ok"), role: .cancel) {}
+        } message: {
+            Text(loc.t("series.need_source"))
+        }
         .task {
             detail = try? await TMDBService.shared.tvDetail(id: show.id)
             credits = try? await TMDBService.shared.tvCredits(id: show.id)
+        }
+    }
+
+    private func startPlayback() {
+        if let hit = sourceManager.resolvePlayableStreams(forTitle: display.name) {
+            dismiss()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+                playback.playInline(
+                    url: hit.urls[0],
+                    title: hit.displayName,
+                    backups: Array(hit.urls.dropFirst())
+                )
+            }
+        } else {
+            showNeedSource = true
         }
     }
 }

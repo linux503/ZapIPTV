@@ -82,6 +82,7 @@
 
 "sports.search" = "搜尋體育頻道";
 "sports.count" = "共 %d 個體育頻道";
+"sports.lines" = "%d 條線路";
 "sports.select" = "選擇一個體育頻道開始觀看";
 "sports.empty" = "暫無體育頻道，請等待片源載入";
 "sports.categories" = "分類";
@@ -118,6 +119,9 @@
 "movies.results" = "篩選結果";
 "movies.filter.all" = "全部";
 "movies.filter.zh" = "華語";
+"movies.filter.us" = "美國";
+"movies.filter.jp" = "日本";
+"movies.filter.kr" = "韓國";
 "movies.filter.twhk" = "港台";
 "movies.filter.jpk" = "日韓";
 "movies.filter.sea" = "東南亞";
@@ -182,3 +186,19 @@
 "series.empty" = "在設定裡新增 Xtream 片源後，劇集會出現在這裡。";
 "movies.need_source" = "請在設定裡用播放列表匯入此片的播放地址。";
 "season" = "第 %d 季";
+
+"settings.sources.hint.soft" = "內建片源已自動整理，這裡只顯示概覽。自定片源預設模糊。";
+"settings.lib.ready" = "片庫已整理";
+"settings.lib.syncing" = "正在同步內容…";
+"settings.lib.summary" = "直播 %d · 影視 %d";
+"settings.lib.live" = "直播";
+"settings.lib.sports" = "體育";
+"settings.lib.movies" = "電影";
+"settings.lib.series" = "劇集";
+"settings.lib.regions" = "地區";
+"settings.lib.custom" = "自定片源";
+"settings.lib.custom_item" = "自定片源 %d";
+"settings.lib.reveal" = "顯示詳情";
+"settings.lib.hide" = "隱藏詳情";"series.need_source" = "片庫暫無對應劇集線路，請添加片源後播放。";
+"series.matched_source" = "將播放片庫線路：%@";
+"ok" = "好的";

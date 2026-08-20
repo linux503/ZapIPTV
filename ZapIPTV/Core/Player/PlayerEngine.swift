@@ -30,13 +30,14 @@ class PlayerEngine: ObservableObject {
     /// Dead / geo-blocked live feeds often never fail — abandon after this.
     private let connectTimeoutSeconds: Double = 12
 
-    func load(url: URL, startAt position: Double = 0) {
+    func load(url: URL, startAt position: Double = 0, connectTimeout: Double? = nil) {
         cleanup()
         loadSeq += 1
         userPaused = false
+        error = nil
         setBuffering(true)
         startPlayback(url: url, startAt: position)
-        scheduleConnectTimeout(seq: loadSeq)
+        scheduleConnectTimeout(seq: loadSeq, seconds: connectTimeout ?? connectTimeoutSeconds)
     }
 
     private func setPlaying(_ value: Bool) {
@@ -47,10 +48,10 @@ class PlayerEngine: ObservableObject {
         if isBuffering != value { isBuffering = value }
     }
 
-    private func scheduleConnectTimeout(seq: Int) {
+    private func scheduleConnectTimeout(seq: Int, seconds: Double) {
         connectTimeoutTask?.cancel()
         connectTimeoutTask = Task { @MainActor in
-            try? await Task.sleep(nanoseconds: UInt64(connectTimeoutSeconds * 1_000_000_000))
+            try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
             guard !Task.isCancelled, loadSeq == seq else { return }
             let rate = player?.rate ?? 0
             let keepUp = player?.currentItem?.isPlaybackLikelyToKeepUp == true

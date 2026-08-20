@@ -208,25 +208,18 @@ struct HeroBanner: View {
                     .foregroundColor(ZapColor.textPrimary)
             }
 
-            if sourceManager.isLoading {
-                HStack(spacing: 8) {
-                    ProgressView().scaleEffect(0.7).tint(ZapColor.accentEnd)
-                    Text(sourceManager.loadingMessage.isEmpty ? loc.t("home.loading") : sourceManager.loadingMessage)
-                        .font(.system(size: 12))
-                        .foregroundColor(ZapColor.textSecondary)
-                }
-            } else if !sourceManager.channels.isEmpty {
-                HStack(spacing: 10) {
-                    HeroBadge(icon: "tv.fill",
-                              value: sourceManager.channels.count >= 1000
-                                ? String(format: "%.1fk", Double(sourceManager.channels.count)/1000)
-                                : "\(sourceManager.channels.count)",
-                              label: loc.t("nav.channels"))
-                    HeroBadge(icon: "film.fill", value: "\(sourceManager.movies.count)", label: loc.t("tab.movies"))
-                    HeroBadge(icon: "square.stack.3d.up.fill",
-                              value: "\(sourceManager.sources.count)", label: loc.t("settings.sources"))
-                }
+            // Always keep badge row so loading never shifts home layout.
+            HStack(spacing: 10) {
+                HeroBadge(icon: "tv.fill",
+                          value: sourceManager.channels.count >= 1000
+                            ? String(format: "%.1fk", Double(sourceManager.channels.count)/1000)
+                            : "\(sourceManager.channels.count)",
+                          label: loc.t("nav.channels"))
+                HeroBadge(icon: "film.fill", value: "\(sourceManager.movies.count)", label: loc.t("tab.movies"))
+                HeroBadge(icon: "square.stack.3d.up.fill",
+                          value: "\(sourceManager.sources.count)", label: loc.t("settings.sources"))
             }
+            .opacity(sourceManager.isLoading && sourceManager.channels.isEmpty ? 0.55 : 1)
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)

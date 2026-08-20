@@ -36,7 +36,7 @@ enum StreamProbe {
     }
 
     static func check(_ url: URL) async -> StreamKind {
-        var request = URLRequest(url: url, timeoutInterval: 4)
+        var request = URLRequest(url: url, timeoutInterval: 2.5)
         request.httpMethod = "GET"
         request.setValue("bytes=0-255", forHTTPHeaderField: "Range")
         for (k, v) in httpHeaders(for: url) {
@@ -83,7 +83,7 @@ enum StreamProbe {
 enum ChannelQuality {
     static func optimize(_ channels: [Channel]) -> [Channel] {
         // Keep alternate URLs as backup lines (not hard-drop duplicates)
-        mergeMirrors(channels.filter { isCandidate($0) }, limitBackups: 8)
+        mergeMirrors(channels.filter { isCandidate($0) }, limitBackups: 15)
             .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
 
@@ -128,6 +128,12 @@ enum ChannelQuality {
         let u = ch.url.absoluteString.lowercased()
         let host = (ch.url.host ?? "").lowercased()
 
+        // Prefer known sports seed CDNs (verified mirrors)
+        if u.contains("7nyaler.streamhostingcdn") || u.contains("ayitistream")
+            || u.contains("amagi.tv") || u.contains("streamup.eu")
+            || u.contains("jmp2.uk") || u.contains("akamaized.net") {
+            n += 16
+        }
         // Prefer domestic / known-good Chinese live mirrors over iptv-org geo feeds
         if u.contains("vbskycn") || host.contains("live.fanmingming")
             || u.contains("fanmingming") || u.contains("iptv4") || u.contains("iptv6")
@@ -153,21 +159,21 @@ enum ChannelQuality {
     }
 
     /// Keep one channel per display name; stash other URLs as ranked backups.
-    static func mergeMirrors(_ channels: [Channel], limitBackups: Int = 6) -> [Channel] {
+    static func mergeMirrors(_ channels: [Channel], limitBackups: Int = 15) -> [Channel] {
         let grouped = Dictionary(grouping: channels, by: { canonicalName($0.name) })
         return grouped.values.compactMap { group -> Channel? in
             let ranked = group.sorted { score($0) > score($1) }
             guard var best = ranked.first else { return nil }
-            var urls: [URL] = []
+            var backups: [URL] = []
             var seen = Set<String>([best.url.absoluteString])
             for ch in ranked {
                 for u in ch.allStreamURLs {
                     let key = u.absoluteString
                     guard seen.insert(key).inserted else { continue }
-                    urls.append(u)
-                    if urls.count >= limitBackups { break }
+                    backups.append(u)
+                    if backups.count >= limitBackups { break }
                 }
-                if urls.count >= limitBackups { break }
+                if backups.count >= limitBackups { break }
             }
             // Prefer logo / favorites from any mirror
             if best.logoURL == nil {
@@ -177,13 +183,13 @@ enum ChannelQuality {
             if let latest = ranked.compactMap(\.lastWatched).max() {
                 best.lastWatched = latest
             }
-            best.backupURLs = urls
+            best.backupURLs = backups
             return best
         }
     }
 
     /// Keep one stream per display name, preferring higher `score`.
     static func dedupePreferringQuality(_ channels: [Channel]) -> [Channel] {
-        mergeMirrors(channels, limitBackups: 6)
+        mergeMirrors(channels, limitBackups: 15)
     }
 }

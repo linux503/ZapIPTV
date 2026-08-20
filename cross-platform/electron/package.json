@@ -21,6 +21,9 @@
     "productName": "ZapIPTV",
     "directories": { "output": "dist" },
     "files": ["main.js", "web/**/*"],
+    "compression": "maximum",
+    "electronLanguages": ["en-US", "zh-CN", "zh-TW"],
+    "afterPack": "./afterPack.js",
     "win": {
       "target": [{ "target": "portable", "arch": ["x64"] }],
       "artifactName": "ZapIPTV-${version}-win-x64.${ext}",
@@ -30,6 +33,9 @@
       "target": [{ "target": "dmg", "arch": ["universal"] }],
       "category": "public.app-category.entertainment"
     },
-    "portable": { "artifactName": "ZapIPTV-${version}-win-x64.${ext}" }
+    "portable": {
+      "artifactName": "ZapIPTV-${version}-win-x64.${ext}",
+      "requestExecutionLevel": "user"
+    }
   }
 }

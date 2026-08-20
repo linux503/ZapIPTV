@@ -98,6 +98,9 @@ struct SportsView: View {
             if cat == .football {
                 return footballLeagueSections(from: list)
             }
+            if cat == .american {
+                return brandSections(from: list)
+            }
             if cat == .network || cat == .other {
                 return brandSections(from: list)
             }
@@ -142,7 +145,7 @@ struct SportsView: View {
         HStack(spacing: 0) {
             if showChannelList && !playback.playerFullScreen {
                 channelPanel
-                    .frame(width: 252)
+                    .frame(width: 288)
                     .zapGlassSurface()
                 Divider().background(ZapColor.hairline)
             }
@@ -239,17 +242,6 @@ struct SportsView: View {
             .padding(.horizontal, 10)
             .padding(.bottom, 8)
 
-            if sourceManager.isLoading {
-                HStack(spacing: 8) {
-                    ProgressView().scaleEffect(0.7).tint(ZapColor.accentEnd)
-                    Text(sourceManager.loadingMessage)
-                        .font(.system(size: 11))
-                        .foregroundColor(ZapColor.textSecondary)
-                    Spacer()
-                }
-                .padding(.horizontal, 12).padding(.bottom, 6)
-            }
-
             if channelSections.isEmpty {
                 Spacer()
                 VStack(spacing: 10) {
@@ -276,11 +268,6 @@ struct SportsView: View {
                                             onFavorite: { sourceManager.toggleFavorite(channelId: ch.id) }
                                         )
                                         .id(ch.id)
-                                        .background(
-                                            selectedChannel?.id == ch.id
-                                            ? ZapColor.accentStart.opacity(0.2)
-                                            : Color.clear
-                                        )
                                         .contentShape(Rectangle())
                                         .onTapGesture { playChannel(ch) }
                                         .padding(.horizontal, 8)
@@ -289,7 +276,9 @@ struct SportsView: View {
                                     let showHeader: Bool = {
                                         if !searchText.isEmpty { return false }
                                         if case .category(let cat) = selectedFilter {
+                                            // 足球按联赛、综合/美职按品牌分段
                                             return cat == .network || cat == .other
+                                                || cat == .football || cat == .american
                                         }
                                         return true // 全部时按大类吸顶
                                     }()
@@ -494,9 +483,16 @@ struct SportsView: View {
             isPreparingStream = true
         }
         let url = streamURLs[index]
+        let remaining = streamURLs.count - index - 1
         mirrorLabel = streamURLs.count > 1
             ? String(format: loc.t("live.mirror"), index + 1, streamURLs.count)
             : ""
+
+        if index > 0 {
+            playerEngine.load(url: url, connectTimeout: remaining > 0 ? 4.5 : 8)
+            return
+        }
+
         Task { @MainActor in
             let kind = await StreamProbe.check(url)
             guard selectedChannel?.id == ch.id, streamIndex == index else { return }
@@ -517,7 +513,7 @@ struct SportsView: View {
                 return
             }
             isPreparingStream = true
-            playerEngine.load(url: url)
+            playerEngine.load(url: url, connectTimeout: remaining > 0 ? 6 : 10)
         }
     }
 

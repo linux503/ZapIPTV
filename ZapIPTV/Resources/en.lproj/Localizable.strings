@@ -82,6 +82,7 @@
 
 "sports.search" = "Search sports channels";
 "sports.count" = "%d sports channels";
+"sports.lines" = "%d lines";
 "sports.select" = "Pick a sports channel to watch";
 "sports.empty" = "No sports channels yet — wait for sources to load";
 "sports.categories" = "Categories";
@@ -118,6 +119,9 @@
 "movies.results" = "Filtered results";
 "movies.filter.all" = "All";
 "movies.filter.zh" = "Chinese";
+"movies.filter.us" = "USA";
+"movies.filter.jp" = "Japan";
+"movies.filter.kr" = "Korea";
 "movies.filter.twhk" = "HK / TW";
 "movies.filter.jpk" = "JP / KR";
 "movies.filter.sea" = "Southeast Asia";
@@ -182,3 +186,19 @@
 "series.empty" = "Add an Xtream source in Settings to see series here.";
 "movies.need_source" = "Import a playlist with this title’s stream URL in Settings.";
 "season" = "Season %d";
+
+"settings.sources.hint.soft" = "Built-in libraries are curated automatically. Custom sources stay blurred by default.";
+"settings.lib.ready" = "Library curated";
+"settings.lib.syncing" = "Syncing…";
+"settings.lib.summary" = "Live %d · Movies %d";
+"settings.lib.live" = "Live";
+"settings.lib.sports" = "Sports";
+"settings.lib.movies" = "Movies";
+"settings.lib.series" = "Series";
+"settings.lib.regions" = "Regions";
+"settings.lib.custom" = "Custom sources";
+"settings.lib.custom_item" = "Custom source %d";
+"settings.lib.reveal" = "Reveal";
+"settings.lib.hide" = "Hide";"series.need_source" = "No matching stream in your library. Add a playlist source to play.";
+"series.matched_source" = "Playing from library: %@";
+"ok" = "OK";

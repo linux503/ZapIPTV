@@ -63,8 +63,16 @@ struct MovieDetailView: View {
 
                         HStack(spacing: 12) {
                             Button(action: {
-                                playback.playInline(url: liveMovie.url, title: liveMovie.title)
+                                let urls = sourceManager.streamURLs(forMovie: liveMovie)
+                                let title = liveMovie.title
                                 dismiss()
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+                                    playback.playInline(
+                                        url: urls[0],
+                                        title: title,
+                                        backups: Array(urls.dropFirst())
+                                    )
+                                }
                             }) {
                                 Label(loc.t("play"), systemImage: "play.fill")
                                     .font(.system(size: 15, weight: .semibold))

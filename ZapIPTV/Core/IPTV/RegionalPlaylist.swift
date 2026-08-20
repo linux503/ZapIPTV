@@ -41,7 +41,9 @@ enum RegionalPlaylist {
     ]
 
     private static let preferredGroups: Set<String> = [
-        "🇹🇼 台湾", "🇭🇰 香港", "🇰🇷 韩国", "🇸🇬 新加坡", "🇻🇳 越南", "🇹🇭 泰国", "🇵🇭 菲律宾", "🇮🇳 印度",
+        "🇹🇼 台湾", "🇭🇰 香港", "🇰🇷 韩国", "🇯🇵 日本", "🇺🇸 美国",
+        "🇸🇬 新加坡", "🇻🇳 越南", "🇹🇭 泰国", "🇵🇭 菲律宾", "🇮🇳 印度",
+        "🎬 华语影视",
     ]
 
     /// Pull Asia drama / movie / entertainment feeds into regional groups.
@@ -86,6 +88,9 @@ enum RegionalPlaylist {
             || u.contains("/categories/entertainment.m3u") {
             return channels.compactMap { ch in
                 if isMainlandNoise(ch.name) || isGeoBlocked(ch.name) { return nil }
+                if let group = MoviePlaylist.mapCountryGroup(name: ch.name, epgId: ch.epgId) {
+                    return remapped(ch, group: group)
+                }
                 guard let group = mapAsiaCategory(ch.name) else { return nil }
                 return remapped(ch, group: group)
             }
@@ -112,7 +117,7 @@ enum RegionalPlaylist {
             filtered = filtered.filter { !isMainlandNoise($0.name) }
         }
 
-        return ChannelQuality.mergeMirrors(filtered, limitBackups: 6)
+        return ChannelQuality.mergeMirrors(filtered, limitBackups: 15)
             .sorted { score($0.name, group: group) > score($1.name, group: group) }
     }
 
@@ -190,6 +195,9 @@ enum RegionalPlaylist {
     }
 
     private static func mapAsiaCategory(_ name: String) -> String? {
+        if let mapped = MoviePlaylist.mapCountryGroup(name: name, epgId: nil) {
+            return mapped
+        }
         if looksHongKong(name) { return "🇭🇰 香港" }
         if looksTaiwan(name) || name.lowercased().contains("axn asia taiwan") { return "🇹🇼 台湾" }
         let lower = name.lowercased()

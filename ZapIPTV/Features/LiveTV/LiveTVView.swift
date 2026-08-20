@@ -90,18 +90,6 @@ struct LiveTVView: View {
                     .padding(.horizontal, 10)
                     .padding(.bottom, 8)
 
-                    // Loading banner
-                    if sourceManager.isLoading {
-                        HStack(spacing: 8) {
-                            ProgressView().scaleEffect(0.7).tint(ZapColor.accentEnd)
-                            Text(sourceManager.loadingMessage)
-                                .font(.system(size: 11))
-                                .foregroundColor(ZapColor.textSecondary)
-                            Spacer()
-                        }
-                        .padding(.horizontal, 12).padding(.bottom, 6)
-                    }
-
                     if let err = sourceManager.loadError {
                         HStack {
                             Image(systemName: "exclamationmark.triangle.fill")
@@ -135,11 +123,6 @@ struct LiveTVView: View {
                                             onFavorite: { sourceManager.toggleFavorite(channelId: ch.id) }
                                         )
                                             .id(ch.id)
-                                            .background(
-                                                selectedChannel?.id == ch.id
-                                                ? ZapColor.accentStart.opacity(0.2)
-                                                : Color.clear
-                                            )
                                             .contentShape(Rectangle())
                                             .onTapGesture { playChannel(ch) }
                                             .padding(.horizontal, 8)
@@ -244,25 +227,15 @@ struct LiveTVView: View {
                         }
                     }
                 } else {
-                    // Empty state
+                    // Empty state — keep layout stable while catalog fills in background
                     VStack(spacing: 20) {
-                        if sourceManager.isLoading {
-                            VStack(spacing: 14) {
-                                ProgressView().progressViewStyle(.circular)
-                                    .scaleEffect(1.5).tint(ZapColor.accentStart)
-                                Text(sourceManager.loadingMessage.isEmpty
-                                     ? loc.t("live.connecting") : sourceManager.loadingMessage)
-                                    .font(.system(size: 15)).foregroundColor(.white.opacity(0.6))
-                            }
-                        } else {
-                            Image(systemName: "tv")
-                                .font(.system(size: 56)).foregroundColor(.white.opacity(0.1))
-                            Text(loc.t("live.select"))
-                                .font(.system(size: 18, weight: .medium)).foregroundColor(.white.opacity(0.4))
-                            if !filteredChannels.isEmpty {
-                                Text(String(format: loc.t("live.count"), filteredChannels.count))
-                                    .font(.system(size: 13)).foregroundColor(.white.opacity(0.25))
-                            }
+                        Image(systemName: "tv")
+                            .font(.system(size: 56)).foregroundColor(.white.opacity(0.1))
+                        Text(loc.t("live.select"))
+                            .font(.system(size: 18, weight: .medium)).foregroundColor(.white.opacity(0.4))
+                        if !filteredChannels.isEmpty {
+                            Text(String(format: loc.t("live.count"), filteredChannels.count))
+                                .font(.system(size: 13)).foregroundColor(.white.opacity(0.25))
                         }
                     }
                 }
@@ -390,9 +363,18 @@ struct LiveTVView: View {
         else { isPreparingStream = true }
 
         let url = streamURLs[index]
+        let remaining = streamURLs.count - index - 1
         mirrorLabel = streamURLs.count > 1
             ? String(format: loc.t("live.mirror"), index + 1, streamURLs.count)
             : ""
+
+        // Failover lines: skip probe — switch instantly into AVPlayer with a short timeout.
+        if index > 0 {
+            isPreparingStream = true
+            playerEngine.load(url: url, connectTimeout: remaining > 0 ? 4.5 : 8)
+            return
+        }
+
         Task { @MainActor in
             let kind = await StreamProbe.check(url)
             guard selectedChannel?.id == ch.id, streamIndex == index else { return }
@@ -411,9 +393,9 @@ struct LiveTVView: View {
                 }
                 return
             }
-            // Hand off to AVPlayer — keep preparing until buffering/playing updates
             isPreparingStream = true
-            playerEngine.load(url: url)
+            // Short timeout when backups exist so we flip quickly
+            playerEngine.load(url: url, connectTimeout: remaining > 0 ? 6 : 10)
         }
     }
 
@@ -620,33 +602,77 @@ struct ChannelListRow: View {
     let channel: Channel
     let isPlaying: Bool
     var onFavorite: (() -> Void)? = nil
+    @Environment(\.colorScheme) private var colorScheme
     @State private var hovered = false
+
+    private var lineCount: Int { channel.allStreamURLs.count }
 
     var body: some View {
         HStack(spacing: 10) {
-            ChannelLogoView(channel: channel, width: 52, height: 34)
-            Text(channel.name)
-                .font(.system(size: 12, weight: isPlaying ? .semibold : .regular))
-                .foregroundColor(isPlaying ? ZapColor.textPrimary : ZapColor.textSecondary)
-                .lineLimit(1)
-            Spacer()
-            if let onFavorite {
-                Button(action: onFavorite) {
-                    Image(systemName: channel.isFavorite ? "heart.fill" : "heart")
-                        .font(.system(size: 11))
-                        .foregroundColor(channel.isFavorite ? ZapColor.accentStart : ZapColor.textTertiary)
+            ChannelLogoView(channel: channel, width: 56, height: 36, cornerRadius: 8)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(channel.name)
+                    .font(.system(size: 12, weight: isPlaying ? .semibold : .medium))
+                    .foregroundColor(ZapColor.textPrimary.opacity(isPlaying ? 1 : 0.88))
+                    .lineLimit(1)
+                    .layoutPriority(1)
+                if channel.group == "⚽ 体育" {
+                    HStack(spacing: 5) {
+                        let cat = SportCategory.classify(channel.name)
+                        Image(systemName: cat.systemImage)
+                            .font(.system(size: 9, weight: .semibold))
+                            .foregroundColor(ZapColor.accentStart.opacity(0.9))
+                        if lineCount > 1 {
+                            Text(String(format: LanguageManager.shared.t("sports.lines"), lineCount))
+                                .font(.system(size: 9, weight: .medium))
+                                .foregroundColor(ZapColor.textTertiary)
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 1)
+                                .background(ZapColor.surface2, in: Capsule())
+                        }
+                    }
                 }
-                .buttonStyle(.plain)
             }
+            Spacer(minLength: 4)
             if isPlaying {
-                Image(systemName: "waveform").font(.system(size: 11))
+                Image(systemName: "waveform")
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(ZapColor.accentStart)
                     .symbolEffect(.variableColor.iterative)
             }
+            if let onFavorite {
+                Button(action: onFavorite) {
+                    Image(systemName: channel.isFavorite ? "heart.fill" : "heart")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(
+                            channel.isFavorite
+                            ? ZapColor.accentStart
+                            : (colorScheme == .light ? ZapColor.textSecondary : ZapColor.textTertiary)
+                        )
+                }
+                .buttonStyle(.plain)
+            }
         }
         .padding(.horizontal, 8).padding(.vertical, 7)
-        .background(hovered && !isPlaying ? ZapColor.hover : Color.clear,
-                    in: RoundedRectangle(cornerRadius: 8))
+        .background(
+            rowBackground,
+            in: RoundedRectangle(cornerRadius: 8, style: .continuous)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .strokeBorder(
+                    isPlaying
+                    ? ZapColor.accentStart.opacity(colorScheme == .light ? 0.28 : 0.35)
+                    : Color.clear,
+                    lineWidth: 1
+                )
+        )
         .onHover { hovered = $0 }
+    }
+
+    private var rowBackground: Color {
+        if isPlaying { return ZapColor.selection }
+        if hovered { return colorScheme == .light ? ZapColor.selectionStrong.opacity(0.55) : ZapColor.hover }
+        return .clear
     }
 }

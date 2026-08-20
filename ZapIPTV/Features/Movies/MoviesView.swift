@@ -1,7 +1,7 @@
 import SwiftUI
 
 private enum MovieFilter: String, CaseIterable, Identifiable {
-    case all, zh, twHK, jpKR, sea, india, live, vod
+    case all, zh, us, jp, kr, twHK, sea, india, live, vod
 
     var id: String { rawValue }
 
@@ -10,8 +10,10 @@ private enum MovieFilter: String, CaseIterable, Identifiable {
         switch self {
         case .all:   return loc.t("movies.filter.all")
         case .zh:    return loc.t("movies.filter.zh")
+        case .us:    return loc.t("movies.filter.us")
+        case .jp:    return loc.t("movies.filter.jp")
+        case .kr:    return loc.t("movies.filter.kr")
         case .twHK:  return loc.t("movies.filter.twhk")
-        case .jpKR:  return loc.t("movies.filter.jpk")
         case .sea:   return loc.t("movies.filter.sea")
         case .india: return loc.t("movies.filter.india")
         case .live:  return loc.t("movies.filter.live")
@@ -24,13 +26,15 @@ private enum MovieFilter: String, CaseIterable, Identifiable {
         switch self {
         case .all:   return true
         case .zh:    return g == "🎬 华语影视" || g == "🇨🇳 中国大陆"
+        case .us:    return g == "🇺🇸 美国" || g == "🇺🇸 美国/英语"
+        case .jp:    return g == "🇯🇵 日本"
+        case .kr:    return g == "🇰🇷 韩国"
         case .twHK:  return g == "🇹🇼 台湾" || g == "🇭🇰 香港"
-        case .jpKR:  return g == "🇯🇵 日本" || g == "🇰🇷 韩国"
         case .sea:   return ["🇹🇭 泰国", "🇻🇳 越南", "🇮🇩 印尼", "🇲🇾 马来西亚",
                               "🇸🇬 新加坡", "🇵🇭 菲律宾"].contains(g)
         case .india: return g == "🇮🇳 印度"
-        case .live:  return movie.sourceId.hasPrefix("live-")
-        case .vod:   return !movie.sourceId.hasPrefix("live-")
+        case .live:  return movie.sourceId.hasPrefix("live-") || movie.sourceId == "seed-movie"
+        case .vod:   return !movie.sourceId.hasPrefix("live-") && movie.sourceId != "seed-movie"
         }
     }
 }
@@ -85,8 +89,10 @@ struct MoviesView: View {
         case "favorites": return favoriteMovies
         case "continue":  return continueWatching
         case "zh":        return list.filter { MovieFilter.zh.matches($0) }
+        case "us":        return list.filter { MovieFilter.us.matches($0) }
+        case "jp":        return list.filter { MovieFilter.jp.matches($0) }
+        case "kr":        return list.filter { MovieFilter.kr.matches($0) }
         case "twHK":      return list.filter { MovieFilter.twHK.matches($0) }
-        case "jpKR":      return list.filter { MovieFilter.jpKR.matches($0) }
         case "sea":       return list.filter { MovieFilter.sea.matches($0) }
         case "india":     return list.filter { MovieFilter.india.matches($0) }
         case "live":      return list.filter { MovieFilter.live.matches($0) }
@@ -101,8 +107,10 @@ struct MoviesView: View {
         case "favorites": return loc.t("movies.favorites")
         case "continue":  return loc.t("movies.continue")
         case "zh":        return "🎬 华语影视"
+        case "us":        return "🇺🇸 美国电影"
+        case "jp":        return "🇯🇵 日本电影"
+        case "kr":        return "🇰🇷 韩国电影"
         case "twHK":      return "🇹🇼 台湾 · 🇭🇰 香港"
-        case "jpKR":      return "🇰🇷 韩国 · 🇯🇵 日本"
         case "sea":       return "🌏 东南亚"
         case "india":     return "🇮🇳 印度"
         case "live":      return loc.t("movies.filter.live")
@@ -209,7 +217,8 @@ struct MoviesView: View {
                 .padding(.horizontal, 24)
         } else if let local = favoriteMovies.first ?? continueWatching.first ?? sourceManager.movies.first {
             LocalMoviesFeaturedHero(movie: local) {
-                playback.playInline(url: local.url, title: local.title)
+                let urls = sourceManager.streamURLs(forMovie: local)
+                playback.playInline(url: urls[0], title: local.title, backups: Array(urls.dropFirst()))
             } onSelect: {
                 selectedMovie = local
             }
@@ -234,13 +243,17 @@ struct MoviesView: View {
 
         catalogSection(title: "🎬 华语影视", icon: "film.fill", key: "zh",
                        movies: movies(for: "zh"))
+        catalogSection(title: "🇺🇸 美国电影", icon: "star.fill", key: "us",
+                       movies: movies(for: "us"))
+        catalogSection(title: "🇯🇵 日本电影", icon: "sparkles", key: "jp",
+                       movies: movies(for: "jp"))
+        catalogSection(title: "🇰🇷 韩国电影", icon: "heart.circle.fill", key: "kr",
+                       movies: movies(for: "kr"))
         catalogSection(title: "🇹🇼 台湾 · 🇭🇰 香港", icon: "tv.fill", key: "twHK",
                        movies: movies(for: "twHK"))
-        catalogSection(title: "🇰🇷 韩国 · 🇯🇵 日本", icon: "sparkles", key: "jpKR",
-                       movies: movies(for: "jpKR"))
         catalogSection(title: "🌏 东南亚", icon: "globe.asia.australia.fill", key: "sea",
                        movies: movies(for: "sea"))
-        catalogSection(title: "🇮🇳 印度", icon: "star.fill", key: "india",
+        catalogSection(title: "🇮🇳 印度", icon: "star.circle.fill", key: "india",
                        movies: movies(for: "india"))
         catalogSection(title: loc.t("movies.filter.live"), icon: "antenna.radiowaves.left.and.right",
                        key: "live", movies: movies(for: "live"))
@@ -436,81 +449,84 @@ struct LocalMoviesFeaturedHero: View {
     var onSelect: (() -> Void)? = nil
 
     var body: some View {
-        Button { onSelect?() } label: {
-            ZStack(alignment: .bottomLeading) {
-                Group {
-                    if let backdrop = movie.backdropURL ?? movie.posterURL {
-                        AsyncImage(url: backdrop) { img in
-                            img.resizable().scaledToFill()
-                        } placeholder: { ZapColor.surface2 }
-                    } else {
-                        ZapColor.surface2
-                    }
+        ZStack(alignment: .bottomLeading) {
+            Group {
+                if let backdrop = movie.backdropURL ?? movie.posterURL {
+                    AsyncImage(url: backdrop) { img in
+                        img.resizable().scaledToFill()
+                    } placeholder: { ZapColor.surface2 }
+                } else {
+                    ZapColor.surface2
                 }
-                .frame(height: 200)
-                .clipped()
-
-                LinearGradient(
-                    colors: [.clear, .black.opacity(0.75), .black.opacity(0.92)],
-                    startPoint: .top, endPoint: .bottom
-                )
-
-                HStack(alignment: .bottom, spacing: 16) {
-                    if let poster = movie.posterURL {
-                        AsyncImage(url: poster) { img in
-                            img.resizable().scaledToFill()
-                        } placeholder: { ZapColor.surface2 }
-                        .frame(width: 72, height: 108)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                        .shadow(radius: 12)
-                    }
-
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(movie.title)
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.white)
-                            .lineLimit(2)
-                        HStack(spacing: 8) {
-                            if let year = movie.year {
-                                Text(year).font(.system(size: 11, weight: .medium))
-                                    .foregroundColor(.white.opacity(0.7))
-                            }
-                            if let rating = movie.rating, !rating.isEmpty {
-                                Text("★ \(rating)")
-                                    .font(.system(size: 11, weight: .semibold))
-                                    .foregroundColor(ZapColor.accentStart)
-                            }
-                            if let g = movie.genres.first {
-                                Text(g).font(.system(size: 11))
-                                    .foregroundColor(.white.opacity(0.55))
-                                    .lineLimit(1)
-                            }
-                        }
-                        if let plot = movie.plot, !plot.isEmpty {
-                            Text(plot)
-                                .font(.system(size: 12))
-                                .foregroundColor(.white.opacity(0.55))
-                                .lineLimit(2)
-                        }
-                        Button(action: onPlay) {
-                            Label("Play", systemImage: "play.fill")
-                                .font(.system(size: 12, weight: .semibold))
-                                .padding(.horizontal, 14)
-                                .padding(.vertical, 6)
-                                .background(ZapColor.accentEnd, in: Capsule())
-                                .foregroundColor(.white)
-                        }
-                        .buttonStyle(.plain)
-                        .padding(.top, 4)
-                    }
-                    Spacer(minLength: 0)
-                }
-                .padding(16)
             }
-            .clipShape(RoundedRectangle(cornerRadius: 14))
-            .overlay(RoundedRectangle(cornerRadius: 14).stroke(ZapColor.border))
+            .frame(maxWidth: .infinity)
+            .frame(height: 200)
+            .clipped()
+            .contentShape(Rectangle())
+            .onTapGesture { onSelect?() }
+
+            LinearGradient(
+                colors: [.clear, .black.opacity(0.75), .black.opacity(0.92)],
+                startPoint: .top, endPoint: .bottom
+            )
+            .allowsHitTesting(false)
+
+            HStack(alignment: .bottom, spacing: 16) {
+                if let poster = movie.posterURL {
+                    AsyncImage(url: poster) { img in
+                        img.resizable().scaledToFill()
+                    } placeholder: { ZapColor.surface2 }
+                    .frame(width: 72, height: 108)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .shadow(radius: 12)
+                    .onTapGesture { onSelect?() }
+                }
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(movie.title)
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(.white)
+                        .lineLimit(2)
+                        .onTapGesture { onSelect?() }
+                    HStack(spacing: 8) {
+                        if let year = movie.year {
+                            Text(year).font(.system(size: 11, weight: .medium))
+                                .foregroundColor(.white.opacity(0.7))
+                        }
+                        if let rating = movie.rating, !rating.isEmpty {
+                            Text("★ \(rating)")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundColor(ZapColor.accentStart)
+                        }
+                        if let g = movie.genres.first {
+                            Text(g).font(.system(size: 11))
+                                .foregroundColor(.white.opacity(0.55))
+                                .lineLimit(1)
+                        }
+                    }
+                    if let plot = movie.plot, !plot.isEmpty {
+                        Text(plot)
+                            .font(.system(size: 12))
+                            .foregroundColor(.white.opacity(0.55))
+                            .lineLimit(2)
+                    }
+                    Button(action: onPlay) {
+                        Label("Play", systemImage: "play.fill")
+                            .font(.system(size: 12, weight: .semibold))
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 6)
+                            .background(ZapColor.accentEnd, in: Capsule())
+                            .foregroundColor(.white)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.top, 4)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(16)
         }
-        .buttonStyle(.plain)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(ZapColor.border))
     }
 }
 
@@ -670,11 +686,16 @@ struct TMDBMovieDetailView: View {
     let movie: TMDBMovie
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var playerEngine: PlayerEngine
+    @EnvironmentObject private var playback: PlaybackRouter
+    @EnvironmentObject private var sourceManager: SourceManager
+    @EnvironmentObject private var loc: LanguageManager
     @State private var detail: TMDBMovie?
     @State private var credits: TMDBCredits?
     @State private var isLoading = true
+    @State private var showNeedSource = false
 
     var displayMovie: TMDBMovie { detail ?? movie }
+    private var localMatch: Movie? { sourceManager.movieMatching(title: displayMovie.title) }
 
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -728,8 +749,56 @@ struct TMDBMovieDetailView: View {
                                 .foregroundColor(.white.opacity(0.5))
                         }
 
-                        Text("Add this title's stream URL via a playlist source to play.")
-                            .font(.system(size: 12)).foregroundColor(.white.opacity(0.35))
+                        if let local = localMatch {
+                            Button {
+                                let urls = sourceManager.streamURLs(forMovie: local)
+                                let title = local.title
+                                dismiss()
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+                                    playback.playInline(
+                                        url: urls[0],
+                                        title: title,
+                                        backups: Array(urls.dropFirst())
+                                    )
+                                }
+                            } label: {
+                                Label(loc.t("play"), systemImage: "play.fill")
+                                    .font(.system(size: 15, weight: .semibold))
+                                    .padding(.horizontal, 24).padding(.vertical, 10)
+                                    .background(LinearGradient(
+                                        colors: [ZapColor.accentStart, ZapColor.accentEnd],
+                                        startPoint: .leading, endPoint: .trailing))
+                                    .foregroundColor(.white).cornerRadius(10)
+                            }
+                            .buttonStyle(.plain)
+                            Text(String(format: loc.t("movies.matched_source"), local.title))
+                                .font(.system(size: 11))
+                                .foregroundColor(.white.opacity(0.45))
+                        } else {
+                            Button {
+                                if let hit = sourceManager.resolvePlayableStreams(forTitle: displayMovie.title) {
+                                    dismiss()
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+                                        playback.playInline(
+                                            url: hit.urls[0],
+                                            title: hit.displayName,
+                                            backups: Array(hit.urls.dropFirst())
+                                        )
+                                    }
+                                } else {
+                                    showNeedSource = true
+                                }
+                            } label: {
+                                Label(loc.t("play"), systemImage: "play.fill")
+                                    .font(.system(size: 15, weight: .semibold))
+                                    .padding(.horizontal, 24).padding(.vertical, 10)
+                                    .background(LinearGradient(
+                                        colors: [ZapColor.accentStart, ZapColor.accentEnd],
+                                        startPoint: .leading, endPoint: .trailing))
+                                    .foregroundColor(.white).cornerRadius(10)
+                            }
+                            .buttonStyle(.plain)
+                        }
                     }
                     Spacer()
                 }
@@ -774,6 +843,11 @@ struct TMDBMovieDetailView: View {
         }
         .frame(minWidth: 720, minHeight: 500)
         .background(Color.black)
+        .alert(loc.t("play"), isPresented: $showNeedSource) {
+            Button(loc.t("ok"), role: .cancel) {}
+        } message: {
+            Text(loc.t("movies.need_source"))
+        }
         .task { await load() }
     }
 

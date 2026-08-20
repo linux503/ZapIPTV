@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0D86037F6F2B866C5805CE9C /* StreamProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F6453E3A8706BECD385CF0E /* StreamProbe.swift */; };
 		139F9EF143CDAE41EF654F21 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 65EB5E48382DF2E4A9F47D2D /* Localizable.strings */; };
+		1D06C99A4E98BF36086399FE /* AppIcon-master.png in Resources */ = {isa = PBXBuildFile; fileRef = 7187DE499F13928DDCC0D0A4 /* AppIcon-master.png */; };
 		250FE1BBFC26F0BBA4917FB8 /* AddSourceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EAEEB88B3261CC3D6796C6 /* AddSourceView.swift */; };
 		294FAA1931E99105679BE21A /* M3UParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F368AFDBDB1606BD8D4E16A /* M3UParser.swift */; };
 		2D7EE002EC775CF4BD5160DD /* MovieDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39FA772A93E644EF0A8BBD15 /* MovieDetailView.swift */; };
@@ -28,6 +29,7 @@
 		7C5D474B8D5BC4F642ECFA92 /* Channel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5C96A092FB2655850E08298 /* Channel.swift */; };
 		800CC8C1D51618EF29D46362 /* TMDBService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E78DDAF03816773B43D0489 /* TMDBService.swift */; };
 		81E229F18A02CB2BF56D49B6 /* RegionalPlaylist.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABACB9D4DB6CDD3441EDBD7C /* RegionalPlaylist.swift */; };
+		8A6A966131A3710F4777DEA3 /* MoviePlaylist.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5800FE0EB00D7047C45D9345 /* MoviePlaylist.swift */; };
 		93F492F3069382414A229C6F /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E8211EF9105EABC531C8A58 /* Extensions.swift */; };
 		97C6819F25B5D891CF556AA8 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 32C8C964AFCC969B08DCEBFF /* AppIcon.icns */; };
 		97F554365489A835823460E8 /* LiveTVView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22667B5E745D0B4C9F618612 /* LiveTVView.swift */; };
@@ -59,8 +61,10 @@
 		4F368AFDBDB1606BD8D4E16A /* M3UParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = M3UParser.swift; sourceTree = "<group>"; };
 		562B25344A4DF8F1B815B4F6 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		56A7744246CE889268BE72CF /* MoviesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoviesView.swift; sourceTree = "<group>"; };
+		5800FE0EB00D7047C45D9345 /* MoviePlaylist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoviePlaylist.swift; sourceTree = "<group>"; };
 		601EDAFF48BA28808EE3ABF9 /* VideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerView.swift; sourceTree = "<group>"; };
 		63AD913E91514CFEE6BA53E9 /* ZapIPTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZapIPTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7187DE499F13928DDCC0D0A4 /* AppIcon-master.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon-master.png"; sourceTree = "<group>"; };
 		768F4B9603D6D400B352D0D8 /* SeriesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeriesView.swift; sourceTree = "<group>"; };
 		802F532A3A32C2203E765051 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		830F3FD7A0E23A414F570915 /* ZapIPTVApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZapIPTVApp.swift; sourceTree = "<group>"; };
@@ -96,6 +100,7 @@
 				25FCF4145D7EA554DE22ABED /* ChinesePlaylist.swift */,
 				CF07B30C935B0A498D34C290 /* HongKongPlaylist.swift */,
 				4F368AFDBDB1606BD8D4E16A /* M3UParser.swift */,
+				5800FE0EB00D7047C45D9345 /* MoviePlaylist.swift */,
 				ABACB9D4DB6CDD3441EDBD7C /* RegionalPlaylist.swift */,
 				DAD5F1EE449A10934DD3D4B1 /* SourceManager.swift */,
 				F424AC194E45F59A3CD84941 /* SportsPlaylist.swift */,
@@ -139,6 +144,7 @@
 		732D637A1A3E002D70040D11 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				7187DE499F13928DDCC0D0A4 /* AppIcon-master.png */,
 				32C8C964AFCC969B08DCEBFF /* AppIcon.icns */,
 				F3ED41A510EFD693AD8F8B1B /* Assets.xcassets */,
 				9E8211EF9105EABC531C8A58 /* Extensions.swift */,
@@ -338,6 +344,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1D06C99A4E98BF36086399FE /* AppIcon-master.png in Resources */,
 				97C6819F25B5D891CF556AA8 /* AppIcon.icns in Resources */,
 				CCA36B3AF457C1E4F169188B /* Assets.xcassets in Resources */,
 				139F9EF143CDAE41EF654F21 /* Localizable.strings in Resources */,
@@ -387,6 +394,7 @@
 				97F554365489A835823460E8 /* LiveTVView.swift in Sources */,
 				294FAA1931E99105679BE21A /* M3UParser.swift in Sources */,
 				2D7EE002EC775CF4BD5160DD /* MovieDetailView.swift in Sources */,
+				8A6A966131A3710F4777DEA3 /* MoviePlaylist.swift in Sources */,
 				A10B6A1A2E184EE89C45D3B3 /* MoviesView.swift in Sources */,
 				520E4619870DBAA53106DD86 /* PlayerEngine.swift in Sources */,
 				798A8E45AE9343A44F43F8D3 /* PlayerSheetView.swift in Sources */,

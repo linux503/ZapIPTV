@@ -100,6 +100,12 @@ enum ZapColor {
 
     static let live   = Color.adaptive(light: "#15803D", dark: "#22C55E")
     static let orange = Color.adaptive(light: "#C2410C", dark: "#FF6B35")
+
+    /// Dark plate behind channel logos so white/light marks stay readable in light mode.
+    static let logoPlate = Color.adaptive(light: "#2A2420", dark: "#222222")
+    /// Soft row selection — warm taupe in light (avoids harsh pink wash).
+    static let selection = Color.adaptive(light: "#EDE3D8", dark: "#2A1A1C")
+    static let selectionStrong = Color.adaptive(light: "#E4D5C8", dark: "#3A2024")
 }
 
 // MARK: - Light-mode glass surfaces
@@ -116,12 +122,12 @@ struct ZapBackdrop: View {
                     endPoint: .bottomTrailing
                 )
                 Circle()
-                    .fill(ZapColor.accentStart.opacity(0.09))
+                    .fill(ZapColor.accentStart.opacity(0.05))
                     .frame(width: 440, height: 440)
                     .offset(x: -260, y: -200)
                     .blur(radius: 2)
                 Circle()
-                    .fill(ZapColor.accentEnd.opacity(0.07))
+                    .fill(ZapColor.accentEnd.opacity(0.04))
                     .frame(width: 380, height: 380)
                     .offset(x: 300, y: 220)
                     .blur(radius: 2)

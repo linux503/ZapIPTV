@@ -23,7 +23,7 @@ enum ChinesePlaylist {
     /// one row with backup URLs (Live TV auto-failover), then sort CCTV → 卫视 → 地方台.
     static func curateMainland(_ channels: [Channel]) -> [Channel] {
         let filtered = channels.filter { isMainlandChannel($0.name) }
-        let merged = mergeMainlandMirrors(filtered, limitBackups: 12)
+        let merged = mergeMainlandMirrors(filtered, limitBackups: 15)
         return merged.sorted { mainlandScore($0.name) > mainlandScore($1.name) }
     }
 
@@ -35,16 +35,16 @@ enum ChinesePlaylist {
             guard var best = ranked.first else { return nil }
             best.name = preferredDisplayName(for: group.map(\.name), key: mainlandMirrorKey(best.name))
 
-            var urls: [URL] = []
+            var backups: [URL] = []
             var seen = Set<String>([best.url.absoluteString])
             for ch in ranked {
                 for u in ch.allStreamURLs {
                     let key = u.absoluteString
                     guard seen.insert(key).inserted else { continue }
-                    urls.append(u)
-                    if urls.count >= limitBackups { break }
+                    backups.append(u)
+                    if backups.count >= limitBackups { break }
                 }
-                if urls.count >= limitBackups { break }
+                if backups.count >= limitBackups { break }
             }
             if best.logoURL == nil {
                 best.logoURL = ranked.compactMap(\.logoURL).first
@@ -53,7 +53,7 @@ enum ChinesePlaylist {
             if let latest = ranked.compactMap(\.lastWatched).max() {
                 best.lastWatched = latest
             }
-            best.backupURLs = urls
+            best.backupURLs = backups
             return best
         }
     }

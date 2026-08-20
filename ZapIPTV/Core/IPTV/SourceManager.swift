@@ -63,6 +63,7 @@ class SourceManager: ObservableObject {
     @Published var seriesList: [SeriesCatalogItem] = []
     @Published var isLoading = false
     @Published var loadingMessage = ""
+    @Published var loadProgress: Double = 0
     @Published var loadError: String?
 
     var userPlaylists: [PlaylistSource] {
@@ -106,7 +107,7 @@ class SourceManager: ObservableObject {
     }
 
     // Bump when default catalog changes — triggers one-time channel reload
-    private static let catalogVersion = 18
+    private static let catalogVersion = 22
 
     /// Shared session: disk cache for playlists + shorter timeouts = faster relaunch.
     private static let playlistSession: URLSession = {
@@ -232,7 +233,7 @@ class SourceManager: ObservableObject {
     /// Show sports seeds immediately so UI isn't empty while playlists download.
     func bootstrapInstantChannels() {
         guard channels.isEmpty || channels(inGroup: "⚽ 体育").isEmpty else { return }
-        let seeds = SportsPlaylist.curatedFootballChannels() + SportsPlaylist.curatedBasketballChannels()
+        let seeds = SportsPlaylist.curatedSeedChannels()
         guard !seeds.isEmpty else { return }
         suppressChannelPublish = true
         if channels.isEmpty {
@@ -244,6 +245,10 @@ class SourceManager: ObservableObject {
         suppressChannelPublish = false
         rebuildGroupIndex()
         updateGroups()
+        // Seed movies tab immediately (CN / US / JP / KR)
+        if movies.isEmpty {
+            movies = MoviePlaylist.curatedMovies()
+        }
         objectWillChange.send()
     }
 
@@ -445,18 +450,25 @@ class SourceManager: ObservableObject {
 
     func refreshAll() async {
         isLoading = true
-        loadingMessage = "Loading \(sources.count) sources…"
+        loadProgress = 0.02
+        loadingMessage = ""
+        loadError = nil
 
         suppressGroupUpdate = true
         suppressChannelPublish = true
 
-        // Priority wave first (mainland / sports / Greater China), then the rest
+        // Slow & steady: few concurrent fetches so UI stays calm.
         let ordered = sources.sorted { sourceLoadPriority($0) < sourceLoadPriority($1) }
         let primary = ordered.filter { sourceLoadPriority($0) <= 3 }
         let secondary = ordered.filter { sourceLoadPriority($0) > 3 }
+        let total = max(1, ordered.count)
+        var done = 0
 
-        await refreshSources(primary, parallelism: 6)
-        // Let UI paint primary content before SEA / movies lists
+        await refreshSources(primary, parallelism: 2) {
+            done += 1
+            self.loadProgress = min(0.92, Double(done) / Double(total))
+        }
+        // Paint primary content, then continue quietly.
         suppressChannelPublish = false
         suppressGroupUpdate = false
         objectWillChange.send()
@@ -466,9 +478,13 @@ class SourceManager: ObservableObject {
         syncLiveSeriesCatalog()
 
         if !secondary.isEmpty {
+            try? await Task.sleep(nanoseconds: 350_000_000)
             suppressGroupUpdate = true
             suppressChannelPublish = true
-            await refreshSources(secondary, parallelism: 4)
+            await refreshSources(secondary, parallelism: 2) {
+                done += 1
+                self.loadProgress = min(0.96, Double(done) / Double(total))
+            }
             suppressChannelPublish = false
             suppressGroupUpdate = false
             objectWillChange.send()
@@ -478,11 +494,18 @@ class SourceManager: ObservableObject {
             syncLiveSeriesCatalog()
         }
 
+        loadProgress = 1
+        try? await Task.sleep(nanoseconds: 280_000_000)
         isLoading = false
         loadingMessage = ""
+        loadProgress = 0
     }
 
-    private func refreshSources(_ snapshot: [PlaylistSource], parallelism: Int) async {
+    private func refreshSources(
+        _ snapshot: [PlaylistSource],
+        parallelism: Int,
+        onEachDone: (@MainActor () -> Void)? = nil
+    ) async {
         guard !snapshot.isEmpty else { return }
         let semaphore = AsyncSemaphore(parallelism)
         await withTaskGroup(of: Void.self) { group in
@@ -490,7 +513,10 @@ class SourceManager: ObservableObject {
                 group.addTask {
                     await semaphore.wait()
                     defer { Task { await semaphore.signal() } }
-                    await self.refreshSource(source)
+                    await self.refreshSource(source, manageGlobalLoading: false)
+                    // Gentle pacing between source completions
+                    try? await Task.sleep(nanoseconds: 120_000_000)
+                    await MainActor.run { onEachDone?() }
                 }
             }
         }
@@ -516,10 +542,11 @@ class SourceManager: ObservableObject {
         return 10
     }
 
-    func refreshSource(_ source: PlaylistSource) async {
-        isLoading = true
-        if !suppressGroupUpdate {
+    func refreshSource(_ source: PlaylistSource, manageGlobalLoading: Bool = true) async {
+        if manageGlobalLoading {
+            isLoading = true
             loadingMessage = "Loading \(source.name)…"
+            loadProgress = max(loadProgress, 0.08)
         }
         loadError = nil
 
@@ -539,11 +566,13 @@ class SourceManager: ObservableObject {
             print("[SourceManager] ✗ \(source.name): \(error)")
         }
 
-        // Clear loading state only when all are done
-        let anyLoading = sources.contains { !$0.isLoaded && $0.lastRefreshed == nil }
-        if !anyLoading {
-            isLoading = false
-            loadingMessage = ""
+        if manageGlobalLoading {
+            let anyLoading = sources.contains { !$0.isLoaded && $0.lastRefreshed == nil }
+            if !anyLoading {
+                isLoading = false
+                loadingMessage = ""
+                loadProgress = 0
+            }
         }
     }
 
@@ -852,9 +881,21 @@ class SourceManager: ObservableObject {
             index["⚽ 体育"] = SportsPlaylist.curate(sports)
         }
         for key in Array(index.keys) where key != "🇨🇳 中国大陆" && key != "⚽ 体育" {
-            index[key] = ChannelQuality.mergeMirrors(index[key] ?? [], limitBackups: 6)
+            index[key] = ChannelQuality.mergeMirrors(index[key] ?? [], limitBackups: 15)
         }
         channelsByGroup = index
+        // Flatten merged rows so channel objects used elsewhere also carry backups.
+        var flat: [Channel] = []
+        flat.reserveCapacity(channels.count)
+        for g in groupSortOrder where index[g] != nil {
+            flat.append(contentsOf: index[g]!)
+        }
+        for (g, list) in index where !groupSortOrder.contains(g) {
+            flat.append(contentsOf: list)
+        }
+        if !flat.isEmpty {
+            channels = flat
+        }
     }
 
     private func mergeMoviesFromChannels(_ vod: [Channel], sourceId: String) {
@@ -869,7 +910,7 @@ class SourceManager: ObservableObject {
 
     /// Pull movie / cinema live channels into the movies catalog for the Movies tab.
     private func syncLiveMovieCatalog() {
-        var seen = Set(movies.filter { !$0.sourceId.hasPrefix("live-") }.map(\.url.absoluteString))
+        var seen = Set(movies.filter { !$0.sourceId.hasPrefix("live-") && $0.sourceId != "seed-movie" }.map(\.url.absoluteString))
         var live: [Movie] = []
         for ch in channels where Self.isMovieChannel(ch) {
             let key = ch.url.absoluteString
@@ -884,7 +925,13 @@ class SourceManager: ObservableObject {
                 sourceId: "live-\(ch.group)"
             ))
         }
-        movies.removeAll { $0.sourceId.hasPrefix("live-") }
+        for seed in MoviePlaylist.curatedMovies() {
+            let key = seed.url.absoluteString
+            guard !seen.contains(key) else { continue }
+            seen.insert(key)
+            live.append(seed)
+        }
+        movies.removeAll { $0.sourceId.hasPrefix("live-") || $0.sourceId == "seed-movie" }
         movies.append(contentsOf: live)
     }
 
@@ -895,10 +942,16 @@ class SourceManager: ObservableObject {
         "viu", "now movies", "persiana cinema", "cinemax", "stars movies", "warner", "hollywood film",
         "thrill", "hits movies", "scm", "卫视电影", "衛視電影", "东森电影", "東森電影", "纬来电影", "緯來電影",
         "好莱坞", "好萊塢", "高清电影", "高清電影", "imax", "4k电影", "4k電影", "movie channel",
+        "pluto tv", "moviesphere", "mytime", "filmrise", "asylum", "cctv-6", "cctv6",
     ]
 
     private nonisolated static func isMovieChannel(_ ch: Channel) -> Bool {
-        if ch.group == "🎬 华语影视" { return true }
+        if ch.group == "🎬 华语影视" || ch.group == "🇺🇸 美国" { return true }
+        if ch.group == "🇯🇵 日本" || ch.group == "🇰🇷 韩国" {
+            let n = ch.name.lowercased()
+            return movieChannelKeys.contains { n.contains($0) }
+                || n.contains("anime") || n.contains("drama") || n.contains("映画") || n.contains("영화")
+        }
         let n = ch.name.lowercased()
         return movieChannelKeys.contains { n.contains($0) }
     }
@@ -950,6 +1003,7 @@ class SourceManager: ObservableObject {
     private nonisolated static let seriesDropKeys = [
         "news", "新聞", "新闻", "sport", "体育", "體育", "shopping", "finance", "財經", "财经",
         "stock", "股市", "weather", "天氣", "天气", "cartoon", "卡通", "kids", "兒童", "儿童",
+        "纪录片", "紀錄片", "documentary", "宗教", "religion", "导视", "導視",
     ]
 
     private nonisolated static let seriesChannelKeys = [
@@ -965,18 +1019,34 @@ class SourceManager: ObservableObject {
         "卫视中文", "衛視中文", "tvb plus", "j2", "翡翠台", "明珠台", "now 华剧", "now華劇",
         "tvbs欢乐", "tvbs歡樂", "东森超视", "東森超視", "三立都会", "三立都會", "三立台湾", "三立台灣",
         "湖南卫视", "浙江卫视", "江苏卫视", "东方卫视", "安徽卫视", "北京卫视",
+        "卫视", "衛視", "综合", "綜合", "影剧台", "影劇台", "戏剧台", "戲劇台",
+        "nhk", "fuji", "tbs", "tv asahi", "nippon tv", "tokyo mx",
+        "astro", "tv3", "ntv7", "channel 8", "suria", "mediacorp",
+        "netflix", "disney", "hbo", "cinemax", // often carry series blocks on IPTV
+    ]
+
+    /// Drama-oriented live groups — pull almost all non-news channels into Series.
+    private nonisolated static let seriesFriendlyGroups: Set<String> = [
+        "🇹🇼 台湾", "🇭🇰 香港", "🇰🇷 韩国", "🇯🇵 日本",
+        "🇹🇭 泰国", "🇻🇳 越南", "🇮🇩 印尼", "🇲🇾 马来西亚", "🇸🇬 新加坡", "🇵🇭 菲律宾",
+        "🇮🇳 印度", "🎮 娱乐",
     ]
 
     private nonisolated static func isSeriesChannel(_ ch: Channel) -> Bool {
         if isMovieChannel(ch) { return false }
         let n = ch.name.lowercased()
         if seriesDropKeys.contains(where: { n.contains($0) }) { return false }
+
+        if seriesFriendlyGroups.contains(ch.group) { return true }
+
         if seriesChannelKeys.contains(where: { n.contains($0.lowercased()) }) { return true }
-        // Soft fill: drama markets keep entertainment channels with logo / known brands
-        let dramaGroups: Set<String> = ["🇹🇼 台湾", "🇭🇰 香港", "🇰🇷 韩国", "🇯🇵 日本"]
-        if dramaGroups.contains(ch.group), ch.logoURL != nil {
-            let soft = ["tv", "channel", "台", "频道", "頻道", "ch", "hd", "uhd"]
-            return soft.contains(where: { n.contains($0) })
+
+        // Mainland satellite / variety often loop dramas
+        if ch.group == "🇨🇳 中国大陆" {
+            if n.contains("卫视") || n.contains("衛視") { return true }
+            if n.contains("综艺") || n.contains("綜藝") || n.contains("娱乐") || n.contains("娛樂") {
+                return true
+            }
         }
         return false
     }
@@ -1085,7 +1155,7 @@ class SourceManager: ObservableObject {
     }
 
     private let groupSortOrder = [
-        "🇨🇳 中国大陆", "⚽ 体育", "🎬 华语影视", "🎆 春晚", "🇹🇼 台湾", "🇭🇰 香港",
+        "🇨🇳 中国大陆", "⚽ 体育", "🎬 华语影视", "🇺🇸 美国", "🎆 春晚", "🇹🇼 台湾", "🇭🇰 香港",
         "🇯🇵 日本", "🇰🇷 韩国", "🇹🇭 泰国", "🇻🇳 越南",
         "🇮🇩 印尼", "🇲🇾 马来西亚", "🇸🇬 新加坡", "🇵🇭 菲律宾", "🇮🇳 印度",
         "🌙 阿拉伯/中东", "🇹🇷 土耳其",
@@ -1098,6 +1168,122 @@ class SourceManager: ObservableObject {
     // MARK: - Convenience
 
     var allChannels: [Channel] { channels }
+
+    /// Normalize titles for fuzzy match (strip punctuation / season tags).
+    nonisolated static func normalizedTitle(_ raw: String) -> String {
+        var s = raw.lowercased()
+        let drop: [String] = [
+            " ", "　", "-", "_", ":", "：", ".", "·", "第", "季", "集", "season", "episode",
+            "hd", "fhd", "4k", "uhd", "(", ")", "（", "）", "[", "]",
+        ]
+        for d in drop { s = s.replacingOccurrences(of: d, with: "") }
+        return s
+    }
+
+    func streamURLs(forMovie movie: Movie) -> [URL] {
+        if movie.id.hasPrefix("live-") {
+            let chId = String(movie.id.dropFirst(5))
+            if let ch = channels.first(where: { $0.id == chId }) {
+                return ch.allStreamURLs
+            }
+        }
+        return [movie.url]
+    }
+
+    func streamURLs(forSeries item: SeriesCatalogItem) -> [URL] {
+        guard let play = item.playURL else { return [] }
+        if item.id.hasPrefix("live-") {
+            let chId = String(item.id.dropFirst(5))
+            if let ch = channels.first(where: { $0.id == chId }) {
+                return ch.allStreamURLs
+            }
+        }
+        return [play]
+    }
+
+    func movieMatching(title: String) -> Movie? {
+        let key = Self.normalizedTitle(title)
+        guard key.count >= 2 else { return nil }
+        if let exact = movies.first(where: { Self.normalizedTitle($0.title) == key }) {
+            return exact
+        }
+        if let soft = movies.first(where: {
+            let t = Self.normalizedTitle($0.title)
+            return t.contains(key) || key.contains(t)
+        }) {
+            return soft
+        }
+        return bestTitleMatch(key: key, in: movies.map { ($0, Self.normalizedTitle($0.title)) })?.0
+    }
+
+    func seriesMatching(title: String) -> SeriesCatalogItem? {
+        let key = Self.normalizedTitle(title)
+        guard key.count >= 2 else { return nil }
+        let playable = seriesList.filter { $0.playURL != nil }
+        if let exact = playable.first(where: { Self.normalizedTitle($0.name) == key }) {
+            return exact
+        }
+        if let soft = playable.first(where: {
+            let t = Self.normalizedTitle($0.name)
+            return t.contains(key) || key.contains(t)
+        }) {
+            return soft
+        }
+        return bestTitleMatch(key: key, in: playable.map { ($0, Self.normalizedTitle($0.name)) })?.0
+    }
+
+    /// Resolve any playable URLs for a display title (series → movie → live channel).
+    func resolvePlayableStreams(forTitle title: String) -> (urls: [URL], displayName: String)? {
+        if let s = seriesMatching(title: title) {
+            let urls = streamURLs(forSeries: s)
+            if let first = urls.first { return (urls, s.name) }
+        }
+        if let m = movieMatching(title: title) {
+            let urls = streamURLs(forMovie: m)
+            if let first = urls.first { return (urls, m.title) }
+        }
+        let key = Self.normalizedTitle(title)
+        guard key.count >= 2 else { return nil }
+        // Fall back to live channel names (drama / entertainment etc.)
+        if let ch = channels.first(where: { Self.normalizedTitle($0.name) == key })
+            ?? channels.first(where: {
+                let t = Self.normalizedTitle($0.name)
+                return t.contains(key) || key.contains(t)
+            })
+            ?? bestTitleMatch(key: key, in: channels.map { ($0, Self.normalizedTitle($0.name)) })?.0 {
+            return (ch.allStreamURLs, ch.name)
+        }
+        return nil
+    }
+
+    private func bestTitleMatch<T>(key: String, in items: [(T, String)]) -> (T, String)? {
+        // Token overlap: keep tokens length >= 3 from the query
+        let tokens = Self.titleTokens(key)
+        guard !tokens.isEmpty else { return nil }
+        var best: (T, String, Int)?
+        for (item, norm) in items {
+            let score = tokens.reduce(0) { $0 + (norm.contains($1) ? $1.count : 0) }
+            guard score >= 4 else { continue }
+            if best == nil || score > best!.2 {
+                best = (item, norm, score)
+            }
+        }
+        return best.map { ($0.0, $0.1) }
+    }
+
+    nonisolated private static func titleTokens(_ normalized: String) -> [String] {
+        // Split camel/joined english roughly by inserting breaks is hard; use sliding chunks for CJK,
+        // and whitespace-free english by known separators already removed — use 4+ char whole key parts.
+        var parts: [String] = []
+        if normalized.count >= 4 { parts.append(normalized) }
+        // Also try first half for long titles
+        if normalized.count >= 8 {
+            let mid = normalized.index(normalized.startIndex, offsetBy: normalized.count / 2)
+            parts.append(String(normalized[..<mid]))
+            parts.append(String(normalized[mid...]))
+        }
+        return parts.filter { $0.count >= 3 }
+    }
 
     func channels(inGroup group: String) -> [Channel] {
         guard group != "All" else { return channels }

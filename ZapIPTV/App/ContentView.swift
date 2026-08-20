@@ -50,8 +50,14 @@ struct ContentView: View {
             }
 
             if let url = playback.overlayURL {
-                InlinePlayerOverlay(url: url, title: playback.overlayTitle)
-                    .transition(.opacity)
+                InlinePlayerOverlay(
+                    url: url,
+                    title: playback.overlayTitle,
+                    mirrorIndex: playback.overlayStreamIndex,
+                    mirrorCount: max(1, playback.overlayStreamURLs.count)
+                )
+                .transition(.opacity)
+                .zIndex(1000)
             }
         }
         .background(WindowFSConfigurator(scheme: theme.theme.scheme))
@@ -89,8 +95,11 @@ struct ContentView: View {
 private struct InlinePlayerOverlay: View {
     let url: URL
     let title: String
+    var mirrorIndex: Int = 0
+    var mirrorCount: Int = 1
     @EnvironmentObject private var playerEngine: PlayerEngine
     @EnvironmentObject private var playback: PlaybackRouter
+    @EnvironmentObject private var loc: LanguageManager
 
     var body: some View {
         ZStack {
@@ -101,6 +110,11 @@ private struct InlinePlayerOverlay: View {
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.white)
                         .lineLimit(1)
+                    if mirrorCount > 1 {
+                        Text(String(format: loc.t("live.mirror"), mirrorIndex + 1, mirrorCount))
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(.white.opacity(0.55))
+                    }
                     Spacer()
                     Button {
                         playerEngine.stop()
@@ -117,14 +131,60 @@ private struct InlinePlayerOverlay: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
 
-                VideoPlayerView(engine: playerEngine, onClose: {
-                    playerEngine.stop()
-                    playback.closeOverlay()
-                })
+                ZStack {
+                    VideoPlayerView(engine: playerEngine, onClose: {
+                        playerEngine.stop()
+                        playback.closeOverlay()
+                    })
+
+                    if let err = playerEngine.error {
+                        VStack(spacing: 12) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .font(.system(size: 28))
+                                .foregroundColor(ZapColor.accentStart)
+                            Text(err.localizedDescription)
+                                .font(.system(size: 13))
+                                .foregroundColor(.white.opacity(0.85))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 40)
+                            if mirrorIndex + 1 < mirrorCount {
+                                Button {
+                                    if let next = playback.advanceOverlayMirror() {
+                                        playerEngine.load(url: next, connectTimeout: 20)
+                                    }
+                                } label: {
+                    Text(loc.t("live.switching_hint"))
+                        .font(.system(size: 13, weight: .semibold))
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(ZapColor.accentEnd, in: Capsule())
+                        .foregroundColor(.white)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Color.black.opacity(0.55))
+                    }
+                }
             }
         }
-        .onAppear { playerEngine.load(url: url) }
-        .onDisappear { playerEngine.stop() }
+        .onAppear { playerEngine.load(url: url, connectTimeout: 20) }
+        .onChange(of: url) { _, newURL in
+            playerEngine.load(url: newURL, connectTimeout: 20)
+        }
+        .onReceive(playerEngine.$error) { err in
+            guard err != nil, mirrorIndex + 1 < mirrorCount else { return }
+            // Auto-try next mirror once per failure
+            if let next = playback.advanceOverlayMirror() {
+                playerEngine.load(url: next, connectTimeout: 20)
+            }
+        }
+        .onDisappear {
+            if playback.overlayURL == nil {
+                playerEngine.stop()
+            }
+        }
     }
 }
 
@@ -140,14 +200,12 @@ struct SidebarView: View {
         VStack(spacing: 0) {
 
             HStack(spacing: 10) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(ZapColor.accent)
-                        .frame(width: 34, height: 34)
-                    Text("Z")
-                        .font(.system(size: 20, weight: .black, design: .rounded))
-                        .foregroundColor(.white)
-                }
+                Image(nsImage: NSApp.applicationIconImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 34, height: 34)
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .shadow(color: .black.opacity(0.25), radius: 3, y: 1)
                 VStack(alignment: .leading, spacing: 1) {
                     Text("ZapIPTV")
                         .font(.system(size: 15, weight: .bold, design: .rounded))
@@ -164,17 +222,20 @@ struct SidebarView: View {
             .padding(.top, 14)
             .padding(.bottom, 10)
 
-            if sourceManager.isLoading {
-                HStack(spacing: 6) {
-                    ProgressView().scaleEffect(0.6).tint(ZapColor.accentEnd)
-                    Text(sourceManager.loadingMessage.isEmpty ? loc.t("loading") : sourceManager.loadingMessage)
-                        .font(.system(size: 10))
-                        .foregroundColor(ZapColor.textTertiary)
-                        .lineLimit(1)
+            // Fixed-height progress slot — never expands/collapses the sidebar layout.
+            ZStack {
+                if sourceManager.isLoading {
+                    ProgressView(value: sourceManager.loadProgress)
+                        .progressViewStyle(.linear)
+                        .tint(ZapColor.accentEnd)
+                        .scaleEffect(x: 1, y: 0.6, anchor: .center)
                 }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 10)
             }
+            .frame(height: 3)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 8)
+            .opacity(sourceManager.isLoading ? 1 : 0)
+            .animation(.easeOut(duration: 0.25), value: sourceManager.isLoading)
 
             Divider().background(ZapColor.border)
 

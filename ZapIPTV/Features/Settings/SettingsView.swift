@@ -83,71 +83,214 @@ struct SettingsView: View {
     }
 }
 
-// MARK: - 片源
+// MARK: - 片源（仅展示整理后的概览，不暴露具体列表地址）
 
 struct SettingsSources: View {
     @EnvironmentObject private var sourceManager: SourceManager
     @EnvironmentObject private var loc: LanguageManager
     @State private var showAdd = false
+    @State private var revealCustom = false
+
+    private var libraryCards: [(icon: String, title: String, count: Int, tint: Color)] {
+        let groups = sourceManager.channelGroups
+        func count(in keys: [String]) -> Int {
+            keys.reduce(0) { $0 + sourceManager.channels(inGroup: $1).count }
+        }
+        let liveKeys = groups.filter {
+            $0.contains("中国") || $0.contains("台湾") || $0.contains("香港")
+                || $0.contains("日本") || $0.contains("韩国") || $0.contains("春晚")
+                || $0.contains("华语")
+        }
+        let sports = sourceManager.channels(inGroup: "⚽ 体育").count
+        let movies = sourceManager.movies.count
+        let series = sourceManager.seriesList.count
+        let regions = groups.filter {
+            !$0.contains("体育") && !$0.contains("春晚") && !$0.contains("华语")
+                && ($0.contains("泰国") || $0.contains("越南") || $0.contains("印尼")
+                    || $0.contains("马来") || $0.contains("新加坡") || $0.contains("菲律宾")
+                    || $0.contains("印度") || $0.contains("美国"))
+        }
+        return [
+            ("tv.fill", loc.t("settings.lib.live"), count(in: liveKeys), ZapColor.accentStart),
+            ("sportscourt.fill", loc.t("settings.lib.sports"), sports, Color.orange),
+            ("film.fill", loc.t("settings.lib.movies"), movies, Color.pink),
+            ("rectangle.stack.fill", loc.t("settings.lib.series"), series, Color.purple),
+            ("globe.asia.australia.fill", loc.t("settings.lib.regions"), count(in: regions), Color.teal),
+        ]
+    }
+
+    private var loadedFraction: Double {
+        let total = max(sourceManager.sources.count, 1)
+        let loaded = sourceManager.sources.filter(\.isLoaded).count
+        return Double(loaded) / Double(total)
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            header(loc.t("settings.sources"), loc.t("settings.sources.hint"))
+        VStack(alignment: .leading, spacing: 20) {
+            header(loc.t("settings.sources"), loc.t("settings.sources.hint.soft"))
 
-            Button {
-                showAdd = true
-            } label: {
-                Label(loc.t("nav.add_source_cta"), systemImage: "plus.circle.fill")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .background(ZapColor.accent, in: RoundedRectangle(cornerRadius: 8))
-            }
-            .buttonStyle(.plain)
-
-            if sourceManager.userPlaylists.isEmpty {
-                Text(loc.t("settings.sources.empty"))
-                    .font(.system(size: 13))
-                    .foregroundColor(ZapColor.textTertiary)
-            } else {
-                VStack(spacing: 0) {
-                    ForEach(sourceManager.userPlaylists) { source in
-                        HStack(spacing: 10) {
-                            Circle()
-                                .fill(source.isLoaded ? ZapColor.live : ZapColor.orange)
-                                .frame(width: 7, height: 7)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(source.name)
-                                    .font(.system(size: 13, weight: .medium))
-                                    .foregroundColor(ZapColor.textPrimary)
-                                Text(loc.t("source.type.\(source.type.rawValue)"))
-                                    .font(.system(size: 11))
-                                    .foregroundColor(ZapColor.textTertiary)
-                            }
-                            Spacer()
-                            Button(loc.t("settings.remove")) {
-                                sourceManager.removeSource(source)
-                            }
-                            .buttonStyle(.plain)
-                            .font(.system(size: 12))
-                            .foregroundColor(.red.opacity(0.85))
-                        }
-                        .padding(.vertical, 10)
-                        Divider().background(ZapColor.border)
-                    }
+            // Soft status pill — no raw URLs
+            HStack(spacing: 10) {
+                ZStack {
+                    Circle()
+                        .stroke(ZapColor.border, lineWidth: 3)
+                        .frame(width: 36, height: 36)
+                    Circle()
+                        .trim(from: 0, to: loadedFraction)
+                        .stroke(ZapColor.accentEnd, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                        .rotationEffect(.degrees(-90))
+                        .frame(width: 36, height: 36)
+                    Image(systemName: sourceManager.isLoading ? "arrow.triangle.2.circlepath" : "checkmark")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(ZapColor.accentEnd)
                 }
-            }
-
-            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(loc.t("settings.lib.ready"))
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(ZapColor.textPrimary)
+                    Text(sourceManager.isLoading
+                         ? loc.t("settings.lib.syncing")
+                         : String(format: loc.t("settings.lib.summary"),
+                                  sourceManager.channels.count,
+                                  sourceManager.movies.count))
+                        .font(.system(size: 12))
+                        .foregroundColor(ZapColor.textTertiary)
+                        .lineLimit(2)
+                }
+                Spacer()
                 Button(loc.t("settings.refresh")) {
                     Task { await sourceManager.refreshAll() }
                 }
                 .buttonStyle(.plain)
+                .font(.system(size: 12, weight: .medium))
                 .foregroundColor(ZapColor.accentEnd)
+                .disabled(sourceManager.isLoading)
+            }
+            .padding(14)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(ZapColor.border.opacity(0.5), lineWidth: 0.5)
+            )
+
+            // Organized library cards (blurred / abstract — no source names)
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                ForEach(Array(libraryCards.enumerated()), id: \.offset) { _, card in
+                    libraryCard(card)
+                }
+            }
+
+            // Custom playlists — names obscured unless revealed
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Text(loc.t("settings.lib.custom"))
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(ZapColor.textSecondary)
+                    Spacer()
+                    if !sourceManager.userPlaylists.isEmpty {
+                        Button(revealCustom ? loc.t("settings.lib.hide") : loc.t("settings.lib.reveal")) {
+                            withAnimation(.easeInOut(duration: 0.2)) { revealCustom.toggle() }
+                        }
+                        .buttonStyle(.plain)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(ZapColor.textTertiary)
+                    }
+                }
+
+                if sourceManager.userPlaylists.isEmpty {
+                    Text(loc.t("settings.sources.empty"))
+                        .font(.system(size: 12))
+                        .foregroundColor(ZapColor.textTertiary)
+                        .padding(.vertical, 4)
+                } else {
+                    VStack(spacing: 0) {
+                        ForEach(Array(sourceManager.userPlaylists.enumerated()), id: \.element.id) { idx, source in
+                            HStack(spacing: 10) {
+                                Circle()
+                                    .fill(source.isLoaded ? ZapColor.live : ZapColor.orange)
+                                    .frame(width: 7, height: 7)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(revealCustom
+                                         ? source.name
+                                         : String(format: loc.t("settings.lib.custom_item"), idx + 1))
+                                        .font(.system(size: 13, weight: .medium))
+                                        .foregroundColor(ZapColor.textPrimary)
+                                        .blur(radius: revealCustom ? 0 : 0) // label already masked
+                                    Text(revealCustom
+                                         ? maskedURL(source.url)
+                                         : loc.t("source.type.\(source.type.rawValue)"))
+                                        .font(.system(size: 11, design: .monospaced))
+                                        .foregroundColor(ZapColor.textTertiary)
+                                        .lineLimit(1)
+                                        .blur(radius: revealCustom ? 0 : 3.5)
+                                }
+                                Spacer()
+                                Button(loc.t("settings.remove")) {
+                                    sourceManager.removeSource(source)
+                                }
+                                .buttonStyle(.plain)
+                                .font(.system(size: 12))
+                                .foregroundColor(.red.opacity(0.85))
+                            }
+                            .padding(.vertical, 10)
+                            if idx < sourceManager.userPlaylists.count - 1 {
+                                Divider().background(ZapColor.border)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                    .background(ZapColor.surface2.opacity(0.55), in: RoundedRectangle(cornerRadius: 12))
+                }
+
+                Button {
+                    showAdd = true
+                } label: {
+                    Label(loc.t("nav.add_source_cta"), systemImage: "plus.circle.fill")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(ZapColor.accentEnd)
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 4)
             }
         }
         .sheet(isPresented: $showAdd) { AddSourceView() }
+    }
+
+    private func libraryCard(_ card: (icon: String, title: String, count: Int, tint: Color)) -> some View {
+        HStack(spacing: 12) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(card.tint.opacity(0.18))
+                    .frame(width: 40, height: 40)
+                Image(systemName: card.icon)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(card.tint)
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(card.title)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(ZapColor.textSecondary)
+                Text("\(card.count)")
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .foregroundColor(ZapColor.textPrimary)
+                    .monospacedDigit()
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .strokeBorder(ZapColor.border.opacity(0.4), lineWidth: 0.5)
+        )
+    }
+
+    /// Soften URL: keep scheme + host blur-friendly truncation.
+    private func maskedURL(_ raw: String) -> String {
+        guard let url = URL(string: raw), let host = url.host else {
+            return String(raw.prefix(18)) + "…"
+        }
+        return "\(url.scheme ?? "https")://\(host)/••••"
     }
 
     private func header(_ title: String, _ hint: String) -> some View {
