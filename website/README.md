@@ -1,11 +1,7 @@
 # ZapIPTV 官网
 
-GitHub Pages 根目录是仓库根目录的 `index.html`。
+地址：https://linux503.github.io/ZapIPTV/
 
-正式地址：https://linux503.github.io/ZapIPTV/
-
-macOS 下载指向 GitHub Release：
-
-`https://github.com/linux503/ZapIPTV/releases/download/v1.1.8/ZapIPTV-1.1.8-universal-installer.dmg`
-
-`website/index.html` 只做跳转到站点根路径。
+三端入口：
+- macOS：GitHub Release DMG（当前 v1.1.8）
+- Windows / Android：页面已预留下载位，安装包发布后改成直链

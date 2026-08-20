@@ -3,122 +3,138 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ZapIPTV — 亚洲娱乐中心</title>
-    <meta name="description" content="ZapIPTV 1.1.8：macOS 亚洲影视与直播。中国大陆、港澳台、日韩与东南亚。Universal DMG。" />
+    <title>ZapIPTV — 亚洲娱乐，三个系统都能看</title>
+    <meta name="description" content="ZapIPTV：亚洲直播与华语影视。现已提供 macOS。Windows 与 Android 即将上线。" />
     <link rel="canonical" href="https://linux503.github.io/ZapIPTV/" />
-    <meta property="og:title" content="ZapIPTV — 亚洲娱乐中心" />
-    <meta property="og:description" content="打开就是亚洲频道。macOS Universal。" />
+    <meta property="og:title" content="ZapIPTV — macOS / Windows / Android" />
+    <meta property="og:description" content="打开就是亚洲频道。Mac 现已可下，Windows 与 Android 即将推出。" />
     <meta property="og:url" content="https://linux503.github.io/ZapIPTV/" />
-    <meta property="og:type" content="website" />
     <link rel="stylesheet" href="./website/styles.css" />
   </head>
   <body>
-    <div class="page">
-      <header class="nav">
-        <a class="nav__brand" href="#top">
-          <img src="./website/app-icon.png" width="40" height="40" alt="ZapIPTV" />
-          <span>ZapIPTV</span>
-        </a>
-        <div class="nav__links">
-          <a href="#catalog">目录</a>
-          <a href="#now">1.1.8</a>
-          <a href="#get">下载</a>
+    <header class="bar">
+      <a class="brand" href="#top">
+        <img src="./website/app-icon.png" width="36" height="36" alt="" />
+        ZapIPTV
+      </a>
+      <nav>
+        <a href="#apps">下载</a>
+        <a href="#why">产品</a>
+        <a href="#faq">说明</a>
+        <a href="https://github.com/linux503/ZapIPTV">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <p class="eyebrow">亚洲娱乐中心 · 跨端</p>
+        <h1>一台设备一种安装包。<br />目录还是亚洲的。</h1>
+        <p class="lead">
+          中国大陆、港澳台、日韩、东南亚。直播默认中国大陆。
+          Mac 已经可以装；Windows 安装包和 Android APK 正在做同一套目录。
+        </p>
+        <div class="hero-cta">
+          <a class="btn solid" href="#apps">选系统下载</a>
+          <a class="btn ghost" href="https://github.com/linux503/ZapIPTV/releases">全部 Release</a>
         </div>
-      </header>
+      </section>
 
-      <main id="top">
-        <section class="mast">
-          <p class="kicker">macOS · Universal · v1.1.8</p>
-          <h1>亚洲的<br />频道，先打开。</h1>
-          <p class="deck">
-            不是全球英文源堆出来的播放器。ZapIPTV 默认落在中国大陆、港澳台、日韩和东南亚。
-            Live TV 第一屏就是 🇨🇳 中国大陆。
-          </p>
-          <div class="mast__actions">
-            <a class="cta" href="https://github.com/linux503/ZapIPTV/releases/download/v1.1.8/ZapIPTV-1.1.8-universal-installer.dmg">下载安装包</a>
-            <a class="textlink" href="https://github.com/linux503/ZapIPTV">GitHub →</a>
-          </div>
-          <dl class="meta">
-            <div><dt>芯片</dt><dd>Apple Silicon / Intel</dd></div>
-            <div><dt>系统</dt><dd>macOS 14+</dd></div>
-            <div><dt>体积</dt><dd>约 4 MB</dd></div>
-          </dl>
-        </section>
+      <section id="apps" class="apps">
+        <h2>下载</h2>
+        <p class="hint">点对应系统。没有安装包的会显示预计形态，避免下到空链。</p>
 
-        <section id="catalog" class="band">
-          <header class="band__head">
-            <span class="num">01</span>
-            <h2>先看哪里</h2>
-          </header>
-          <ul class="catalog">
-            <li><b>中国大陆</b><span>央视、卫视、地方台，国内直播列表</span></li>
-            <li><b>华语影视</b><span>CCTV-6 / CCTV-8 / CHC / 剧场</span></li>
-            <li><b>台湾 · 香港</b><span>地区源单独成组</span></li>
-            <li><b>日本 · 韩国</b><span>东亚直播</span></li>
-            <li><b>东南亚</b><span>泰、越、印尼、马、新、菲、印</span></li>
-            <li><b>自备片库</b><span>M3U / Xtream / 本地文件</span></li>
-          </ul>
-        </section>
-
-        <section class="band band--split">
-          <header class="band__head">
-            <span class="num">02</span>
-            <h2>怎么用</h2>
-          </header>
-          <div class="split">
-            <article>
-              <h3>直播</h3>
-              <p>按地区分组，点一下就播。确认打不开的源会从列表拿掉或自动跳下一条，不用干等。</p>
-            </article>
-            <article>
-              <h3>影视</h3>
-              <p>华语电影、电视剧走线性频道。完整点播片库请导入你自己的播放列表。</p>
-            </article>
-            <article>
-              <h3>升级</h3>
-              <p>覆盖安装即可。旧的英文全球源会在启动时清掉，不必进设置 Reset。</p>
-            </article>
-          </div>
-        </section>
-
-        <section id="now" class="band">
-          <header class="band__head">
-            <span class="num">03</span>
-            <h2>这一版</h2>
-          </header>
-          <ol class="edition">
-            <li>
-              <h3>国内直播</h3>
-              <p>补上央视 / 卫视 / 地方台的 IPv4 列表，和原中国源一起用。</p>
-            </li>
-            <li>
-              <h3>华语影视</h3>
-              <p>Home 增加电影与电视剧频道入口。</p>
-            </li>
-            <li>
-              <h3>新图标</h3>
-              <p>Dock 与官网换成闪电 Z。</p>
-            </li>
-          </ol>
-        </section>
-
-        <section id="get" class="get">
-          <div class="get__inner">
-            <p class="kicker kicker--light">Download</p>
-            <h2>拿到 macOS 版</h2>
-            <p>拖进「应用程序」。若提示未验证开发者：系统设置 → 隐私与安全性 → 仍要打开。</p>
-            <a class="cta cta--invert" href="https://github.com/linux503/ZapIPTV/releases/download/v1.1.8/ZapIPTV-1.1.8-universal-installer.dmg">
-              ZapIPTV-1.1.8.dmg
+        <div class="os-grid">
+          <article class="os is-ready">
+            <div class="os-top">
+              <span class="os-name">macOS</span>
+              <span class="tag on">可下载</span>
+            </div>
+            <p>Universal DMG，Apple Silicon 与 Intel。拖进应用程序即可。</p>
+            <ul>
+              <li>系统 macOS 14+</li>
+              <li>体积约 4 MB</li>
+              <li>当前 v1.1.8</li>
+            </ul>
+            <a class="btn solid wide" href="https://github.com/linux503/ZapIPTV/releases/download/v1.1.8/ZapIPTV-1.1.8-universal-installer.dmg">
+              下载 .dmg
             </a>
-            <p class="get__win">Windows 稍后。先用 Mac。</p>
-          </div>
-        </section>
-      </main>
+            <p class="fine">未验证开发者：系统设置 → 隐私与安全性 → 仍要打开。</p>
+          </article>
 
-      <footer class="foot">
-        <span>© 2026 ZapIPTV</span>
-        <a href="https://github.com/linux503/ZapIPTV/releases/tag/v1.1.8">Release</a>
-      </footer>
-    </div>
+          <article class="os">
+            <div class="os-top">
+              <span class="os-name">Windows</span>
+              <span class="tag">即将推出</span>
+            </div>
+            <p>桌面客户端，内嵌播放。目录与 macOS 同一套亚洲分区。</p>
+            <ul>
+              <li>计划 Windows 10 / 11</li>
+              <li>安装包 .exe / .msi</li>
+              <li>播放走本地播放引擎</li>
+            </ul>
+            <a class="btn ghost wide" href="https://github.com/linux503/ZapIPTV/releases">关注 Release</a>
+            <p class="fine">上线后会出现在 GitHub Releases，本页按钮会改成直链。</p>
+          </article>
+
+          <article class="os">
+            <div class="os-top">
+              <span class="os-name">Android</span>
+              <span class="tag">即将推出</span>
+            </div>
+            <p>手机 / 盒子都能装的 APK。同样默认中国大陆与华语影视。</p>
+            <ul>
+              <li>计划 Android 8+</li>
+              <li>侧载 APK，后续上应用商店</li>
+              <li>遥控器友好的直播列表</li>
+            </ul>
+            <a class="btn ghost wide" href="https://github.com/linux503/ZapIPTV/releases">关注 Release</a>
+            <p class="fine">APK 发布后，这里会提供直接下载与版本号。</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="why" class="why">
+        <h2>三个系统，同一套内容</h2>
+        <div class="why-grid">
+          <div>
+            <h3>地区</h3>
+            <p>🇨🇳 中国大陆 · 🎬 华语影视 · 🇹🇼 台湾 · 🇭🇰 香港 · 🇯🇵 日本 · 🇰🇷 韩国 · 东南亚</p>
+          </div>
+          <div>
+            <h3>直播</h3>
+            <p>打开就是中国大陆。国内还有央视 / 卫视 / 地方台。打不开会跳下一条。</p>
+          </div>
+          <div>
+            <h3>影视</h3>
+            <p>CCTV-6、CCTV-8、CHC、剧场。自己的片库用 M3U / Xtream 导入。</p>
+          </div>
+          <div>
+            <h3>安装</h3>
+            <p>Mac 覆盖安装即可。Windows、Android 发布后同样只保留一个主窗口播放，不弹独立播放器。</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="faq" class="faq">
+        <h2>说明</h2>
+        <details open>
+          <summary>Windows / Android 什么时候能下？</summary>
+          <p>官网已经按三端预留入口。安装包会先发到 <a href="https://github.com/linux503/ZapIPTV/releases">GitHub Releases</a>，再把本页按钮换成直链。请 Watch 仓库或看 Releases。</p>
+        </details>
+        <details>
+          <summary>Mac 第一次打不开？</summary>
+          <p>ad-hoc 签名。右键 App → 打开，或到隐私与安全性点仍要打开。</p>
+        </details>
+        <details>
+          <summary>三个系统源一不一样？</summary>
+          <p>目录规划一致：亚洲优先，默认中国大陆。各端播放器用系统或 VLC，体验会略有差别。</p>
+        </details>
+      </section>
+    </main>
+
+    <footer>
+      <span>© 2026 ZapIPTV</span>
+      <span>macOS 现已提供 · Windows · Android 即将推出</span>
+    </footer>
   </body>
 </html>

@@ -5,8 +5,8 @@
 <h1 align="center">ZapIPTV</h1>
 
 <p align="center">
-  <strong>亚洲娱乐中心</strong> · macOS 直播与影视客户端<br />
-  打开就是中国大陆 / 港澳台 / 日韩 / 东南亚频道，不是一堆英文源。
+  <strong>亚洲娱乐中心</strong> · macOS 已发布 · Windows / Android 即将推出<br />
+  打开就是中国大陆 / 港澳台 / 日韩 / 东南亚频道。
 </p>
 
 <p align="center">
@@ -28,7 +28,7 @@
 
 ## 这是什么
 
-ZapIPTV 是一款 **macOS** 应用（Apple Silicon + Intel），用来看亚洲直播和华语影视频道。
+ZapIPTV 目前 **macOS** 可下载（Apple Silicon + Intel）。**Windows** 与 **Android** 正在做同一套亚洲目录，安装包会发到 Releases。
 
 - 默认地区：🇨🇳 中国大陆 · 🇹🇼 台湾 · 🇭🇰 香港 · 🇯🇵 日本 · 🇰🇷 韩国 · 东南亚
 - Live TV 进入后默认 **中国大陆**
