@@ -10,4 +10,12 @@ DerivedData/
 # DMG assets (website links use GitHub Releases instead)
 website/downloads/*.dmg
 website/downloads/*.zip
+dist/
+cross-platform/electron/node_modules/
+cross-platform/electron/dist/
+cross-platform/android/.gradle/
+cross-platform/android/app/build/
+cross-platform/android/build/
+cross-platform/android/.kotlin/
+*.apk.idsig
 

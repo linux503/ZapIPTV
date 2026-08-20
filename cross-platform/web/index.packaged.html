@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>ZapIPTV</title>
+  <link rel="stylesheet" href="css/app.css" />
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.7/dist/hls.min.js"></script>
+</head>
+<body data-theme="dark">
+  <div id="loader" class="loader">
+    <div class="status" id="load-msg">正在載入頻道…</div>
+  </div>
+  <div id="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">Z</div>
+        <div><strong>ZapIPTV</strong><small id="tagline">亞洲影視與直播應用</small></div>
+      </div>
+      <button class="nav-btn active" data-tab="home"><span>🏠</span> <span id="nav-home">首頁</span></button>
+      <button class="nav-btn" data-tab="live"><span>📺</span> <span id="nav-live">直播</span></button>
+      <div class="nav-spacer"></div>
+      <button class="nav-btn" data-tab="settings"><span>⚙️</span> <span id="nav-settings">設定</span></button>
+    </aside>
+    <div class="main">
+      <section id="view-home" class="view active">
+        <div class="home-scroll" id="home-sections"></div>
+      </section>
+      <section id="view-live" class="view">
+        <div class="live-layout">
+          <div class="groups">
+            <h4 id="cat-label">分類</h4>
+            <div id="group-list"></div>
+          </div>
+          <div class="list-panel">
+            <div class="search-box">
+              <span>🔍</span>
+              <input id="search" type="search" placeholder="搜尋頻道" />
+            </div>
+            <div class="now-bar" id="now-bar">
+              <small id="now-label">正在播放</small>
+              <strong id="now-name"></strong>
+            </div>
+            <div class="channel-list" id="channel-list"></div>
+          </div>
+          <div class="player-panel">
+            <div class="empty-player" id="empty-player">選擇一個頻道開始觀看</div>
+            <video id="video" controls playsinline style="display:none"></video>
+            <div class="player-bar" id="player-bar" style="display:none">
+              <div><div class="title" id="play-title"></div><div class="sub" id="play-group"></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section id="view-settings" class="view settings">
+        <h2 id="settings-title">設定</h2>
+        <div class="setting-block">
+          <h4 id="lang-label">語言</h4>
+          <button class="opt-btn active" data-lang="hant" id="opt-hant">繁體</button>
+          <button class="opt-btn" data-lang="hans" id="opt-hans">简体</button>
+        </div>
+        <div class="setting-block">
+          <h4 id="theme-label">外觀</h4>
+          <button class="opt-btn active" data-theme="dark" id="opt-dark">深色</button>
+          <button class="opt-btn" data-theme="light" id="opt-light">淺色</button>
+        </div>
+        <div class="setting-block">
+          <h4 id="ver-label">版本</h4>
+          <p>2.0.0</p>
+          <button class="opt-btn" id="btn-refresh">重新整理片源</button>
+        </div>
+      </section>
+    </div>
+  </div>
+  <script src="js/app.all.js"></script>
+</body>
+</html>

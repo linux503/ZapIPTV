@@ -5,67 +5,38 @@
 <h1 align="center">ZapIPTV</h1>
 
 <p align="center">
-  <strong>亚洲娱乐中心</strong> · macOS 已发布 · Windows / Android 即将推出<br />
-  打开就是中国大陆 / 港澳台 / 日韩 / 东南亚频道。
+  <strong>亚洲影视与直播应用</strong> · macOS / Windows / Android<br />
+  默认中国大陆、港澳台、日韩与东南亚频道。
 </p>
 
 <p align="center">
   <a href="https://linux503.github.io/ZapIPTV/"><img alt="Website" src="https://img.shields.io/badge/Website-linux503.github.io-E8192C" /></a>
   <a href="https://github.com/linux503/ZapIPTV/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/linux503/ZapIPTV?color=FF6B35" /></a>
-  <a href="https://github.com/linux503/ZapIPTV/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/linux503/ZapIPTV/total?color=111" /></a>
-  <img alt="macOS 14+" src="https://img.shields.io/badge/macOS-14%2B%20Universal-black" />
+  <img alt="macOS Universal" src="https://img.shields.io/badge/macOS-Universal-black" />
+  <img alt="Windows" src="https://img.shields.io/badge/Windows-10%2B-blue" />
+  <img alt="Android" src="https://img.shields.io/badge/Android-8%2B-green" />
 </p>
 
-<p align="center">
-  <a href="https://github.com/linux503/ZapIPTV/releases/latest">下载最新 DMG</a>
-  ·
-  <a href="https://linux503.github.io/ZapIPTV/">产品官网</a>
-  ·
-  <a href="https://github.com/linux503/ZapIPTV/releases">全部版本</a>
-</p>
+## 下载（v2.0.0）
 
----
+| 系统 | 安装包 | 说明 |
+|------|--------|------|
+| **macOS** | [Universal DMG](https://github.com/linux503/ZapIPTV/releases/download/v2.0.0/ZapIPTV-2.0.0-universal-installer.dmg) | Apple Silicon (M) + Intel，拖进「应用程序」 |
+| **Windows** | [便携 .exe](https://github.com/linux503/ZapIPTV/releases/download/v2.0.0/ZapIPTV-2.0.0-win-x64.exe) | Windows 10/11，双击即用 |
+| **Android** | [APK](https://github.com/linux503/ZapIPTV/releases/download/v2.0.0/ZapIPTV-2.0.0-android.apk) | Android 8+，需允许未知来源 |
 
-## 这是什么
+官网：https://linux503.github.io/ZapIPTV/
 
-ZapIPTV 目前 **macOS** 可下载（Apple Silicon + Intel）。**Windows** 与 **Android** 正在做同一套亚洲目录，安装包会发到 Releases。
+## 功能
 
-- 默认地区：🇨🇳 中国大陆 · 🇹🇼 台湾 · 🇭🇰 香港 · 🇯🇵 日本 · 🇰🇷 韩国 · 东南亚
-- Live TV 进入后默认 **中国大陆**
-- 另有国内直播列表（央视 / 卫视 / 地方台）
-- 华语影视：CCTV-6、CHC、电影轮播频道、历年春晚
-- 支持自己导入 **M3U / Xtream / 本地文件**
-- 打不开的频道会跳过，避免卡在转圈
+- 🇨🇳 中国大陆 / 🎬 华语影视 / 🎆 春晚 / 港澳台 / 日韩 / 东南亚
+- 简繁切换、浅色/深色主题
+- macOS 原生版另含：完整设置、应用内更新、TMDB 等
 
-> IPTV/M3U 只是能力，不是产品主轴。主轴是「亚洲优先的娱乐中心」。
+## 构建
 
-## 安装
-
-1. 打开 [Releases](https://github.com/linux503/ZapIPTV/releases/latest)，下载 `ZapIPTV-*-universal-installer.dmg`
-2. 把 **ZapIPTV.app** 拖进 **应用程序**
-3. 第一次打开若提示无法验证开发者：系统设置 → 隐私与安全性 → 仍要打开，或右键 App 选「打开」
-
-当前版本：**1.1.16**（Universal）
-
-## 功能概览
-
-| | |
-|---|---|
-| 直播 | 按国家/地区分组，点击即播 |
-| 华语影视 | 电影 / 电视剧线性频道 |
-| 发现 | TMDB 趋势（配置 API Key 后） |
-| 播放 | 原生播放器，适配较新的 macOS |
-| 源管理 | 添加、刷新、恢复默认亚洲源 |
-
-## 仓库说明
-
-这个仓库同时托管：
-
-- **GitHub Pages 官网**：[https://linux503.github.io/ZapIPTV/](https://linux503.github.io/ZapIPTV/)
-- **安装包**：在 [Releases](https://github.com/linux503/ZapIPTV/releases) 里下载 DMG
-
-Windows 客户端仍在规划中。
+见 [cross-platform/README.md](cross-platform/README.md) 与 `scripts/build-all.sh`。
 
 ## License
 
-仅供个人学习与自用播放列表。请遵守当地法律法规与版权要求，不要把未授权内容作为商用源。
+仅供个人学习与自用播放列表。请遵守当地法律法规与版权要求。

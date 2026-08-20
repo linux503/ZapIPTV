@@ -1,5 +1,7 @@
 {
-  "version": "1.1.16",
-  "dmg": "https://github.com/linux503/ZapIPTV/releases/download/v1.1.16/ZapIPTV-1.1.16-universal-installer.dmg",
+  "version": "2.0.0",
+  "dmg": "https://github.com/linux503/ZapIPTV/releases/download/v2.0.0/ZapIPTV-2.0.0-universal-installer.dmg",
+  "win": "https://github.com/linux503/ZapIPTV/releases/download/v2.0.0/ZapIPTV-2.0.0-win-x64.exe",
+  "apk": "https://github.com/linux503/ZapIPTV/releases/download/v2.0.0/ZapIPTV-2.0.0-android.apk",
   "page": "https://github.com/linux503/ZapIPTV/releases/latest"
 }
