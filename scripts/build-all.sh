@@ -43,7 +43,10 @@ if [ ! -f gradlew ]; then
 fi
 chmod +x gradlew
 ./gradlew assembleRelease 2>&1 | tail -20
-APK="$AND/app/build/outputs/apk/release/app-release-unsigned.apk"
+APK="$AND/app/build/outputs/apk/release/app-release.apk"
+if [ ! -f "$APK" ]; then
+  APK="$AND/app/build/outputs/apk/release/app-release-unsigned.apk"
+fi
 echo "Android APK: $APK"
 
 echo "==> Mac Universal DMG"

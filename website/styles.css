@@ -155,7 +155,7 @@ h1 em{
 .stat b{display:block;font-size:22px;font-weight:800;background:linear-gradient(90deg,#fff,var(--orange));-webkit-background-clip:text;background-clip:text;color:transparent}
 .stat span{font-size:11px;color:var(--mute);margin-top:4px;display:block}
 
-.hero-cta{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:440px}
+.hero-cta{display:grid;grid-template-columns:1fr;gap:12px;max-width:440px}
 .btn{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   min-height:58px;padding:10px 16px;border-radius:14px;
@@ -319,9 +319,12 @@ h2{
 .os:hover::before{opacity:1}
 .os.is-ready{border-color:rgba(255,107,53,.25)}
 .os-icon{
-  font-size:28px;margin-bottom:14px;height:32px;
+  width:40px;height:40px;margin-bottom:14px;
+  display:grid;place-items:center;
+  color:#fff;
   filter:drop-shadow(0 0 12px rgba(255,107,53,.3));
 }
+.os-icon svg{width:100%;height:100%;fill:currentColor}
 .os-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
 .os-name{font-size:22px;font-weight:800}
 .tag{
@@ -358,7 +361,12 @@ h2{
   border-color:rgba(255,107,53,.3);
   box-shadow:0 16px 48px rgba(0,0,0,.3);
 }
-.bento .ico{font-size:28px;margin-bottom:10px;display:block}
+.bento .ico{
+  width:32px;height:32px;margin-bottom:10px;display:block;
+  color:#fff;filter:drop-shadow(0 0 12px rgba(255,107,53,.24));
+}
+.bento .ico svg{width:100%;height:100%;display:block;fill:currentColor}
+.bento .ico svg [stroke]{fill:none}
 .bento h3{margin:0 0 10px;font-size:18px;font-weight:700}
 .bento p{margin:0;color:var(--mute);line-height:1.65;font-size:14px}
 

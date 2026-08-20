@@ -11,14 +11,16 @@ android {
         applicationId = "com.zapiptv.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 200
-        versionName = "2.0.0"
+        versionCode = 201
+        versionName = "2.0.1"
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+            // Use the debug keystore by default so release APKs are installable.
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 

@@ -13,6 +13,33 @@
     <link rel="stylesheet" href="./website/styles.css" />
   </head>
   <body>
+    <svg width="0" height="0" style="position:absolute">
+      <symbol id="icon-apple" viewBox="0 0 24 24">
+        <path d="M15.2 3.2c-.8 1-1.3 2.3-1.2 3.6 1.2.1 2.5-.6 3.3-1.6.8-.9 1.3-2.2 1.2-3.5-1.2 0-2.5.6-3.3 1.5Z"/>
+        <path d="M17.8 12.4c0-2 1.7-3 1.8-3.1-1-1.5-2.6-1.7-3.1-1.8-1.3-.1-2.5.8-3.2.8s-1.8-.8-2.9-.8c-1.5 0-2.9.9-3.7 2.3-1.6 2.8-.4 6.9 1.2 9.2.8 1.1 1.7 2.4 3 2.3 1.2 0 1.7-.8 3.1-.8s1.9.8 3.1.8c1.3 0 2.1-1.1 2.9-2.2.9-1.3 1.3-2.6 1.3-2.7-.1 0-3.5-1.4-3.5-4Z"/>
+      </symbol>
+      <symbol id="icon-windows" viewBox="0 0 24 24">
+        <path d="M2 4.4 10 3v8.2H2V4.4Zm9 6.8V2.9L22 1v10.2H11Zm-9 1.6h8V21l-8-1.4v-6.8Zm9 8.3v-8.3h11V23l-11-1.9Z"/>
+      </symbol>
+      <symbol id="icon-android" viewBox="0 0 24 24">
+        <path d="M8 6.1 6.8 4.2a.7.7 0 1 1 1.2-.7L9.3 5.6a8.4 8.4 0 0 1 5.4 0L16 3.5a.7.7 0 0 1 1.2.7L16 6.1a6.2 6.2 0 0 1 2.9 5.2H5.1A6.2 6.2 0 0 1 8 6.1Zm1.6 2.1a.8.8 0 1 0 0 1.6.8.8 0 0 0 0-1.6Zm4.8 0a.8.8 0 1 0 0 1.6.8.8 0 0 0 0-1.6Z"/>
+        <path d="M5.5 12.3h13v5.8a1.9 1.9 0 0 1-1.9 1.9H15v2.1a1 1 0 1 1-2 0V20h-2v2.1a1 1 0 1 1-2 0V20H7.4a1.9 1.9 0 0 1-1.9-1.9v-5.8Z"/>
+      </symbol>
+      <symbol id="icon-live" viewBox="0 0 24 24">
+        <path d="M12 6.5a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11Zm0 2.5a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/>
+        <path d="M5.6 3.8a1 1 0 0 1 1.4 0 11 11 0 0 0 0 16.4 1 1 0 0 1-1.4 1.4 13 13 0 0 1 0-19.2 1 1 0 0 1 0 1.4Zm11.4 0a1 1 0 0 1 1.4 0 13 13 0 0 1 0 19.2 1 1 0 1 1-1.4-1.4 11 11 0 0 0 0-16.4 1 1 0 0 1 0-1.4Z"/>
+      </symbol>
+      <symbol id="icon-film" viewBox="0 0 24 24">
+        <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v13a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 18.5v-13Zm4 .5H6.5v2H8V6Zm0 4H6.5v2H8v-2Zm0 4H6.5v2H8v-2Zm0 4H6.5v.5c0 .3.2.5.5.5H8v-1Zm8-12H10v12h6V6Zm1.5 0H18v2h-1.5V6Zm0 4H18v2h-1.5v-2Zm0 4H18v2h-1.5v-2Zm0 4H18v.5a.5.5 0 0 1-.5.5h-1v-1Z"/>
+      </symbol>
+      <symbol id="icon-language" viewBox="0 0 24 24">
+        <path d="M4 6.5h8M8 4v2.5m0 0A13.5 13.5 0 0 1 4.8 15M6.8 12c1.1 1.2 2.4 2.3 3.8 3.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M14.5 7.5h1.3l3.7 9h-1.8l-.9-2.2h-3.5l-.9 2.2h-1.7l3.8-9Zm.5 2.4-1.1 2.9H16l-1-2.9Z"/>
+      </symbol>
+      <symbol id="icon-play" viewBox="0 0 24 24">
+        <path d="M6 5.8A1.8 1.8 0 0 1 8.7 4.2l9.1 6a2 2 0 0 1 0 3.3l-9.1 6A1.8 1.8 0 0 1 6 18V5.8Z"/>
+      </symbol>
+    </svg>
     <div class="fx" aria-hidden="true"></div>
     <div class="fx-grid" aria-hidden="true"></div>
     <div class="fx-orb a" aria-hidden="true"></div>
@@ -48,13 +75,9 @@
             <div class="stat"><b>2.0</b><span data-i18n="stat.version">正式版</span></div>
           </div>
           <div class="hero-cta">
-            <a class="btn solid" href="https://github.com/linux503/ZapIPTV/releases/download/v2.0.1/ZapIPTV-2.0.1-universal-installer.dmg">
-              <span data-i18n="cta.mac">下載 macOS</span>
-              <small>v2.0.1 · Universal</small>
-            </a>
-            <a class="btn ghost" href="#apps">
-              <span data-i18n="cta.other">Windows / Android</span>
-              <small data-i18n="cta.ready">現已可下載</small>
+            <a class="btn solid" href="#apps">
+              <span data-i18n="cta.download">选择下载</span>
+              <small data-i18n="cta.choose">macOS / Windows / Android</small>
             </a>
           </div>
           <ul class="regions">
@@ -98,7 +121,7 @@
         </div>
         <div class="os-grid">
           <article class="os is-ready">
-            <div class="os-icon"></div>
+            <div class="os-icon" aria-hidden="true"><svg><use href="#icon-apple"></use></svg></div>
             <div class="os-top">
               <span class="os-name">macOS</span>
               <span class="tag on" data-i18n="tag.ready">可下載</span>
@@ -113,7 +136,7 @@
             <p class="fine" data-i18n="mac.gate">若提示未驗證：系統設定 → 隱私與安全性 → 仍要打開。</p>
           </article>
           <article class="os is-ready">
-            <div class="os-icon">⊞</div>
+            <div class="os-icon" aria-hidden="true"><svg><use href="#icon-windows"></use></svg></div>
             <div class="os-top">
               <span class="os-name">Windows</span>
               <span class="tag on" data-i18n="tag.ready">可下載</span>
@@ -128,7 +151,7 @@
             <p class="fine" data-i18n="win.note">免安裝便攜版，雙擊即可用。</p>
           </article>
           <article class="os is-ready">
-            <div class="os-icon">▶</div>
+            <div class="os-icon" aria-hidden="true"><svg><use href="#icon-android"></use></svg></div>
             <div class="os-top">
               <span class="os-name">Android</span>
               <span class="tag on" data-i18n="tag.ready">可下載</span>
@@ -152,22 +175,22 @@
         </div>
         <div class="bento">
           <article>
-            <span class="ico">📡</span>
+            <span class="ico" aria-hidden="true"><svg><use href="#icon-live"></use></svg></span>
             <h3 data-i18n="why.live">直播</h3>
             <p data-i18n="why.live.p">第一屏就是中國大陸。央視、衛視、地方台。打不開會自動跳下一條。</p>
           </article>
           <article>
-            <span class="ico">🎬</span>
+            <span class="ico" aria-hidden="true"><svg><use href="#icon-film"></use></svg></span>
             <h3 data-i18n="why.vod">影視</h3>
             <p data-i18n="why.vod.p">CCTV-6、CHC、周星馳電影輪播，還有歷年春晚。</p>
           </article>
           <article>
-            <span class="ico">🌐</span>
+            <span class="ico" aria-hidden="true"><svg><use href="#icon-language"></use></svg></span>
             <h3 data-i18n="why.lang">簡繁</h3>
             <p data-i18n="why.lang.p">App 和官網都支援簡體、繁體，側欄一鍵切換。</p>
           </article>
           <article>
-            <span class="ico">▶️</span>
+            <span class="ico" aria-hidden="true"><svg><use href="#icon-play"></use></svg></span>
             <h3 data-i18n="why.play">一個視窗</h3>
             <p data-i18n="why.play.p">點了就在主視窗裡播，不另開播放器。</p>
           </article>
@@ -203,7 +226,7 @@
           eyebrow: "亚洲直播进行中",
           h1: "亚洲影视与直播应用",
           lead: "默认中国大陆，还有港澳台、日韩和东南亚。自己的片库用 M3U / Xtream 导入。",
-          "cta.mac": "下载 macOS", "cta.other": "Windows / Android", "cta.ready": "现已可下载",
+          "cta.download": "选择下载", "cta.choose": "macOS / Windows / Android",
           "chip.sea": "东南亚",
           "stat.platforms": "平台可下载", "stat.regions": "亚洲分区", "stat.version": "正式版",
           "apps.kicker": "一台设备一个安装包",
@@ -238,7 +261,7 @@
           eyebrow: "亞洲直播進行中",
           h1: "亞洲影視與直播應用",
           lead: "預設中國大陸，還有港澳台、日韓和東南亞。自己的片庫用 M3U / Xtream 匯入。",
-          "cta.mac": "下載 macOS", "cta.other": "Windows / Android", "cta.ready": "現已可下載",
+          "cta.download": "選擇下載", "cta.choose": "macOS / Windows / Android",
           "chip.sea": "東南亞",
           "stat.platforms": "平台可下載", "stat.regions": "亞洲分區", "stat.version": "正式版",
           "apps.kicker": "一台裝置一個安裝包",
