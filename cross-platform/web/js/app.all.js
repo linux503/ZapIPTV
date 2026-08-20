@@ -194,6 +194,10 @@ const state = {
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
 
+function isPhoneLayout() {
+  return window.matchMedia('(max-width: 839px)').matches;
+}
+
 function applyI18n() {
   const L = state.lang;
   $('#tagline').textContent = t('tagline', L);
@@ -356,6 +360,9 @@ function play(ch) {
     video.src = url;
   }
   renderChannelList();
+  if (isPhoneLayout()) {
+    document.querySelector('.player-panel')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  }
 }
 
 function switchTab(name) {

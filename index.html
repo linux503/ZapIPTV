@@ -39,6 +39,43 @@
       <symbol id="icon-play" viewBox="0 0 24 24">
         <path d="M6 5.8A1.8 1.8 0 0 1 8.7 4.2l9.1 6a2 2 0 0 1 0 3.3l-9.1 6A1.8 1.8 0 0 1 6 18V5.8Z"/>
       </symbol>
+      <symbol id="icon-cn" viewBox="0 0 24 24">
+        <rect x="2" y="4" width="20" height="16" rx="4" fill="#de2910"/>
+        <path d="m7.2 7 1 2.1 2.3.2-1.7 1.5.5 2.2-2-1.1-2 1 .4-2.1-1.6-1.6 2.3-.2 1-2Z" fill="#ffde00"/>
+        <circle cx="13.5" cy="7.2" r=".8" fill="#ffde00"/>
+        <circle cx="15.3" cy="9.2" r=".7" fill="#ffde00"/>
+        <circle cx="15.1" cy="12" r=".7" fill="#ffde00"/>
+        <circle cx="12.9" cy="13.9" r=".7" fill="#ffde00"/>
+      </symbol>
+      <symbol id="icon-gala" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" fill="#7a0814"/>
+        <path d="M12 5v3M12 16v3M5 12h3M16 12h3M7.2 7.2l2.1 2.1M14.7 14.7l2.1 2.1M16.8 7.2l-2.1 2.1M9.3 14.7l-2.1 2.1" stroke="#ffb347" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="12" cy="12" r="2.3" fill="#ffcf5a"/>
+      </symbol>
+      <symbol id="icon-tw" viewBox="0 0 24 24">
+        <rect x="2" y="4" width="20" height="16" rx="4" fill="#de2910"/>
+        <path d="M2 4h10v8H2z" fill="#012b7f"/>
+        <circle cx="7" cy="8" r="2.2" fill="#fff"/>
+      </symbol>
+      <symbol id="icon-hk" viewBox="0 0 24 24">
+        <rect x="2" y="4" width="20" height="16" rx="4" fill="#c8102e"/>
+        <path d="M12 8.2c.9.7 1.2 1.6 1 2.7-.2 1.1-.8 1.9-1.8 2.3.7-.9.8-1.8.4-2.8-.3-.8-.2-1.5.4-2.2Zm-2.8 1.1c1.1.2 1.8.8 2.1 1.9.3 1 .1 2-.7 2.8.1-1.1-.3-1.9-1.2-2.6-.7-.5-1-1.2-.8-2.1Zm5.6 0c.2.9-.1 1.6-.8 2.1-.9.7-1.3 1.5-1.2 2.6-.8-.8-1-1.8-.7-2.8.3-1.1 1-1.7 2.1-1.9Z" fill="#fff"/>
+      </symbol>
+      <symbol id="icon-jp" viewBox="0 0 24 24">
+        <rect x="2" y="4" width="20" height="16" rx="4" fill="#fff"/>
+        <circle cx="12" cy="12" r="4.1" fill="#bc002d"/>
+      </symbol>
+      <symbol id="icon-kr" viewBox="0 0 24 24">
+        <rect x="2" y="4" width="20" height="16" rx="4" fill="#fff"/>
+        <path d="M12 8.1a3.9 3.9 0 0 1 3.9 3.9h-3.9a2 2 0 1 0-2 2 2 2 0 0 1 2 2v.9A3.9 3.9 0 0 1 8.1 14H12a2 2 0 1 0 2-2 2 2 0 0 1-2-2v-.9Z" fill="#cd2e3a"/>
+        <path d="M12 15.9A3.9 3.9 0 0 1 8.1 12H12a2 2 0 1 0 2-2 2 2 0 0 1-2-2v-.9A3.9 3.9 0 0 1 15.9 10H12a2 2 0 1 0-2 2 2 2 0 0 1 2 2v1.9Z" fill="#0047a0"/>
+      </symbol>
+      <symbol id="icon-sea" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" fill="#0f3b75"/>
+        <path d="M7 14.8c1.6-1.2 3.3-1.8 5-1.8 1.8 0 3.5.6 5 1.8" stroke="#78c7ff" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+        <path d="M8.2 9.2c1 1.1 2.3 1.7 3.8 1.7s2.8-.6 3.8-1.7" stroke="#8ce99a" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+        <circle cx="12" cy="8" r="2.2" fill="#ffd166"/>
+      </symbol>
     </svg>
     <div class="fx" aria-hidden="true"></div>
     <div class="fx-grid" aria-hidden="true"></div>
@@ -81,13 +118,13 @@
             </a>
           </div>
           <ul class="regions">
-            <li>🇨🇳 中國大陸</li>
-            <li>🎆 春晚</li>
-            <li>🇹🇼 台灣</li>
-            <li>🇭🇰 香港</li>
-            <li>🇯🇵 日本</li>
-            <li>🇰🇷 韓國</li>
-            <li data-i18n="chip.sea">東南亞</li>
+            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-cn"></use></svg></span>中國大陸</li>
+            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-gala"></use></svg></span>春晚</li>
+            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-tw"></use></svg></span>台灣</li>
+            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-hk"></use></svg></span>香港</li>
+            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-jp"></use></svg></span>日本</li>
+            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-kr"></use></svg></span>韓國</li>
+            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-sea"></use></svg></span><span data-i18n="chip.sea">東南亞</span></li>
           </ul>
         </div>
 

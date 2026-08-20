@@ -190,11 +190,18 @@ h1 em{
   margin:24px 0 0;padding:0;
 }
 .regions li{
+  display:inline-flex;align-items:center;gap:8px;
   font-size:13px;color:var(--text);
   border:1px solid var(--line);border-radius:999px;padding:7px 12px;
   background:rgba(255,255,255,.03);
   transition:all .2s;cursor:default;
 }
+.region-icon{
+  width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;
+  border-radius:50%;overflow:hidden;flex:0 0 auto;
+  box-shadow:0 0 0 1px rgba(255,255,255,.08), 0 2px 10px rgba(0,0,0,.18);
+}
+.region-icon svg{width:100%;height:100%;display:block}
 .regions li:hover{
   border-color:rgba(255,107,53,.45);
   background:rgba(232,25,44,.1);
