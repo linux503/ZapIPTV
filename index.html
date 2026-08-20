@@ -4,10 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>ZapIPTV — 亞洲影視與直播應用</title>
-    <meta name="description" content="亞洲影視與直播應用。macOS / Windows / Android 三端可下載。Universal Mac（M 與 Intel）。" />
+    <meta name="description" content="亞洲影視與直播應用：中國大陸、港澳台、日韓、東南亞，以及獨立體育頻道。macOS / Windows / Android 三端可下載。" />
     <link rel="canonical" href="https://linux503.github.io/ZapIPTV/" />
     <meta property="og:title" content="ZapIPTV — 亞洲影視與直播應用" />
-    <meta property="og:description" content="亞洲影視與直播應用。" />
+    <meta property="og:description" content="直播、體育、影視與春晚，三端同一套亞洲目錄。" />
     <meta property="og:url" content="https://linux503.github.io/ZapIPTV/" />
     <link rel="icon" href="./website/app-icon.png" />
     <link rel="stylesheet" href="./website/styles.css" />
@@ -76,6 +76,16 @@
         <path d="M8.2 9.2c1 1.1 2.3 1.7 3.8 1.7s2.8-.6 3.8-1.7" stroke="#8ce99a" stroke-width="1.6" stroke-linecap="round" fill="none"/>
         <circle cx="12" cy="8" r="2.2" fill="#ffd166"/>
       </symbol>
+      <symbol id="icon-sport" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" fill="#059669"/>
+        <circle cx="12" cy="12" r="6.2" fill="none" stroke="#ecfdf5" stroke-width="1.5"/>
+        <path d="M12 5.8v12.4M5.8 12h12.4M8.2 8.2c2.4 1.8 5.2 1.8 7.6 0M8.2 15.8c2.4-1.8 5.2-1.8 7.6 0" fill="none" stroke="#ecfdf5" stroke-width="1.3" stroke-linecap="round"/>
+      </symbol>
+      <symbol id="icon-mirror" viewBox="0 0 24 24">
+        <path d="M4 7.5A3.5 3.5 0 0 1 7.5 4h9A3.5 3.5 0 0 1 20 7.5v9a3.5 3.5 0 0 1-3.5 3.5h-9A3.5 3.5 0 0 1 4 16.5v-9Z" fill="#1e293b"/>
+        <path d="M8 8h5.5v8H8zm7.5 2H16v4h-.5z" fill="#38bdf8"/>
+        <path d="M9.2 10.2h2.6v1.2H9.2zm0 2.4h2.6v1.2H9.2z" fill="#0f172a"/>
+      </symbol>
     </svg>
     <div class="fx" aria-hidden="true"></div>
     <div class="fx-grid" aria-hidden="true"></div>
@@ -114,20 +124,21 @@
         <div class="hero-copy">
           <p class="live-pill"><i></i><span data-i18n="eyebrow">亞洲直播進行中</span></p>
           <h1><em data-i18n="h1">亞洲影視與直播應用</em></h1>
-          <p class="lead" data-i18n="lead">預設中國大陸，還有港澳台、日韓和東南亞。自己的片庫用 M3U / Xtream 匯入。</p>
+          <p class="lead" data-i18n="lead">預設中國大陸，還有港澳台、日韓、東南亞，以及獨立體育頻道。央視同名線路自動合併，播不了會切備用線路。</p>
           <div class="hero-stats">
             <div class="stat"><b>3</b><span data-i18n="stat.platforms">平台可下載</span></div>
-            <div class="stat"><b>14+</b><span data-i18n="stat.regions">亞洲分區</span></div>
+            <div class="stat"><b>15+</b><span data-i18n="stat.regions">亞洲分區</span></div>
             <div class="stat"><b>2.0.6</b><span data-i18n="stat.version">正式版</span></div>
           </div>
           <div class="hero-cta">
             <a class="btn solid" href="#apps">
-              <span data-i18n="cta.download">选择下载</span>
+              <span data-i18n="cta.download">選擇下載</span>
               <small data-i18n="cta.choose">macOS / Windows / Android</small>
             </a>
           </div>
           <ul class="regions">
             <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-cn"></use></svg></span><span data-i18n="chip.cn">中國大陸</span></li>
+            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-sport"></use></svg></span><span data-i18n="chip.sport">體育</span></li>
             <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-gala"></use></svg></span><span data-i18n="chip.gala">春晚</span></li>
             <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-tw"></use></svg></span><span data-i18n="chip.tw">台灣</span></li>
             <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-hk"></use></svg></span><span data-i18n="chip.hk">香港</span></li>
@@ -151,9 +162,10 @@
             </div>
             <ul class="tv-list" id="tv-channels">
               <li class="on" data-ch="CCTV-1 綜合"><span>01</span> CCTV-1 綜合</li>
-              <li data-ch="CCTV-6 電影"><span>06</span> CCTV-6 電影</li>
-              <li data-ch="🎆 2025 春晚"><span>春</span> 🎆 2025 春晚</li>
+              <li data-ch="NBA TV"><span>球</span> NBA TV</li>
+              <li data-ch="CCTV-5 體育"><span>05</span> CCTV-5 體育</li>
               <li data-ch="翡翠台"><span>HK</span> 翡翠台</li>
+              <li data-ch="🎆 2025 春晚"><span>春</span> 2025 春晚</li>
             </ul>
           </div>
         </aside>
@@ -202,7 +214,7 @@
               <span class="os-name">Android</span>
               <span class="tag on" data-i18n="tag.ready">可下載</span>
             </div>
-            <p data-i18n="and.desc">手機和電視盒子都能裝。預設中國大陸與華語影視。</p>
+            <p data-i18n="and.desc">手機和電視盒子都能裝。直播、體育、華語影視與春晚一手齊全。</p>
             <ul>
               <li>Android 8+</li>
               <li>APK</li>
@@ -218,27 +230,38 @@
         <div class="sec-head">
           <p class="kicker" data-i18n="why.kicker">三個系統</p>
           <h2 data-i18n="why.title">同一套亞洲目錄</h2>
+          <p data-i18n="why.hint">直播、體育、影視與春晚都在一個 App 裡，Mac / Windows / Android 目錄一致。</p>
         </div>
-        <div class="bento">
+        <div class="bento bento-6">
           <article>
             <span class="ico" aria-hidden="true"><svg><use href="#icon-live"></use></svg></span>
             <h3 data-i18n="why.live">直播</h3>
-            <p data-i18n="why.live.p">第一屏就是中國大陸。央視、衛視、地方台。打不開會自動跳下一條。</p>
+            <p data-i18n="why.live.p">第一屏就是中國大陸。央視、衛視、地方台。CCTV 同名頻道合併成一條，多線路自動切換。</p>
+          </article>
+          <article>
+            <span class="ico" aria-hidden="true"><svg><use href="#icon-sport"></use></svg></span>
+            <h3 data-i18n="why.sport">體育</h3>
+            <p data-i18n="why.sport.p">獨立體育選單：足球、籃球、綜合台、美職等分區整理。NBA TV、國內體育與全球賽事台都在這裡。</p>
           </article>
           <article>
             <span class="ico" aria-hidden="true"><svg><use href="#icon-film"></use></svg></span>
             <h3 data-i18n="why.vod">影視</h3>
-            <p data-i18n="why.vod.p">CCTV-6、CHC、周星馳電影輪播，還有歷年春晚。</p>
+            <p data-i18n="why.vod.p">電影、劇集分頁更清晰。CCTV-6、CHC、華語輪播，還有歷年春晚。</p>
+          </article>
+          <article>
+            <span class="ico" aria-hidden="true"><svg><use href="#icon-mirror"></use></svg></span>
+            <h3 data-i18n="why.mirror">備用線路</h3>
+            <p data-i18n="why.mirror.p">播不了會提示「線路切換中」，自動試下一條備用源，少卡在連接中。</p>
           </article>
           <article>
             <span class="ico" aria-hidden="true"><svg><use href="#icon-language"></use></svg></span>
-            <h3 data-i18n="why.lang">簡繁</h3>
-            <p data-i18n="why.lang.p">App 和官網都支援簡體、繁體，側欄一鍵切換。</p>
+            <h3 data-i18n="why.lang">多語言</h3>
+            <p data-i18n="why.lang.p">App 和官網支援繁體、簡體與英文，下拉一鍵切換。</p>
           </article>
           <article>
             <span class="ico" aria-hidden="true"><svg><use href="#icon-play"></use></svg></span>
             <h3 data-i18n="why.play">一個視窗</h3>
-            <p data-i18n="why.play.p">點了就在主視窗裡播，不另開播放器。</p>
+            <p data-i18n="why.play.p">點了就在主視窗裡播，不另開播放器。也可匯入自己的 M3U / Xtream。</p>
           </article>
         </div>
       </section>
@@ -255,7 +278,15 @@
         </details>
         <details>
           <summary data-i18n="faq.q3">三個系統內容一樣嗎？</summary>
-          <p data-i18n="faq.a3">目錄規劃一致：亞洲優先，預設中國大陸。播放器按系統會略有差別。</p>
+          <p data-i18n="faq.a3">目錄規劃一致：亞洲優先，預設中國大陸，並有獨立體育。播放器按系統會略有差別。</p>
+        </details>
+        <details>
+          <summary data-i18n="faq.q4">體育在哪裡？</summary>
+          <p data-i18n="faq.a4">Mac 版側欄有獨立「體育」；可按足球、籃球、綜合台等分類瀏覽。Android / Windows 同樣收錄體育頻道。</p>
+        </details>
+        <details>
+          <summary data-i18n="faq.q5">為什麼有時顯示線路切換中？</summary>
+          <p data-i18n="faq.a5">同一個頻道可能有多條備用線路。當前線路連不上時，會自動換下一條，稍等即可。</p>
         </details>
       </section>
     </main>
@@ -277,9 +308,9 @@
           "nav.apps": "下载", "nav.why": "产品", "nav.faq": "说明",
           eyebrow: "亚洲直播进行中",
           h1: "亚洲影视与直播应用",
-          lead: "默认中国大陆，还有港澳台、日韩和东南亚。自己的片库用 M3U / Xtream 导入。",
+          lead: "默认中国大陆，还有港澳台、日韩、东南亚，以及独立体育频道。央视同名线路自动合并，播不了会切备用线路。",
           "cta.download": "选择下载", "cta.choose": "macOS / Windows / Android",
-          "chip.cn": "中国大陆", "chip.gala": "春晚", "chip.tw": "台湾", "chip.hk": "香港",
+          "chip.cn": "中国大陆", "chip.sport": "体育", "chip.gala": "春晚", "chip.tw": "台湾", "chip.hk": "香港",
           "chip.jp": "日本", "chip.kr": "韩国", "chip.sea": "东南亚",
           "stat.platforms": "平台可下载", "stat.regions": "亚洲分区", "stat.version": "正式版",
           "apps.kicker": "一台设备一个安装包",
@@ -291,33 +322,39 @@
           "mac.gate": "若提示未验证：系统设置 → 隐私与安全性 → 仍要打开。",
           "win.desc": "Windows 10 / 11 桌面版，窗口内播放，目录与 Mac 同一套。",
           "win.play": "内嵌播放器", "win.btn": "下载 .exe", "win.note": "免安装便携版，双击即可用。",
-          "and.desc": "手机和电视盒子都能装。默认中国大陆与华语影视。",
+          "and.desc": "手机和电视盒子都能装。直播、体育、华语影视与春晚一手齐全。",
           "and.btn": "下载 APK", "and.note": "需允许安装未知来源。",
           "why.kicker": "三个系统",
           "why.title": "同一套亚洲目录",
-          "why.live": "直播", "why.live.p": "第一屏就是中国大陆。央视、卫视、地方台。打不开会自动跳下一条。",
-          "why.vod": "影视", "why.vod.p": "CCTV-6、CHC、周星驰电影轮播，还有历年春晚。",
-          "why.lang": "多语言", "why.lang.p": "App 和官网支持简体、繁体与英文，下拉一键切换。",
-          "why.play": "一个窗口", "why.play.p": "点了就在主窗口里播，不另开播放器。",
-          "why.src": "自己的片源", "why.src.p": "左侧「我的片源」只用来导入你自己的播放列表，和自带频道分开。",
+          "why.hint": "直播、体育、影视与春晚都在一个 App 里，Mac / Windows / Android 目录一致。",
+          "why.live": "直播", "why.live.p": "第一屏就是中国大陆。央视、卫视、地方台。CCTV 同名频道合并成一条，多线路自动切换。",
+          "why.sport": "体育", "why.sport.p": "独立体育菜单：足球、篮球、综合台、美职等分区整理。NBA TV、国内体育与全球赛事台都在这里。",
+          "why.vod": "影视", "why.vod.p": "电影、剧集分页更清晰。CCTV-6、CHC、华语轮播，还有历年春晚。",
+          "why.mirror": "备用线路", "why.mirror.p": "播不了会提示「线路切换中」，自动试下一条备用源，少卡在连接中。",
+          "why.lang": "多语言", "why.lang.p": "App 和官网支持繁体、简体与英文，下拉一键切换。",
+          "why.play": "一个窗口", "why.play.p": "点了就在主窗口里播，不另开播放器。也可导入自己的 M3U / Xtream。",
           "faq.title": "说明",
           "faq.q1": "Android 提示无法安装？",
           "faq.a1": "到系统设置允许「未知来源」或「安装未知应用」，再重新安装 APK。",
           "faq.q2": "Mac 提示无法打开？",
           "faq.a2": "右键 App 选打开，或到系统设置 → 隐私与安全性 → 仍要打开。",
           "faq.q3": "三个系统内容一样吗？",
-          "faq.a3": "目录规划一致：亚洲优先，默认中国大陆。播放器按系统会略有差别。",
+          "faq.a3": "目录规划一致：亚洲优先，默认中国大陆，并有独立体育。播放器按系统会略有差别。",
+          "faq.q4": "体育在哪里？",
+          "faq.a4": "Mac 版侧栏有独立「体育」；可按足球、篮球、综合台等分类浏览。Android / Windows 同样收录体育频道。",
+          "faq.q5": "为什么有时显示线路切换中？",
+          "faq.a5": "同一个频道可能有多条备用线路。当前线路连不上时，会自动换下一条，稍等即可。",
           foot: "macOS · Windows · Android 三端可下载",
           "doc.title": "ZapIPTV — 亚洲影视与直播应用",
-          "doc.desc": "亚洲影视与直播应用。macOS / Windows / Android 三端可下载。"
+          "doc.desc": "亚洲影视与直播应用：中国大陆、港澳台、日韩、东南亚，以及独立体育频道。macOS / Windows / Android 三端可下载。"
         },
         hant: {
           "nav.apps": "下載", "nav.why": "產品", "nav.faq": "說明",
           eyebrow: "亞洲直播進行中",
           h1: "亞洲影視與直播應用",
-          lead: "預設中國大陸，還有港澳台、日韓和東南亞。自己的片庫用 M3U / Xtream 匯入。",
+          lead: "預設中國大陸，還有港澳台、日韓、東南亞，以及獨立體育頻道。央視同名線路自動合併，播不了會切備用線路。",
           "cta.download": "選擇下載", "cta.choose": "macOS / Windows / Android",
-          "chip.cn": "中國大陸", "chip.gala": "春晚", "chip.tw": "台灣", "chip.hk": "香港",
+          "chip.cn": "中國大陸", "chip.sport": "體育", "chip.gala": "春晚", "chip.tw": "台灣", "chip.hk": "香港",
           "chip.jp": "日本", "chip.kr": "韓國", "chip.sea": "東南亞",
           "stat.platforms": "平台可下載", "stat.regions": "亞洲分區", "stat.version": "正式版",
           "apps.kicker": "一台裝置一個安裝包",
@@ -329,33 +366,39 @@
           "mac.gate": "若提示未驗證：系統設定 → 隱私與安全性 → 仍要打開。",
           "win.desc": "Windows 10 / 11 桌面版，視窗內播放，目錄與 Mac 同一套。",
           "win.play": "內嵌播放器", "win.btn": "下載 .exe", "win.note": "免安裝便攜版，雙擊即可用。",
-          "and.desc": "手機和電視盒子都能裝。預設中國大陸與華語影視。",
+          "and.desc": "手機和電視盒子都能裝。直播、體育、華語影視與春晚一手齊全。",
           "and.btn": "下載 APK", "and.note": "需允許安裝未知來源。",
           "why.kicker": "三個系統",
           "why.title": "同一套亞洲目錄",
-          "why.live": "直播", "why.live.p": "第一屏就是中國大陸。央視、衛視、地方台。打不開會自動跳下一條。",
-          "why.vod": "影視", "why.vod.p": "CCTV-6、CHC、周星馳電影輪播，還有歷年春晚。",
+          "why.hint": "直播、體育、影視與春晚都在一個 App 裡，Mac / Windows / Android 目錄一致。",
+          "why.live": "直播", "why.live.p": "第一屏就是中國大陸。央視、衛視、地方台。CCTV 同名頻道合併成一條，多線路自動切換。",
+          "why.sport": "體育", "why.sport.p": "獨立體育選單：足球、籃球、綜合台、美職等分區整理。NBA TV、國內體育與全球賽事台都在這裡。",
+          "why.vod": "影視", "why.vod.p": "電影、劇集分頁更清晰。CCTV-6、CHC、華語輪播，還有歷年春晚。",
+          "why.mirror": "備用線路", "why.mirror.p": "播不了會提示「線路切換中」，自動試下一條備用源，少卡在連接中。",
           "why.lang": "多語言", "why.lang.p": "App 和官網支援繁體、簡體與英文，下拉一鍵切換。",
-          "why.play": "一個視窗", "why.play.p": "點了就在主視窗裡播，不另開播放器。",
-          "why.src": "自己的片源", "why.src.p": "左側「我的片源」只用來匯入你自己的播放列表，和自帶頻道分開。",
+          "why.play": "一個視窗", "why.play.p": "點了就在主視窗裡播，不另開播放器。也可匯入自己的 M3U / Xtream。",
           "faq.title": "說明",
           "faq.q1": "Android 提示無法安裝？",
           "faq.a1": "到系統設定允許「未知來源」或「安裝未知應用」，再重新安裝 APK。",
           "faq.q2": "Mac 提示無法打開？",
           "faq.a2": "右鍵 App 選打開，或到系統設定 → 隱私與安全性 → 仍要打開。",
           "faq.q3": "三個系統內容一樣嗎？",
-          "faq.a3": "目錄規劃一致：亞洲優先，預設中國大陸。播放器按系統會略有差別。",
+          "faq.a3": "目錄規劃一致：亞洲優先，預設中國大陸，並有獨立體育。播放器按系統會略有差別。",
+          "faq.q4": "體育在哪裡？",
+          "faq.a4": "Mac 版側欄有獨立「體育」；可按足球、籃球、綜合台等分類瀏覽。Android / Windows 同樣收錄體育頻道。",
+          "faq.q5": "為什麼有時顯示線路切換中？",
+          "faq.a5": "同一個頻道可能有多條備用線路。當前線路連不上時，會自動換下一條，稍等即可。",
           foot: "macOS · Windows · Android 三端可下載",
           "doc.title": "ZapIPTV — 亞洲影視與直播應用",
-          "doc.desc": "亞洲影視與直播應用。macOS / Windows / Android 三端可下載。"
+          "doc.desc": "亞洲影視與直播應用：中國大陸、港澳台、日韓、東南亞，以及獨立體育頻道。macOS / Windows / Android 三端可下載。"
         },
         en: {
           "nav.apps": "Download", "nav.why": "Product", "nav.faq": "Help",
           eyebrow: "Asian live TV, ready now",
           h1: "Asian TV & streaming app",
-          lead: "Mainland China first, plus Hong Kong, Taiwan, Japan, Korea, and Southeast Asia. Import your own library with M3U / Xtream.",
+          lead: "Mainland China first, plus Hong Kong, Taiwan, Japan, Korea, Southeast Asia, and a dedicated Sports section. Same-name CCTV feeds merge into one channel with auto failover.",
           "cta.download": "Choose download", "cta.choose": "macOS / Windows / Android",
-          "chip.cn": "Mainland China", "chip.gala": "Spring Festival Gala", "chip.tw": "Taiwan", "chip.hk": "Hong Kong",
+          "chip.cn": "Mainland China", "chip.sport": "Sports", "chip.gala": "Spring Festival Gala", "chip.tw": "Taiwan", "chip.hk": "Hong Kong",
           "chip.jp": "Japan", "chip.kr": "Korea", "chip.sea": "Southeast Asia",
           "stat.platforms": "platforms", "stat.regions": "Asian regions", "stat.version": "stable",
           "apps.kicker": "One installer per device",
@@ -367,25 +410,31 @@
           "mac.gate": "If macOS blocks it: System Settings → Privacy & Security → Open Anyway.",
           "win.desc": "Windows 10 / 11 desktop app with in-window playback and the same catalog as Mac.",
           "win.play": "Built-in player", "win.btn": "Download .exe", "win.note": "Portable build — double-click to run.",
-          "and.desc": "Works on phones and TV boxes. Mainland China and Chinese cinema presets included.",
+          "and.desc": "Works on phones and TV boxes. Live TV, Sports, Chinese cinema, and Spring Festival Gala included.",
           "and.btn": "Download APK", "and.note": "Allow installs from unknown sources.",
           "why.kicker": "Three platforms",
           "why.title": "One Asian catalog",
-          "why.live": "Live TV", "why.live.p": "Mainland China first: CCTV, provincial, and local channels. Auto-skips dead links.",
-          "why.vod": "Cinema", "why.vod.p": "CCTV-6, CHC, movie loops, plus Spring Festival Gala archives.",
+          "why.hint": "Live TV, Sports, cinema, and Spring Festival Gala in one app — same catalog on Mac, Windows, and Android.",
+          "why.live": "Live TV", "why.live.p": "Mainland China first: CCTV, provincial, and local channels. Matching CCTV names merge into one row with multiple lines.",
+          "why.sport": "Sports", "why.sport.p": "A dedicated Sports menu with football, basketball, networks, and US majors — NBA TV, China sports, and global feeds.",
+          "why.vod": "Cinema", "why.vod.p": "Clearer Movies & Series tabs. CCTV-6, CHC, Chinese loops, plus Spring Festival Gala archives.",
+          "why.mirror": "Backup lines", "why.mirror.p": "When a stream fails, you’ll see “Switching source” while ZapIPTV tries the next mirror.",
           "why.lang": "Languages", "why.lang.p": "App and website support Traditional Chinese, Simplified Chinese, and English.",
-          "why.play": "One window", "why.play.p": "Tap a channel and it plays in the main window — no extra player.",
-          "why.src": "Your sources", "why.src.p": "Add your own playlists under My Sources, separate from the built-in catalog.",
+          "why.play": "One window", "why.play.p": "Tap a channel and it plays in the main window. You can also import your own M3U / Xtream lists.",
           "faq.title": "Help",
           "faq.q1": "Android says it can’t install?",
           "faq.a1": "Allow Unknown sources / Install unknown apps in system settings, then install the APK again.",
           "faq.q2": "Mac won’t open the app?",
           "faq.a2": "Right-click → Open, or go to System Settings → Privacy & Security → Open Anyway.",
           "faq.q3": "Are the three platforms the same?",
-          "faq.a3": "Same catalog focus: Asia first, Mainland China by default. Players differ slightly by OS.",
+          "faq.a3": "Same catalog focus: Asia first, Mainland China by default, plus dedicated Sports. Players differ slightly by OS.",
+          "faq.q4": "Where is Sports?",
+          "faq.a4": "On Mac, open the Sports sidebar tab — browse football, basketball, networks, and more. Android and Windows include sports channels too.",
+          "faq.q5": "Why does it say Switching source?",
+          "faq.a5": "Many channels have backup lines. If the current one fails, ZapIPTV automatically tries the next — just wait a moment.",
           foot: "Available on macOS · Windows · Android",
           "doc.title": "ZapIPTV — Asian TV & streaming app",
-          "doc.desc": "Asian TV and streaming app. Download for macOS, Windows, and Android."
+          "doc.desc": "Asian TV and streaming app with Mainland China, Greater China, Japan, Korea, Southeast Asia, and dedicated Sports. Download for macOS, Windows, and Android."
         }
       };
 
