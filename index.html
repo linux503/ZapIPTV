@@ -14,6 +14,10 @@
   </head>
   <body>
     <div class="fx" aria-hidden="true"></div>
+    <div class="fx-grid" aria-hidden="true"></div>
+    <div class="fx-orb a" aria-hidden="true"></div>
+    <div class="fx-orb b" aria-hidden="true"></div>
+    <div class="fx-noise" aria-hidden="true"></div>
 
     <header class="bar">
       <a class="brand" href="#top">
@@ -38,6 +42,11 @@
           <p class="live-pill"><i></i><span data-i18n="eyebrow">亞洲直播進行中</span></p>
           <h1><em data-i18n="h1">亞洲影視與直播應用</em></h1>
           <p class="lead" data-i18n="lead">預設中國大陸，還有港澳台、日韓和東南亞。自己的片庫用 M3U / Xtream 匯入。</p>
+          <div class="hero-stats">
+            <div class="stat"><b>3</b><span data-i18n="stat.platforms">平台可下載</span></div>
+            <div class="stat"><b>14+</b><span data-i18n="stat.regions">亞洲分區</span></div>
+            <div class="stat"><b>2.0</b><span data-i18n="stat.version">正式版</span></div>
+          </div>
           <div class="hero-cta">
             <a class="btn solid" href="https://github.com/linux503/ZapIPTV/releases/download/v2.0.0/ZapIPTV-2.0.0-universal-installer.dmg">
               <span data-i18n="cta.mac">下載 macOS</span>
@@ -69,18 +78,19 @@
             <div class="tv-screen">
               <img src="./website/app-icon.png" width="72" height="72" alt="" />
               <b>ZapIPTV</b>
+              <div class="tv-wave"></div>
             </div>
-            <ul class="tv-list">
-              <li class="on"><span>01</span> CCTV-1 綜合</li>
-              <li><span>06</span> CCTV-6 電影</li>
-              <li><span>08</span> CCTV-8 電視劇</li>
-              <li><span>13</span> 湖南衛視</li>
+            <ul class="tv-list" id="tv-channels">
+              <li class="on" data-ch="CCTV-1 綜合"><span>01</span> CCTV-1 綜合</li>
+              <li data-ch="CCTV-6 電影"><span>06</span> CCTV-6 電影</li>
+              <li data-ch="🎆 2025 春晚"><span>春</span> 🎆 2025 春晚</li>
+              <li data-ch="翡翠台"><span>HK</span> 翡翠台</li>
             </ul>
           </div>
         </aside>
       </section>
 
-      <section id="apps" class="apps">
+      <section id="apps" class="apps reveal">
         <div class="sec-head">
           <p class="kicker" data-i18n="apps.kicker">一台裝置一個安裝包</p>
           <h2 data-i18n="apps.title">選系統下載</h2>
@@ -135,25 +145,29 @@
         </div>
       </section>
 
-      <section id="why" class="why">
+      <section id="why" class="why reveal">
         <div class="sec-head">
           <p class="kicker" data-i18n="why.kicker">三個系統</p>
           <h2 data-i18n="why.title">同一套亞洲目錄</h2>
         </div>
         <div class="bento">
           <article>
+            <span class="ico">📡</span>
             <h3 data-i18n="why.live">直播</h3>
             <p data-i18n="why.live.p">第一屏就是中國大陸。央視、衛視、地方台。打不開會自動跳下一條。</p>
           </article>
           <article>
+            <span class="ico">🎬</span>
             <h3 data-i18n="why.vod">影視</h3>
             <p data-i18n="why.vod.p">CCTV-6、CHC、周星馳電影輪播，還有歷年春晚。</p>
           </article>
           <article>
+            <span class="ico">🌐</span>
             <h3 data-i18n="why.lang">簡繁</h3>
             <p data-i18n="why.lang.p">App 和官網都支援簡體、繁體，側欄一鍵切換。</p>
           </article>
           <article>
+            <span class="ico">▶️</span>
             <h3 data-i18n="why.play">一個視窗</h3>
             <p data-i18n="why.play.p">點了就在主視窗裡播，不另開播放器。</p>
           </article>
@@ -191,6 +205,7 @@
           lead: "默认中国大陆，还有港澳台、日韩和东南亚。自己的片库用 M3U / Xtream 导入。",
           "cta.mac": "下载 macOS", "cta.other": "Windows / Android", "cta.ready": "现已可下载",
           "chip.sea": "东南亚",
+          "stat.platforms": "平台可下载", "stat.regions": "亚洲分区", "stat.version": "正式版",
           "apps.kicker": "一台设备一个安装包",
           "apps.title": "选系统下载",
           "apps.hint": "macOS、Windows、Android 三端现已可下载。Mac 版同时支持 Apple Silicon 与 Intel。",
@@ -225,6 +240,7 @@
           lead: "預設中國大陸，還有港澳台、日韓和東南亞。自己的片庫用 M3U / Xtream 匯入。",
           "cta.mac": "下載 macOS", "cta.other": "Windows / Android", "cta.ready": "現已可下載",
           "chip.sea": "東南亞",
+          "stat.platforms": "平台可下載", "stat.regions": "亞洲分區", "stat.version": "正式版",
           "apps.kicker": "一台裝置一個安裝包",
           "apps.title": "選系統下載",
           "apps.hint": "macOS、Windows、Android 三端現已可下載。Mac 版同時支援 Apple Silicon 與 Intel。",
@@ -270,6 +286,28 @@
       apply(start);
       document.getElementById("btn-hans").onclick = () => apply("hans");
       document.getElementById("btn-hant").onclick = () => apply("hant");
+
+      // TV 频道轮播
+      (function () {
+        const list = document.getElementById("tv-channels");
+        const chLabel = document.querySelector(".tv-ch");
+        if (!list) return;
+        const items = [...list.querySelectorAll("li")];
+        let idx = 0;
+        setInterval(() => {
+          items.forEach((li) => li.classList.remove("on"));
+          idx = (idx + 1) % items.length;
+          items[idx].classList.add("on");
+          if (chLabel) chLabel.textContent = items[idx].dataset.ch || items[idx].textContent.trim();
+        }, 2800);
+      })();
+
+      // 滚动入场
+      const io = new IntersectionObserver(
+        (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("visible"); }),
+        { threshold: 0.12 }
+      );
+      document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
     </script>
   </body>
 </html>
