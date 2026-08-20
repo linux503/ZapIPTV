@@ -6,7 +6,8 @@ enum RegionalPlaylist {
         "entertain", "variety", "showbiz", "music", "bollywood", "zee", "star", "colors", "sony",
         "戲劇", "戏剧", "劇", "剧", "劇場", "剧场", "影", "電影", "电影", "影院", "娛樂", "娱乐", "綜藝", "综艺",
         "音樂", "音乐", "偶像", "八大", "東森", "东森", "中天", "TVBS", "TVB", "Viu", "HOY", "KBS", "MBC", "SBS",
-        "GEM", "AXN", "Celestial", "Cinema One", "Viva Cinema", "Tap Movies",
+        "GEM", "AXN", "Celestial", "Cinema One", "Viva Cinema", "Tap Movies", "星河", "靖天", "纬来", "緯來",
+        "龙华", "龍華", "美亚", "美亞",
     ]
 
     private static let indiaNewsKeys = [
@@ -19,15 +20,19 @@ enum RegionalPlaylist {
         "lotte home", "hyundai home", "gongyoung", "gs my shop", "buddhist", "radio",
     ]
 
-    private static let taiwanKeys = [
-        "taiwan", "tvbs", "cts", "ftv", "ttv", "ctv", "ebc", "cti", "set ", "三立",
-        "東森", "东森", "中天", "八大", "緯來", "纬来", "民視", "民视", "台视", "台視",
-        "中视", "中視", "华视", "華視", "綜藝", "综合台", "綜合台",
+    /// Short Latin tokens need word-boundary checks so "ctv" does not match "CCTV".
+    private static let taiwanTokenKeys = ["tvbs", "cts", "ftv", "ttv", "ctv", "ebc", "cti"]
+    private static let taiwanTextKeys = [
+        "taiwan", "三立", "東森", "东森", "中天", "八大", "緯來", "纬来", "民視", "民视",
+        "台视", "台視", "中视", "中視", "华视", "華視", "靖天", "龙华", "龍華", "公视", "公視",
+        "好看", "影剧", "影劇", "戏剧", "戲劇", "都会", "都會", "欢乐", "歡樂", "超视", "超視",
+        "洋片", "映画", "精采", "亚洲台", "亞洲台",
     ]
 
-    private static let hongKongKeys = [
-        "hong kong", "tvb", "viu", "hoy", "jade", "pearl", "rthk", "celestial",
-        "翡翠", "明珠", "港台", "無線", "无线", "有線", "有线", "鳳凰", "凤凰", "耀才",
+    private static let hongKongTokenKeys = ["tvb", "viu", "hoy", "rthk", "nowtv"]
+    private static let hongKongTextKeys = [
+        "hong kong", "jade", "pearl", "celestial", "翡翠", "明珠", "港台", "無線", "无线",
+        "有線", "有线", "鳳凰", "凤凰", "耀才", "星河", "华丽", "華麗", "美亚", "美亞",
     ]
 
     private static let koreaKeys = [
@@ -42,24 +47,45 @@ enum RegionalPlaylist {
     /// Pull Asia drama / movie / entertainment feeds into regional groups.
     static func refineExtra(_ channels: [Channel], sourceURL: String) -> [Channel] {
         let u = sourceURL.lowercased()
+
+        if u.contains("guovin/iptv-api") || u.contains("suxuang/myiptv") {
+            return channels.compactMap { ch -> Channel? in
+                if isMainlandNoise(ch.name) { return nil }
+                if isGeoBlocked(ch.name) { return nil }
+                let g = (ch.group + " " + ch.name).lowercased()
+                let fromHKGroup = g.contains("港") || g.contains("澳") || g.contains("台") || g.contains("港澳")
+                guard fromHKGroup || looksHongKong(ch.name) || looksTaiwan(ch.name) else { return nil }
+                if let mapped = mapGreaterChina(ch.name) {
+                    return remapped(ch, group: mapped)
+                }
+                return nil
+            }
+        }
+
         if u.contains("/languages/zho.m3u") {
+            // Keep only clear Taiwan/HK names — never dump mainland CCTV into 台湾.
             return channels.compactMap { ch in
-                guard let group = mapChineseLanguage(ch.name) else { return nil }
+                if isMainlandNoise(ch.name) || isGeoBlocked(ch.name) { return nil }
+                guard let group = mapGreaterChina(ch.name) else { return nil }
                 return remapped(ch, group: group)
             }
         }
         if u.contains("/languages/yue.m3u") {
-            return channels.map { remapped($0, group: "🇭🇰 香港") }
+            return channels.compactMap { ch in
+                if isMainlandNoise(ch.name) || isGeoBlocked(ch.name) { return nil }
+                return remapped(ch, group: "🇭🇰 香港")
+            }
         }
         if u.contains("/languages/kor.m3u") {
             return channels
-                .filter { !isKoreaNoise($0.name) }
+                .filter { !isKoreaNoise($0.name) && !isGeoBlocked($0.name) }
                 .map { remapped($0, group: "🇰🇷 韩国") }
         }
         if u.contains("/categories/movies.m3u")
             || u.contains("/categories/series.m3u")
             || u.contains("/categories/entertainment.m3u") {
             return channels.compactMap { ch in
+                if isMainlandNoise(ch.name) || isGeoBlocked(ch.name) { return nil }
                 guard let group = mapAsiaCategory(ch.name) else { return nil }
                 return remapped(ch, group: group)
             }
@@ -70,12 +96,20 @@ enum RegionalPlaylist {
     static func curate(_ channels: [Channel], group: String) -> [Channel] {
         guard preferredGroups.contains(group) else { return channels }
 
-        var filtered = channels
+        var filtered = channels.filter { !isGeoBlocked($0.name) }
         if group == "🇮🇳 印度" {
-            filtered = channels.filter { shouldKeepIndia($0.name) }
+            filtered = filtered.filter { shouldKeepIndia($0.name) }
         }
         if group == "🇰🇷 韩国" {
-            filtered = channels.filter { !isKoreaNoise($0.name) }
+            filtered = filtered.filter { !isKoreaNoise($0.name) }
+        }
+        if group == "🇹🇼 台湾" {
+            filtered = filtered.filter { !isMainlandNoise($0.name) && (looksTaiwan($0.name) || isDramaLike($0.name.lowercased())) }
+            // Drop residual CCTV / mainland leftovers
+            filtered = filtered.filter { !isMainlandNoise($0.name) }
+        }
+        if group == "🇭🇰 香港" {
+            filtered = filtered.filter { !isMainlandNoise($0.name) }
         }
 
         return filtered.sorted { score($0.name, group: group) > score($1.name, group: group) }
@@ -93,30 +127,75 @@ enum RegionalPlaylist {
         )
     }
 
-    private static func mapChineseLanguage(_ name: String) -> String? {
-        let lower = name.lowercased()
-        if hongKongKeys.contains(where: { lower.contains($0.lowercased()) }) { return "🇭🇰 香港" }
-        if taiwanKeys.contains(where: { lower.contains($0.lowercased()) }) { return "🇹🇼 台湾" }
+    private static func mapGreaterChina(_ name: String) -> String? {
+        if isMainlandNoise(name) { return nil }
+        if looksHongKong(name) { return "🇭🇰 香港" }
+        if looksTaiwan(name) { return "🇹🇼 台湾" }
         return nil
     }
 
-    private static func mapAsiaCategory(_ name: String) -> String? {
+    private static func looksTaiwan(_ name: String) -> Bool {
         let lower = name.lowercased()
-        if hongKongKeys.contains(where: { lower.contains($0.lowercased()) })
-            || lower.contains("celestial") {
-            return "🇭🇰 香港"
+        if isMainlandNoise(name) { return false }
+        if taiwanTextKeys.contains(where: { lower.contains($0.lowercased()) }) { return true }
+        return taiwanTokenKeys.contains(where: { containsToken(lower, $0) })
+    }
+
+    private static func looksHongKong(_ name: String) -> Bool {
+        let lower = name.lowercased()
+        if isMainlandNoise(name) { return false }
+        if hongKongTextKeys.contains(where: { lower.contains($0.lowercased()) }) { return true }
+        return hongKongTokenKeys.contains(where: { containsToken(lower, $0) })
+    }
+
+    /// Avoid "ctv" matching inside "cctv".
+    private static func containsToken(_ haystack: String, _ token: String) -> Bool {
+        guard !token.isEmpty else { return false }
+        var search = haystack
+        var start = search.startIndex
+        while let range = search.range(of: token, range: start..<search.endIndex) {
+            let beforeOK: Bool = {
+                if range.lowerBound == search.startIndex { return true }
+                let prev = search[search.index(before: range.lowerBound)]
+                return !prev.isLetter && !prev.isNumber
+            }()
+            let afterOK: Bool = {
+                if range.upperBound == search.endIndex { return true }
+                let next = search[range.upperBound]
+                return !next.isLetter && !next.isNumber
+            }()
+            if beforeOK && afterOK { return true }
+            start = range.upperBound
         }
-        if taiwanKeys.contains(where: { lower.contains($0.lowercased()) })
-            || lower.contains("axn asia taiwan") {
-            return "🇹🇼 台湾"
+        return false
+    }
+
+    private static func isMainlandNoise(_ name: String) -> Bool {
+        let lower = name.lowercased()
+        if lower.contains("cctv") || lower.contains("cntv") || lower.contains("央视") || lower.contains("央視") {
+            return true
         }
+        if lower.contains("卫视") && (lower.contains("湖南") || lower.contains("浙江") || lower.contains("东方") || lower.contains("江苏")) {
+            return true
+        }
+        return false
+    }
+
+    private static func isGeoBlocked(_ name: String) -> Bool {
+        let lower = name.lowercased()
+        return lower.contains("geo-blocked") || lower.contains("[geo")
+    }
+
+    private static func mapAsiaCategory(_ name: String) -> String? {
+        if looksHongKong(name) { return "🇭🇰 香港" }
+        if looksTaiwan(name) || name.lowercased().contains("axn asia taiwan") { return "🇹🇼 台湾" }
+        let lower = name.lowercased()
         if koreaKeys.contains(where: { lower.contains($0.lowercased()) })
             || lower.contains("persiana korea")
             || lower.contains("mbc drama")
             || lower.contains("mbc+") {
             return "🇰🇷 韩国"
         }
-        // Shared Asian drama brands useful for TW/HK audiences
         if lower.contains("gem drama") || lower.contains("gem series") || lower.contains("gem film") {
             return "🇹🇼 台湾"
         }
@@ -148,13 +227,22 @@ enum RegionalPlaylist {
         var score = 0
 
         if isDramaLike(lower) { score += 140 }
-        if lower.contains("hd") || lower.contains("1080") { score += 12 }
+        if lower.contains("hd") || lower.contains("1080") || lower.contains("4k") { score += 12 }
+        if lower.contains("backup") { score -= 5 }
 
         switch group {
         case "🇹🇼 台湾":
-            if taiwanKeys.contains(where: { lower.contains($0.lowercased()) }) { score += 40 }
+            if looksTaiwan(name) { score += 50 }
+            if ["戏剧", "戲劇", "电影", "電影", "综艺", "綜藝", "综合", "綜合", "都会", "都會", "超视", "洋片", "精采"].contains(where: { lower.contains($0.lowercased()) }) {
+                score += 35
+            }
+            if lower.contains("新闻") || lower.contains("新聞") { score -= 40 }
         case "🇭🇰 香港":
-            if hongKongKeys.contains(where: { lower.contains($0.lowercased()) }) { score += 40 }
+            if looksHongKong(name) { score += 50 }
+            if ["翡翠", "明珠", "星河", "viu", "hoy", "电影", "電影", "凤凰", "鳳凰"].contains(where: { lower.contains($0.lowercased()) }) {
+                score += 35
+            }
+            if lower.contains("新闻") || lower.contains("新聞") { score -= 25 }
         case "🇰🇷 韩国":
             if koreaKeys.contains(where: { lower.contains($0.lowercased()) }) { score += 40 }
             if ["drama", "movie", "film", "kbs", "mbc", "sbs", "tvn"].contains(where: { lower.contains($0) }) {

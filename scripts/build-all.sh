@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-VER="2.0.2"
+VER="2.0.3"
 DIST="$ROOT/dist"
 WEB="$ROOT/cross-platform/web"
 ELEC="$ROOT/cross-platform/electron"

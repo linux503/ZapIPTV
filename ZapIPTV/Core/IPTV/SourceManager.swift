@@ -12,7 +12,8 @@ private let defaultSources: [(name: String, url: String, type: PlaylistSource.So
         ("🇨🇳 中国大陆",  "\(cdn)/countries/cn.m3u", .m3u, "🇨🇳 中国大陆"),
         ("🇨🇳 国内直播",  "https://cdn.jsdelivr.net/gh/vbskycn/iptv@master/tv/iptv4.m3u", .m3u, nil),
         ("🇹🇼 台湾",      "\(cdn)/countries/tw.m3u", .m3u, "🇹🇼 台湾"),
-        ("🇹🇼 华语剧场",  "\(cdn)/languages/zho.m3u", .m3u, nil),
+        ("🇹🇼🇭🇰 港澳台精选", "https://cdn.jsdelivr.net/gh/suxuang/myIPTV@main/ipv4.m3u", .m3u, nil),
+        ("🇹🇼🇭🇰 港澳台备用", "https://raw.githubusercontent.com/Guovin/iptv-api/gd/output/result.m3u", .m3u, nil),
         ("🇭🇰 香港",      "\(cdn)/countries/hk.m3u", .m3u, "🇭🇰 香港"),
         ("🇭🇰 香港直播",  "https://cdn.jsdelivr.net/gh/sammy0101/hk-iptv-auto@main/hk_live.m3u", .m3u, "🇭🇰 香港"),
         ("🇭🇰 粤语频道",  "\(cdn)/languages/yue.m3u", .m3u, nil),
@@ -88,7 +89,7 @@ class SourceManager: ObservableObject {
     }
 
     // Bump when default catalog changes — triggers one-time channel reload
-    private static let catalogVersion = 9
+    private static let catalogVersion = 10
 
     private static let legacySourceNames: Set<String> = [
         "News (Global)", "Sports (Global)", "Movies & Films", "Kids & Family",
