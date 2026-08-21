@@ -15,10 +15,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./website/styles.css?v=42" />
+    <link rel="stylesheet" href="./website/styles.css?v=48" />
   </head>
   <body>
-    <svg width="0" height="0" style="position:absolute">
+    <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
       <symbol id="icon-apple" viewBox="0 0 24 24">
         <path d="M15.2 3.2c-.8 1-1.3 2.3-1.2 3.6 1.2.1 2.5-.6 3.3-1.6.8-.9 1.3-2.2 1.2-3.5-1.2 0-2.5.6-3.3 1.5Z"/>
         <path d="M17.8 12.4c0-2 1.7-3 1.8-3.1-1-1.5-2.6-1.7-3.1-1.8-1.3-.1-2.5.8-3.2.8s-1.8-.8-2.9-.8c-1.5 0-2.9.9-3.7 2.3-1.6 2.8-.4 6.9 1.2 9.2.8 1.1 1.7 2.4 3 2.3 1.2 0 1.7-.8 3.1-.8s1.9.8 3.1.8c1.3 0 2.1-1.1 2.9-2.2.9-1.3 1.3-2.6 1.3-2.7-.1 0-3.5-1.4-3.5-4Z"/>
@@ -90,6 +90,14 @@
         <circle cx="12" cy="12" r="10" fill="#059669"/>
         <circle cx="12" cy="12" r="6.2" fill="none" stroke="#ecfdf5" stroke-width="1.5"/>
         <path d="M12 5.8v12.4M5.8 12h12.4M8.2 8.2c2.4 1.8 5.2 1.8 7.6 0M8.2 15.8c2.4-1.8 5.2-1.8 7.6 0" fill="none" stroke="#ecfdf5" stroke-width="1.3" stroke-linecap="round"/>
+      </symbol>
+      <symbol id="icon-movies" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" fill="#1d4ed8"/>
+        <path d="M8 7.2h8a1.2 1.2 0 0 1 1.2 1.2v7.2a1.2 1.2 0 0 1-1.2 1.2H8A1.2 1.2 0 0 1 6.8 15.6V8.4A1.2 1.2 0 0 1 8 7.2Zm.9 1.3v1.1h1.1V8.5H8.9Zm0 2.2v1.1h1.1v-1.1H8.9Zm0 2.2v1.1h1.1v-1.1H8.9Zm5.2-4.4v1.1h1.1V8.5h-1.1Zm0 2.2v1.1h1.1v-1.1h-1.1Zm0 2.2v1.1h1.1v-1.1h-1.1ZM10.6 8.5v7h2.8v-7h-2.8Z" fill="#eff6ff"/>
+      </symbol>
+      <symbol id="icon-shows" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" fill="#6d28d9"/>
+        <path d="M7.2 8.2h9.6a1.1 1.1 0 0 1 1.1 1.1v5.4a1.1 1.1 0 0 1-1.1 1.1H7.2a1.1 1.1 0 0 1-1.1-1.1V9.3a1.1 1.1 0 0 1 1.1-1.1Zm1.4 8.4h6.8v1.2H8.6v-1.2Zm2 1.8h2.8V19h-2.8v-.6Z" fill="#f5f3ff"/>
       </symbol>
 
       <symbol id="icon-home" viewBox="0 0 24 24">
@@ -184,19 +192,21 @@
       </section>
 
       <div class="coverage" aria-label="coverage">
-        <span class="coverage-label" data-i18n="stat.regions">內容覆蓋</span>
-        <ul class="regions">
-          <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-cn"></use></svg></span><span data-i18n="chip.cn">中國大陸</span></li>
-          <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-sport"></use></svg></span><span data-i18n="chip.sport">體育</span></li>
-          <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-film"></use></svg></span><span data-i18n="chip.movies">電影</span></li>
-          <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-series"></use></svg></span><span data-i18n="chip.series">劇集</span></li>
-          <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-gala"></use></svg></span><span data-i18n="chip.gala">春晚</span></li>
-          <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-tw"></use></svg></span><span data-i18n="chip.tw">台灣</span></li>
-          <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-hk"></use></svg></span><span data-i18n="chip.hk">香港</span></li>
-          <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-jp"></use></svg></span><span data-i18n="chip.jp">日本</span></li>
-          <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-kr"></use></svg></span><span data-i18n="chip.kr">韓國</span></li>
-          <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-sea"></use></svg></span><span data-i18n="chip.sea">東南亞</span></li>
-        </ul>
+        <div class="coverage-inner">
+          <span class="coverage-label" data-i18n="stat.regions">內容覆蓋</span>
+          <ul class="regions">
+            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-cn"></use></svg></span><span data-i18n="chip.cn">中國大陸</span></li>
+            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-sport"></use></svg></span><span data-i18n="chip.sport">體育</span></li>
+            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-movies"></use></svg></span><span data-i18n="chip.movies">電影</span></li>
+            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-shows"></use></svg></span><span data-i18n="chip.series">劇集</span></li>
+            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-gala"></use></svg></span><span data-i18n="chip.gala">春晚</span></li>
+            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-tw"></use></svg></span><span data-i18n="chip.tw">台灣</span></li>
+            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-hk"></use></svg></span><span data-i18n="chip.hk">香港</span></li>
+            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-jp"></use></svg></span><span data-i18n="chip.jp">日本</span></li>
+            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-kr"></use></svg></span><span data-i18n="chip.kr">韓國</span></li>
+            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-sea"></use></svg></span><span data-i18n="chip.sea">東南亞</span></li>
+          </ul>
+        </div>
       </div>
 
 
@@ -245,7 +255,7 @@
               <h3 data-i18n="menu.series.t">劇集分集連看</h3>
               <p data-i18n="menu.series.p">劇集分頁清晰，同名合併備援源。選集連播，同樣支援進度條與跳轉。</p>
             </article>
-            <article>
+            <article class="span-2">
               <span class="menu-tag fav" data-i18n="tab.favorites">收藏</span>
               <h3 data-i18n="menu.fav.t">收藏常看頻道</h3>
               <p data-i18n="menu.fav.p">把常用直播、體育與影視收進收藏，下次打開首頁就能直接點播。</p>
