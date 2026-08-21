@@ -1,10 +1,10 @@
 {
   "version": "2.0.13",
-  "androidVersion": "2.0.19",
-  "androidTvVersion": "2.0.19-tv",
+  "androidVersion": "2.0.20",
+  "androidTvVersion": "2.0.20-tv",
   "dmg": "https://github.com/linux503/ZapIPTV/releases/download/v2.0.13/ZapIPTV-2.0.13-universal-installer.dmg",
   "win": "https://github.com/linux503/ZapIPTV/releases/download/v2.0.8/ZapIPTV-windows-portable.exe",
-  "apk": "https://github.com/linux503/ZapIPTV/releases/download/v2.0.19/ZapIPTV-2.0.19-android.apk",
-  "apkTv": "https://github.com/linux503/ZapIPTV/releases/download/v2.0.19/ZapIPTV-2.0.19-android-tv.apk",
+  "apk": "https://github.com/linux503/ZapIPTV/releases/download/v2.0.20/ZapIPTV-2.0.20-android.apk",
+  "apkTv": "https://github.com/linux503/ZapIPTV/releases/download/v2.0.20/ZapIPTV-2.0.20-android-tv.apk",
   "page": "https://github.com/linux503/ZapIPTV/releases/latest"
 }
