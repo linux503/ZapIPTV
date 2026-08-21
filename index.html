@@ -15,7 +15,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./website/styles.css?v=38" />
+    <link rel="stylesheet" href="./website/styles.css?v=39" />
   </head>
   <body>
     <svg width="0" height="0" style="position:absolute">
@@ -29,6 +29,11 @@
       <symbol id="icon-android" viewBox="0 0 24 24">
         <path d="M8 6.1 6.8 4.2a.7.7 0 1 1 1.2-.7L9.3 5.6a8.4 8.4 0 0 1 5.4 0L16 3.5a.7.7 0 0 1 1.2.7L16 6.1a6.2 6.2 0 0 1 2.9 5.2H5.1A6.2 6.2 0 0 1 8 6.1Zm1.6 2.1a.8.8 0 1 0 0 1.6.8.8 0 0 0 0-1.6Zm4.8 0a.8.8 0 1 0 0 1.6.8.8 0 0 0 0-1.6Z"/>
         <path d="M5.5 12.3h13v5.8a1.9 1.9 0 0 1-1.9 1.9H15v2.1a1 1 0 1 1-2 0V20h-2v2.1a1 1 0 1 1-2 0V20H7.4a1.9 1.9 0 0 1-1.9-1.9v-5.8Z"/>
+      </symbol>
+      <symbol id="icon-tv" viewBox="0 0 24 24">
+        <path d="M3.5 5.2A2.2 2.2 0 0 1 5.7 3h12.6a2.2 2.2 0 0 1 2.2 2.2v9.6a2.2 2.2 0 0 1-2.2 2.2H5.7a2.2 2.2 0 0 1-2.2-2.2V5.2Zm2.2.8v8h12.6v-8H5.7Z"/>
+        <path d="M8.2 19.2h7.6a1 1 0 1 1 0 2H8.2a1 1 0 1 1 0-2Z"/>
+        <path d="M10 8.2v4.6l4-2.3-4-2.3Z"/>
       </symbol>
       <symbol id="icon-live" viewBox="0 0 24 24">
         <path d="M12 6.5a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11Zm0 2.5a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/>
@@ -329,20 +334,40 @@
               <span class="os-name">Android</span>
               <span class="tag on" data-i18n="tag.ready">可下載</span>
             </div>
-            <p data-i18n="and.desc">手機和電視盒子都能裝。直播、體育、華語影視與春晚一手齊全。</p>
+            <p data-i18n="and.desc">手機專用版。直播、體育、華語影視與春晚一手齊全。</p>
             <div class="os-chips">
               <span>Android 8+</span>
               <span>APK</span>
-              <span data-i18n="and.chip">手機 / 盒子</span>
+              <span data-i18n="and.chip">手機</span>
             </div>
             <ul>
-              <li data-i18n="and.f1">豎屏手機與橫屏電視適配</li>
+              <li data-i18n="and.f1">豎屏手機適配</li>
               <li data-i18n="and.f2">直播 · 體育 · 影視一站收齊</li>
               <li>v2.0.20</li>
             </ul>
-            <a class="btn solid wide" href="https://github.com/linux503/ZapIPTV/releases/download/v2.0.20/ZapIPTV-2.0.20-android.apk" data-i18n="and.btn">下載手機 APK</a>
-            <a class="btn ghost wide" style="margin-top:10px" href="https://github.com/linux503/ZapIPTV/releases/download/v2.0.20/ZapIPTV-2.0.20-android-tv.apk" data-i18n="and.tvbtn">下載電視盒子 APK</a>
-            <p class="fine" data-i18n="and.note">需允許安裝未知來源。電視盒子請用專用 TV 包。</p>
+            <a class="btn solid wide" href="https://github.com/linux503/ZapIPTV/releases/download/v2.0.20/ZapIPTV-2.0.20-android.apk" data-i18n="and.btn">下載 Android APK</a>
+            <p class="fine" data-i18n="and.note">需允許安裝未知來源。電視盒子請下載下方獨立 TV 版。</p>
+          </article>
+          <article class="os is-ready" style="--accent:#f5c542;--d:3">
+            <div class="os-glow" aria-hidden="true"></div>
+            <div class="os-icon" aria-hidden="true"><svg><use href="#icon-tv"></use></svg></div>
+            <div class="os-top">
+              <span class="os-name" data-i18n="tv.name">電視盒子</span>
+              <span class="tag on" data-i18n="tag.ready">可下載</span>
+            </div>
+            <p data-i18n="tv.desc">專為電視盒子 / Android TV 適配：橫屏 10-foot UI、遙控焦點、Leanback 啟動器。</p>
+            <div class="os-chips">
+              <span>Android TV</span>
+              <span>APK</span>
+              <span data-i18n="tv.chip">盒子專用</span>
+            </div>
+            <ul>
+              <li data-i18n="tv.f1">強制橫屏 · 大字體遙控操作</li>
+              <li data-i18n="tv.f2">獨立包名，可與手機版共存</li>
+              <li>v2.0.20-tv</li>
+            </ul>
+            <a class="btn solid wide" href="https://github.com/linux503/ZapIPTV/releases/download/v2.0.20/ZapIPTV-2.0.20-android-tv.apk" data-i18n="tv.btn">下載電視盒子 APK</a>
+            <p class="fine" data-i18n="tv.note">請勿安裝手機版到盒子。本包為獨立 TV 版。</p>
           </article>
         </div>
 
@@ -607,10 +632,15 @@
           "win.play": "内嵌播放器", "win.chip": "便携版",
           "win.f1": "免安装 · 双击直接看", "win.f2": "亚洲目录与 Mac 同步",
           "win.btn": "下载 .exe", "win.note": "免安装便携版，双击即可用。",
-          "and.desc": "手机和电视盒子都能装。直播、体育、华语影视与春晚一手齐全。",
-          "and.chip": "手机 / 盒子",
-          "and.f1": "竖屏手机与横屏电视适配", "and.f2": "直播 · 体育 · 影视一站收齐",
-          "and.btn": "下载手机 APK", "and.tvbtn": "下载电视盒子 APK", "and.note": "需允许安装未知来源。电视盒子请用专用 TV 包。",
+          "and.desc": "手机专用版。直播、体育、华语影视与春晚一手齐全。",
+          "and.chip": "手机",
+          "and.f1": "竖屏手机适配", "and.f2": "直播 · 体育 · 影视一站收齐",
+          "and.btn": "下载 Android APK", "and.note": "需允许安装未知来源。电视盒子请下载独立 TV 版。",
+          "tv.name": "电视盒子",
+          "tv.desc": "专为电视盒子 / Android TV 适配：横屏 10-foot UI、遥控焦点、Leanback 启动器。",
+          "tv.chip": "盒子专用",
+          "tv.f1": "强制横屏 · 大字体遥控操作", "tv.f2": "独立包名，可与手机版共存",
+          "tv.btn": "下载电视盒子 APK", "tv.note": "请勿安装手机版到盒子。本包为独立 TV 版。",
           "why.kicker": "三个系统",
           "why.title": "同一套亚洲目录",
           "why.hint": "直播、体育、影视与春晚都在一个 App 里，Mac / Windows / Android 目录一致。",
@@ -663,10 +693,15 @@
           "win.play": "內嵌播放器", "win.chip": "便攜版",
           "win.f1": "免安裝 · 雙擊直接看", "win.f2": "亞洲目錄與 Mac 同步",
           "win.btn": "下載 .exe", "win.note": "免安裝便攜版，雙擊即可用。",
-          "and.desc": "手機和電視盒子都能裝。直播、體育、華語影視與春晚一手齊全。",
-          "and.chip": "手機 / 盒子",
-          "and.f1": "豎屏手機與橫屏電視適配", "and.f2": "直播 · 體育 · 影視一站收齊",
-          "and.btn": "下載手機 APK", "and.tvbtn": "下載電視盒子 APK", "and.note": "需允許安裝未知來源。電視盒子請用專用 TV 包。",
+          "and.desc": "手機專用版。直播、體育、華語影視與春晚一手齊全。",
+          "and.chip": "手機",
+          "and.f1": "豎屏手機適配", "and.f2": "直播 · 體育 · 影視一站收齊",
+          "and.btn": "下載 Android APK", "and.note": "需允許安裝未知來源。電視盒子請下載獨立 TV 版。",
+          "tv.name": "電視盒子",
+          "tv.desc": "專為電視盒子 / Android TV 適配：橫屏 10-foot UI、遙控焦點、Leanback 啟動器。",
+          "tv.chip": "盒子專用",
+          "tv.f1": "強制橫屏 · 大字體遙控操作", "tv.f2": "獨立包名，可與手機版共存",
+          "tv.btn": "下載電視盒子 APK", "tv.note": "請勿安裝手機版到盒子。本包為獨立 TV 版。",
           "why.kicker": "三個系統",
           "why.title": "同一套亞洲目錄",
           "why.hint": "首頁、直播、體育、電影、劇集、收藏——與 Mac App 側欄一一對應；Windows / Android 目錄同步。",
@@ -719,10 +754,15 @@
           "win.play": "Built-in player", "win.chip": "Portable",
           "win.f1": "No install · double-click to watch", "win.f2": "Same Asian catalog as Mac",
           "win.btn": "Download .exe", "win.note": "Portable build — double-click to run.",
-          "and.desc": "Works on phones and TV boxes. Live TV, Sports, Chinese cinema, and Spring Festival Gala included.",
-          "and.chip": "Phone / TV box",
-          "and.f1": "Portrait phones & landscape TVs", "and.f2": "Live · Sports · Cinema in one app",
-          "and.btn": "Download phone APK", "and.tvbtn": "Download TV box APK", "and.note": "Allow unknown sources. Use the TV build on set-top boxes.",
+          "and.desc": "Phone-only build. Live TV, Sports, Chinese cinema, and Spring Festival Gala included.",
+          "and.chip": "Phone",
+          "and.f1": "Portrait phone layout", "and.f2": "Live · Sports · Cinema in one app",
+          "and.btn": "Download Android APK", "and.note": "Allow unknown sources. For TV boxes, download the separate TV build.",
+          "tv.name": "TV Box",
+          "tv.desc": "Built for Android TV / set-top boxes: landscape 10-foot UI, D-pad focus, Leanback launcher.",
+          "tv.chip": "TV only",
+          "tv.f1": "Landscape · large remote-friendly UI", "tv.f2": "Separate package — can sit beside phone app",
+          "tv.btn": "Download TV box APK", "tv.note": "Do not install the phone APK on a TV box. This is the dedicated TV build.",
           "why.kicker": "Six sidebar tabs",
           "why.title": "Easy to find — like the app",
           "why.hint": "Home, Live, Sports, Movies, Series, Favorites — matching the Mac sidebar; Windows / Android stay in sync.",
