@@ -15,7 +15,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./website/styles.css?v=39" />
+    <link rel="stylesheet" href="./website/styles.css?v=40" />
   </head>
   <body>
     <svg width="0" height="0" style="position:absolute">
@@ -114,8 +114,6 @@
     </svg>
     <div class="fx" aria-hidden="true"></div>
     <div class="fx-grid" aria-hidden="true"></div>
-    <div class="fx-orb a" aria-hidden="true"></div>
-    <div class="fx-orb b" aria-hidden="true"></div>
     <div class="fx-noise" aria-hidden="true"></div>
 
     <header class="bar">
@@ -150,34 +148,20 @@
     <main id="top">
       <section class="hero">
         <div class="hero-copy">
-          <div class="signal-badge" role="status">
-            <span class="signal-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-            <span class="signal-label" data-i18n="eyebrow">開機即播 · 側欄六大分區</span>
-            <span class="signal-pulse" aria-hidden="true"></span>
-          </div>
-          <h1><em data-i18n="h1">亞洲影視與直播應用</em></h1>
+          <p class="hero-brand"><span>ZapIPTV</span></p>
+          <p class="hero-eyebrow" data-i18n="eyebrow">開機即播 · 側欄六大分區</p>
+          <h1 data-i18n="h1">亞洲影視與直播應用</h1>
           <p class="lead" data-i18n="lead">側欄六大分區：首頁、直播、體育、電影、劇集、收藏。直播／體育目錄式瀏覽；大陸頻道按 IP 智能選線（國內低延遲／海外友好源）；電影劇集可拖進度，直播無進度條。</p>
-          <div class="hero-stats">
-            <div class="stat"><b>4</b><span data-i18n="stat.platforms">平台可下載</span></div>
-            <div class="stat"><b>15+</b><span data-i18n="stat.regions">亞洲分區</span></div>
-            <div class="stat"><b>2.0.13</b><span data-i18n="stat.version">正式版</span></div>
-          </div>
           <div class="hero-cta">
             <a class="btn solid" href="#apps">
               <span data-i18n="cta.download">選擇下載</span>
               <small data-i18n="cta.choose">macOS / Windows / Android / 電視盒子</small>
             </a>
+            <a class="btn ghost" href="#menu">
+              <span data-i18n="nav.menu">功能</span>
+              <small data-i18n="menu.kicker">與 App 側欄一致</small>
+            </a>
           </div>
-          <ul class="regions">
-            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-cn"></use></svg></span><span data-i18n="chip.cn">中國大陸</span></li>
-            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-sport"></use></svg></span><span data-i18n="chip.sport">體育</span></li>
-            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-gala"></use></svg></span><span data-i18n="chip.gala">春晚</span></li>
-            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-tw"></use></svg></span><span data-i18n="chip.tw">台灣</span></li>
-            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-hk"></use></svg></span><span data-i18n="chip.hk">香港</span></li>
-            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-jp"></use></svg></span><span data-i18n="chip.jp">日本</span></li>
-            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-kr"></use></svg></span><span data-i18n="chip.kr">韓國</span></li>
-            <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-sea"></use></svg></span><span data-i18n="chip.sea">東南亞</span></li>
-          </ul>
         </div>
 
         <aside class="tv" aria-hidden="true">
@@ -197,11 +181,25 @@
               <li data-ch="NBA TV"><span>球</span> NBA TV</li>
               <li data-ch="CCTV-5 體育"><span>05</span> CCTV-5 體育</li>
               <li data-ch="翡翠台"><span>HK</span> 翡翠台</li>
-              <li data-ch="🎆 2025 春晚"><span>春</span> 2025 春晚</li>
+              <li data-ch="2025 春晚"><span>春</span> 2025 春晚</li>
             </ul>
           </div>
         </aside>
       </section>
+
+      <div class="coverage" aria-label="coverage">
+        <span class="coverage-label" data-i18n="stat.regions">亞洲分區</span>
+        <ul class="regions">
+          <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-cn"></use></svg></span><span data-i18n="chip.cn">中國大陸</span></li>
+          <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-sport"></use></svg></span><span data-i18n="chip.sport">體育</span></li>
+          <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-gala"></use></svg></span><span data-i18n="chip.gala">春晚</span></li>
+          <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-tw"></use></svg></span><span data-i18n="chip.tw">台灣</span></li>
+          <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-hk"></use></svg></span><span data-i18n="chip.hk">香港</span></li>
+          <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-jp"></use></svg></span><span data-i18n="chip.jp">日本</span></li>
+          <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-kr"></use></svg></span><span data-i18n="chip.kr">韓國</span></li>
+          <li><span class="region-icon" aria-hidden="true"><svg><use href="#icon-sea"></use></svg></span><span data-i18n="chip.sea">東南亞</span></li>
+        </ul>
+      </div>
 
 
       <section id="menu" class="menu reveal">
@@ -224,32 +222,32 @@
             <div class="rail-foot" data-i18n="tab.settings">設定</div>
           </aside>
           <div class="menu-grid">
-            <article id="home-feat" style="--d:0">
-              <span class="menu-tag" data-i18n="tab.home">首頁</span>
-              <h3 data-i18n="menu.home.t">繼續看 · 快速入口</h3>
-              <p data-i18n="menu.home.p">首屏彙整：繼續觀看、直播精選、體育、點播與探索快捷跳轉，一鍵進各分區。</p>
-            </article>
-            <article id="live" style="--d:1">
+            <article id="live" class="featured">
               <span class="menu-tag live" data-i18n="tab.live">直播</span>
               <h3 data-i18n="menu.live.t">直播目錄 · IP 智能選線</h3>
               <p data-i18n="menu.live.p">與電影同級的分類卡片瀏覽。大陸頻道偵測國內／國際 IP：國內選最低延遲線路，海外優先國外友好源；無進度條。</p>
             </article>
-            <article id="sports" style="--d:2">
+            <article id="home-feat">
+              <span class="menu-tag" data-i18n="tab.home">首頁</span>
+              <h3 data-i18n="menu.home.t">繼續看 · 快速入口</h3>
+              <p data-i18n="menu.home.p">首屏彙整：繼續觀看、直播精選、體育、點播與探索快捷跳轉，一鍵進各分區。</p>
+            </article>
+            <article id="sports">
               <span class="menu-tag sport" data-i18n="tab.sports">體育</span>
               <h3 data-i18n="menu.sports.t">體育卡片目錄</h3>
               <p data-i18n="menu.sports.p">精選 Hero、分類磁貼、分區橫滑與查看全部網格。足球／籃球／美職整齊排列，即時流無進度條。</p>
             </article>
-            <article id="vod" style="--d:3">
+            <article id="vod">
               <span class="menu-tag vod" data-i18n="tab.movies">電影</span>
               <h3 data-i18n="menu.movies.t">電影點播可拖進度</h3>
               <p data-i18n="menu.movies.p">華語與熱門片庫，海報牆瀏覽。真正點播：可拖進度、快進快退，與直播體驗分開。</p>
             </article>
-            <article style="--d:4">
+            <article>
               <span class="menu-tag series" data-i18n="tab.series">劇集</span>
               <h3 data-i18n="menu.series.t">劇集分集連看</h3>
               <p data-i18n="menu.series.p">劇集分頁清晰，同名合併備援源。選集連播，同樣支援進度條與跳轉。</p>
             </article>
-            <article style="--d:5">
+            <article>
               <span class="menu-tag fav" data-i18n="tab.favorites">收藏</span>
               <h3 data-i18n="menu.fav.t">收藏常看頻道</h3>
               <p data-i18n="menu.fav.p">把常用直播、體育與影視收進收藏，下次打開首頁就能直接點播。</p>
@@ -265,28 +263,27 @@
           <p data-i18n="apps.hint">macOS、Windows、Android 手機版與電視盒子版正式齊開。同一套亞洲目錄，裝完就能看直播、體育與影視。</p>
         </div>
 
-        <div class="apps-highlights" aria-label="download highlights">
-          <div class="ah-item" style="--d:0">
+        <ul class="apps-meta" aria-label="download highlights">
+          <li>
             <b data-i18n="apps.hl1.t">Universal</b>
             <span data-i18n="apps.hl1.d">Mac 雙架構一包搞定</span>
-          </div>
-          <div class="ah-item" style="--d:1">
+          </li>
+          <li>
             <b data-i18n="apps.hl2.t">便攜 EXE</b>
             <span data-i18n="apps.hl2.d">Windows 免安裝雙擊即用</span>
-          </div>
-          <div class="ah-item" style="--d:2">
+          </li>
+          <li>
             <b data-i18n="apps.hl3.t">Phone + TV</b>
             <span data-i18n="apps.hl3.d">手機與電視盒子分開下載</span>
-          </div>
-          <div class="ah-item" style="--d:3">
+          </li>
+          <li>
             <b data-i18n="apps.hl4.t">v2.0.20</b>
             <span data-i18n="apps.hl4.d">影視合併 · 繼續觀看 · 電視盒子</span>
-          </div>
-        </div>
+          </li>
+        </ul>
 
         <div class="os-grid">
-          <article class="os is-ready" style="--accent:#a3a3a3;--d:0">
-            <div class="os-glow" aria-hidden="true"></div>
+          <article class="os is-ready">
             <div class="os-icon" aria-hidden="true"><svg><use href="#icon-apple"></use></svg></div>
             <div class="os-top">
               <span class="os-name">macOS</span>
@@ -306,8 +303,7 @@
             <a class="btn solid wide" href="https://github.com/linux503/ZapIPTV/releases/download/v2.0.13/ZapIPTV-2.0.13-universal-installer.dmg" data-i18n="mac.btn">下載 .dmg</a>
             <p class="fine" data-i18n="mac.gate">若提示未驗證：系統設定 → 隱私與安全性 → 仍要打開。</p>
           </article>
-          <article class="os is-ready" style="--accent:#38bdf8;--d:1">
-            <div class="os-glow" aria-hidden="true"></div>
+          <article class="os is-ready">
             <div class="os-icon" aria-hidden="true"><svg><use href="#icon-windows"></use></svg></div>
             <div class="os-top">
               <span class="os-name">Windows</span>
@@ -327,8 +323,7 @@
             <a class="btn solid wide" href="https://github.com/linux503/ZapIPTV/releases/download/v2.0.8/ZapIPTV-windows-portable.exe" data-i18n="win.btn">下載 .exe</a>
             <p class="fine" data-i18n="win.note">免安裝便攜版，雙擊即可用。</p>
           </article>
-          <article class="os is-ready" style="--accent:#3ee08a;--d:2">
-            <div class="os-glow" aria-hidden="true"></div>
+          <article class="os is-ready">
             <div class="os-icon" aria-hidden="true"><svg><use href="#icon-android"></use></svg></div>
             <div class="os-top">
               <span class="os-name">Android</span>
@@ -343,13 +338,12 @@
             <ul>
               <li data-i18n="and.f1">豎屏手機適配</li>
               <li data-i18n="and.f2">直播 · 體育 · 影視一站收齊</li>
-              <li>v2.0.20</li>
+              <li>v2.0.21</li>
             </ul>
-            <a class="btn solid wide" href="https://github.com/linux503/ZapIPTV/releases/download/v2.0.20/ZapIPTV-2.0.20-android.apk" data-i18n="and.btn">下載 Android APK</a>
+            <a class="btn solid wide" href="https://github.com/linux503/ZapIPTV/releases/download/v2.0.21/ZapIPTV-2.0.21-android.apk" data-i18n="and.btn">下載 Android APK</a>
             <p class="fine" data-i18n="and.note">需允許安裝未知來源。電視盒子請下載下方獨立 TV 版。</p>
           </article>
-          <article class="os is-ready" style="--accent:#f5c542;--d:3">
-            <div class="os-glow" aria-hidden="true"></div>
+          <article class="os is-ready">
             <div class="os-icon" aria-hidden="true"><svg><use href="#icon-tv"></use></svg></div>
             <div class="os-top">
               <span class="os-name" data-i18n="tv.name">電視盒子</span>
@@ -364,9 +358,9 @@
             <ul>
               <li data-i18n="tv.f1">強制橫屏 · 大字體遙控操作</li>
               <li data-i18n="tv.f2">獨立包名，可與手機版共存</li>
-              <li>v2.0.20-tv</li>
+              <li>v2.0.21-tv</li>
             </ul>
-            <a class="btn solid wide" href="https://github.com/linux503/ZapIPTV/releases/download/v2.0.20/ZapIPTV-2.0.20-android-tv.apk" data-i18n="tv.btn">下載電視盒子 APK</a>
+            <a class="btn solid wide" href="https://github.com/linux503/ZapIPTV/releases/download/v2.0.21/ZapIPTV-2.0.21-android-tv.apk" data-i18n="tv.btn">下載電視盒子 APK</a>
             <p class="fine" data-i18n="tv.note">請勿安裝手機版到盒子。本包為獨立 TV 版。</p>
           </article>
         </div>
@@ -402,37 +396,29 @@
           <h2 data-i18n="why.title">跟 App 一樣好找</h2>
           <p data-i18n="why.hint">首頁、直播、體育、電影、劇集、收藏——與 Mac App 側欄一一對應；Windows / Android 目錄同步。</p>
         </div>
-        <div class="bento bento-6">
-          <article>
-            <span class="ico" aria-hidden="true"><svg><use href="#icon-live"></use></svg></span>
-            <h3 data-i18n="why.live">直播</h3>
+        <div class="proof">
+          <div class="proof-pane">
+            <span class="proof-label" data-i18n="proof.live.k">即時流</span>
+            <h3 data-i18n="proof.live.t">直播 · 體育</h3>
             <p data-i18n="why.live.p">目錄式瀏覽：分類芯片、精選 Hero、分區卡片。央視／衛視多鏡像合併，按 IP 智能匹配線路，無進度條。</p>
-          </article>
-          <article>
-            <span class="ico" aria-hidden="true"><svg><use href="#icon-sport"></use></svg></span>
-            <h3 data-i18n="why.sport">體育</h3>
-            <p data-i18n="why.sport.p">獨立「體育」分頁，卡片目錄瀏覽足球、籃球、綜合與美職。點選即播，同樣無進度條。</p>
-          </article>
-          <article>
-            <span class="ico" aria-hidden="true"><svg><use href="#icon-film"></use></svg></span>
-            <h3 data-i18n="why.vod">電影 · 劇集</h3>
+            <ul>
+              <li data-i18n="why.sport.p">獨立「體育」分頁，卡片目錄瀏覽足球、籃球、綜合與美職。點選即播，同樣無進度條。</li>
+              <li data-i18n="faq.a6">直播與體育是即時流，不顯示進度條；電影與劇集是點播，可拖動、快進快退。</li>
+            </ul>
+          </div>
+          <div class="proof-pane vod">
+            <span class="proof-label" data-i18n="proof.vod.k">點播</span>
+            <h3 data-i18n="proof.vod.t">電影 · 劇集</h3>
             <p data-i18n="why.vod.p">電影與劇集分開：真點播庫、海報牆、分集連看；可拖進度與快進快退，和直播徹底分開。</p>
-          </article>
-          <article>
-            <span class="ico" aria-hidden="true"><svg><use href="#icon-mirror"></use></svg></span>
-            <h3 data-i18n="why.mirror">IP 智能選線</h3>
-            <p data-i18n="why.mirror.p">偵測國內或國際 IP：國內競速選最低延遲；海外優先中轉友好線路。播不了再自動切備用源。</p>
-          </article>
-          <article>
-            <span class="ico" aria-hidden="true"><svg><use href="#icon-language"></use></svg></span>
-            <h3 data-i18n="why.lang">多語言</h3>
-            <p data-i18n="why.lang.p">App 和官網支援繁體、簡體與英文，下拉一鍵切換。</p>
-          </article>
-          <article>
-            <span class="ico" aria-hidden="true"><svg><use href="#icon-play"></use></svg></span>
-            <h3 data-i18n="why.play">首頁總覽</h3>
-            <p data-i18n="why.play.p">首頁串起繼續觀看、直播、體育與點播快捷入口；主視窗內聯播放，也可匯入 M3U / Xtream。</p>
-          </article>
+            <ul>
+              <li data-i18n="why.play.p">首頁串起繼續觀看、直播、體育與點播快捷入口；主視窗內聯播放，也可匯入 M3U / Xtream。</li>
+              <li data-i18n="why.lang.p">App 和官網支援繁體、簡體與英文，下拉一鍵切換。</li>
+            </ul>
+          </div>
+        </div>
+        <div class="proof-foot">
+          <strong data-i18n="why.mirror">IP 智能選線</strong>
+          <p data-i18n="why.mirror.p">偵測國內或國際 IP：國內競速選最低延遲；海外優先中轉友好線路。播不了再自動切備用源。</p>
         </div>
       </section>
 
@@ -547,6 +533,10 @@
           "faq.a8": "App 會偵測 IP：國內優先低延遲線路並競速；國際 IP 優先海外友好源。播不了仍會自動切備用線路。",
           "faq.q9": "手機 APK 和電視盒子 APK 有什麼不同？",
           "faq.a9": "手機請下 Android 卡片；電視盒子請下獨立「電視盒子」卡片。兩者包名與介面不同，請勿混用。",
+          "proof.live.k": "即時流",
+          "proof.live.t": "直播 · 體育",
+          "proof.vod.k": "點播",
+          "proof.vod.t": "電影 · 劇集",
           "doc.desc": "亞洲影視與直播：側欄首頁／直播／體育／電影／劇集／收藏。大陸頻道 IP 智能選線，電影劇集可拖進度。macOS / Windows / Android 手機版與電視盒子版可下載。",},
         hans: { label: "简体", htmlLang: "zh-Hans",
           "nav.menu": "功能",
@@ -607,6 +597,10 @@
           "faq.a8": "App 会检测 IP：国内优先低延迟线路并竞速；国际 IP 优先海外友好源。播不了仍会自动切备用线路。",
           "faq.q9": "手机 APK 和电视盒子 APK 有什么不同？",
           "faq.a9": "手机请下 Android 卡片；电视盒子请下独立「电视盒子」卡片。两者包名与界面不同，请勿混用。",
+          "proof.live.k": "即时流",
+          "proof.live.t": "直播 · 体育",
+          "proof.vod.k": "点播",
+          "proof.vod.t": "电影 · 剧集",
           "doc.desc": "亚洲影视与直播：侧栏首页／直播／体育／电影／剧集／收藏。大陆频道 IP 智能选线，电影剧集可拖进度。macOS / Windows / Android 手机版与电视盒子版可下载。",},
         en:   { label: "English", htmlLang: "en",
           "nav.menu": "Features",
@@ -665,6 +659,10 @@
           "faq.a7": "No. Live/Sports are channel streams; Movies/Series are a separate VOD library — live channels aren’t dumped into cinema.",
           "faq.q8": "Does Mainland TV differ on home vs overseas networks?",
           "faq.a8": "The app detects your IP: in China it races for the lowest-latency line; abroad it prefers overseas-friendly sources — then auto failover.",
+          "proof.live.k": "Live stream",
+          "proof.live.t": "Live · Sports",
+          "proof.vod.k": "On demand",
+          "proof.vod.t": "Movies · Series",
           "doc.desc": "Asian TV & streaming: Home / Live / Sports / Movies / Series / Favorites. Smart IP lines for Mainland channels; VOD scrubbing. Download for macOS, Windows, Android phone, and TV box.",
         },
       };
